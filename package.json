@@ -1,0 +1,45 @@
+{
+  "name": "odin",
+  "version": "0.0.1",
+  "description": "odin framework for the browser and node.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nathanfaucett/odin.git"
+  },
+  "main": "src/index.js",
+  "keywords": [
+    "odin",
+    "odin.js"
+  ],
+  "author": "Nathan Faucett",
+  "license": "BSD-2-Clause",
+  "readmeFilename": "README.md",
+  "devDependencies": {
+    "comn": "git://github.com/nathanfaucett/comn",
+    "grunt": "",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-contrib-uglify": "^0.7.0",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-jsbeautifier": ""
+  },
+  "dependencies": {
+    "color": "nathanfaucett/color",
+    "create_store": "nathanfaucett/create_store",
+    "delegator": "nathanfaucett/delegator",
+    "environment": "nathanfaucett/environment",
+    "event_emitter": "nathanfaucett/event_emitter",
+    "event_listener": "nathanfaucett/event_listener",
+    "input": "nathanfaucett/input",
+    "mat3": "nathanfaucett/mat3",
+    "mat32": "nathanfaucett/mat32",
+    "mat4": "nathanfaucett/mat4",
+    "mathf": "nathanfaucett/mathf",
+    "quat": "nathanfaucett/quat",
+    "request_animation_frame": "nathanfaucett/request_animation_frame",
+    "time": "nathanfaucett/time",
+    "type": "nathanfaucett/type",
+    "utils": "nathanfaucett/utils",
+    "vec2": "nathanfaucett/vec2",
+    "vec3": "nathanfaucett/vec3"
+  }
+}
