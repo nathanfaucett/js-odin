@@ -1,5 +1,8 @@
-var type = require("type"),
+var isString = require("is_string"),
+    isNumber = require("is_number"),
+    indexOf = require("index_of"),
     Class = require("../base/class"),
+    Assets = require("../assets/assets"),
     Scene = require("../scene_graph/scene"),
     createLoop = require("./create_loop");
 
@@ -21,6 +24,8 @@ BaseApplication.prototype.construct = function() {
 
     ClassPrototype.construct.call(this);
 
+    this.assets = Assets.create();
+
     this.__scenes = [];
     this.__sceneHash = {};
 
@@ -31,9 +36,11 @@ BaseApplication.prototype.construct = function() {
     return this;
 };
 
-BaseApplication.prototype.destruct = function() {
+BaseApplication.prototype.destructor = function() {
 
-    ClassPrototype.destruct.call(this);
+    ClassPrototype.destructor.call(this);
+
+    this.assets = null;
 
     this.__scenes = null;
     this.__sceneHash = null;
@@ -86,9 +93,9 @@ function BaseApplication_removeScene(_this, scene) {
         sceneHash = _this.__sceneHash,
         json, name;
 
-    if (type.isString(scene)) {
+    if (isString(scene)) {
         json = sceneHash[scene];
-    } else if (type.isNumber(scene)) {
+    } else if (isNumber(scene)) {
         json = scenes[scene];
     }
 
@@ -97,7 +104,7 @@ function BaseApplication_removeScene(_this, scene) {
     if (sceneHash[name]) {
 
         sceneHash[name] = null;
-        utils.remove(scenes, json);
+        scenes.splice(indexOf(scenes, json), 1);
 
         _this.emit("removeScene", name);
     } else {

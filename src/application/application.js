@@ -1,4 +1,5 @@
-var type = require("type"),
+var isString = require("is_string"),
+    isNumber = require("is_number"),
     Class = require("../base/class"),
     Canvas = require("./canvas"),
     BaseApplication = require("./base_application");
@@ -26,9 +27,9 @@ Application.prototype.construct = function(options) {
     return this;
 };
 
-Application.prototype.destruct = function() {
+Application.prototype.destructor = function() {
 
-    BaseApplicationPrototype.destruct.call(this);
+    BaseApplicationPrototype.destructor.call(this);
 
     this.scene = null;
     this.camera = null;
@@ -41,9 +42,9 @@ Application.prototype.setScene = function(scene) {
     var scenes = this.__scenes,
         sceneHash = this.__sceneHash;
 
-    if (type.isString(scene)) {
+    if (isString(scene)) {
         scene = sceneHash[scene];
-    } else if (type.isNumber(scene)) {
+    } else if (isNumber(scene)) {
         scene = scenes[scene];
     }
 
@@ -59,6 +60,8 @@ Application.prototype.setScene = function(scene) {
         scene.init();
 
         this.emit("setScene", scene);
+
+        scene.awake();
     } else {
         throw new Error("Application.setScene(scene) Scene could not be found in Application");
     }
@@ -79,7 +82,7 @@ Application.prototype.setCamera = function(sceneObject) {
         throw new Error("Application.setCamera: SceneObject is not a member of the active Scene, adding it...");
     }
 
-    camera = this.camera = sceneObject.getComponent("camera") || sceneObject.getComponent("camera2d");
+    camera = this.camera = sceneObject.getComponent("Camera") || sceneObject.getComponent("Camera2D");
 
     if (camera) {
         camera.__active = true;

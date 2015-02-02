@@ -7,6 +7,9 @@ module.exports = Time;
 function Time() {
     var _this = this,
         scale = 1,
+
+        START = time.now() * 0.001,
+
         globalFixed = 1 / 60,
         fixedDelta = 1 / 60,
 
@@ -20,10 +23,18 @@ function Time() {
         MIN_DELTA = 0.000001,
         MAX_DELTA = 1;
 
-    this.time = 0;
+    this.time = START;
     this.fps = 60;
     this.delta = 1 / 60;
     this.frameCount = 0;
+
+    this.now = function() {
+        return (time.now() * 0.001) - START;
+    };
+
+    this.start = function() {
+        return START;
+    };
 
     this.update = function() {
         _this.frameCount = frameCount++;
@@ -42,57 +53,24 @@ function Time() {
         delta = (current - last) * _this.scale;
         _this.delta = delta < MIN_DELTA ? MIN_DELTA : delta > MAX_DELTA ? MAX_DELTA : delta;
 
-        _this.time = current * _this.scale;
+        _this.time = current;
     };
 
-    Object.defineProperty(this, "scale", {
-        enumerable: true,
-        configurable: false,
+    this.scale = scale;
+    this.setScale = function(value) {
+        this.scale = value;
+        this.fixedDelta = globalFixed * value;
+    };
 
-        get: function() {
-            return scale;
-        },
-        set: function(value) {
-            scale = value;
-            fixedDelta = globalFixed * value;
-        }
-    });
-
-    Object.defineProperty(this, "fixedDelta", {
-        enumerable: true,
-        configurable: false,
-
-        get: function() {
-            return fixedDelta;
-        },
-        set: function(value) {
-            globalFixed = value;
-            fixedDelta = globalFixed * scale;
-        }
-    });
+    this.fixedDelta = fixedDelta;
+    this.setFixedDelta = function(value) {
+        globalFixed = value;
+        this.fixedDelta = globalFixed * scale;
+    };
 }
 
 Time.create = function() {
     return new Time();
-};
-
-Object.defineProperty(Time.prototype, "sinceStart", {
-    enumerable: true,
-    configurable: false,
-    get: function() {
-        return time.now();
-    }
-});
-
-Object.defineProperty(Time.prototype, "start", {
-    enumerable: true,
-    configurable: false,
-    writable: false,
-    value: time.stamp()
-});
-
-Time.prototype.now = function() {
-    return time.now() * 0.001;
 };
 
 Time.prototype.stamp = function() {

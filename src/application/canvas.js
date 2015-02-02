@@ -1,4 +1,4 @@
-var type = require("type"),
+var isNumber = require("is_number"),
     environment = require("environment"),
     eventListener = require("event_listener"),
     Class = require("../base/class");
@@ -86,8 +86,8 @@ Canvas.prototype.construct = function(options) {
 
     this.fullScreen = options.fullScreen ? options.fullScreen : (options.width == null && options.height == null) ? true : false;
 
-    this.width = type.isNumber(options.width) ? options.width : window.innerWidth;
-    this.height = type.isNumber(options.height) ? options.height : window.innerHeight;
+    this.width = isNumber(options.width) ? options.width : window.innerWidth;
+    this.height = isNumber(options.height) ? options.height : window.innerHeight;
 
     this.aspect = this.width / this.height;
 
@@ -104,9 +104,9 @@ Canvas.prototype.construct = function(options) {
     return this;
 };
 
-Canvas.prototype.destruct = function() {
+Canvas.prototype.destructor = function() {
 
-    ClassPrototype.destruct.call(this);
+    ClassPrototype.destructor.call(this);
 
     this.element = null;
 

@@ -36,9 +36,9 @@ Transform.prototype.construct = function() {
     return this;
 };
 
-Transform.prototype.destruct = function() {
+Transform.prototype.destructor = function() {
 
-    ComponentPrototype.destruct.call(this);
+    ComponentPrototype.destructor.call(this);
 
     this.position = null;
     this.rotation = null;
@@ -57,6 +57,24 @@ Transform.prototype.init = function() {
 
     ComponentPrototype.init.call(this);
 
+    return this;
+};
+
+Transform.prototype.setPosition = function(x, y, z) {
+
+    vec3.set(this.position, x, y, z);
+    return this;
+};
+
+Transform.prototype.setRotation = function(x, y, z, w) {
+
+    vec3.set(this.rotation, x, y, z, w);
+    return this;
+};
+
+Transform.prototype.setScale = function(x, y, z) {
+
+    vec3.set(this.scale, x, y, z);
     return this;
 };
 

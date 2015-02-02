@@ -55,9 +55,9 @@ Camera.prototype.construct = function(options) {
     return this;
 };
 
-Camera.prototype.destruct = function() {
+Camera.prototype.destructor = function() {
 
-    ComponentPrototype.destruct.call(this);
+    ComponentPrototype.destructor.call(this);
 
     this.width = null;
     this.height = null;
@@ -208,7 +208,7 @@ Camera.prototype.toScreen = function(v, out) {
 
 Camera.prototype.update = function(force) {
     var sceneObject = this.sceneObject,
-        transform = sceneObject && (sceneObject.getComponent("transform") || sceneObject.getComponent("transform2d")),
+        transform = sceneObject && (sceneObject.getComponent("Transform") || sceneObject.getComponent("Transform2D")),
         orthographicSize, right, left, top, bottom;
 
     ComponentPrototype.update.call(this);

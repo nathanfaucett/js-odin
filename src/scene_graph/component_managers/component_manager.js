@@ -1,4 +1,4 @@
-var utils = require("utils"),
+var indexOf = require("index_of"),
     Class = require("../../base/class");
 
 
@@ -31,9 +31,9 @@ ComponentManager.prototype.construct = function() {
     return this;
 };
 
-ComponentManager.prototype.destruct = function() {
+ComponentManager.prototype.destructor = function() {
 
-    ClassPrototype.destruct.call(this);
+    ClassPrototype.destructor.call(this);
 
     this.__components = null;
 
@@ -68,6 +68,18 @@ ComponentManager.prototype.init = function() {
     return this;
 };
 
+ComponentManager.prototype.awake = function() {
+    var components = this.__components,
+        i = -1,
+        il = components.length - 1;
+
+    while (i++ < il) {
+        components[i].awake();
+    }
+
+    return this;
+};
+
 ComponentManager.prototype.update = function() {
     var components = this.__components,
         i = -1,
@@ -96,7 +108,7 @@ ComponentManager.prototype.forEach = function(callback) {
 
 ComponentManager.prototype.add = function(component) {
     var components = this.__components,
-        index = utils.indexOf(components, component);
+        index = indexOf(components, component);
 
     if (index === -1) {
         components[components.length] = component;
@@ -105,7 +117,7 @@ ComponentManager.prototype.add = function(component) {
 
 ComponentManager.prototype.remove = function(component) {
     var components = this.__components,
-        index = utils.indexOf(components, component);
+        index = indexOf(components, component);
 
     if (index !== -1) {
         components.splice(index, 1);

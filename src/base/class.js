@@ -1,5 +1,5 @@
-var type = require("type"),
-    utils = require("utils"),
+var isFunction = require("is_function"),
+    inherits = require("inherits"),
     EventEmitter = require("event_emitter");
 
 
@@ -13,7 +13,7 @@ function Class() {
 
     EventEmitter.call(this, -1);
 
-    this.destruct();
+    this.destructor();
 }
 EventEmitter.extend(Class);
 
@@ -21,12 +21,12 @@ Class.extend = function(child, className) {
 
     Class.__classes[className] = child;
 
-    utils.inherits(child, this);
+    inherits(child, this);
     child.extend = this.extend;
     child.create = this.create;
     child.className = child.prototype.className = className;
 
-    if (type.isFunction(this.onExtend)) {
+    if (isFunction(this.onExtend)) {
         this.onExtend.apply(this, arguments);
     }
 
@@ -53,7 +53,7 @@ Class.prototype.construct = function() {
     return this;
 };
 
-Class.prototype.destruct = function() {
+Class.prototype.destructor = function() {
 
     this.__id = null;
 

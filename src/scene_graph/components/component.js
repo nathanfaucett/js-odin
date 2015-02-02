@@ -1,5 +1,5 @@
-var Class = require("../../base/class"),
-    helpers = require("../../base/helpers"),
+var camelize = require("camelize"),
+    Class = require("../../base/class"),
     ComponentManager = require("../component_managers/component_manager");
 
 
@@ -14,14 +14,14 @@ function Component() {
 }
 
 Component.onExtend = function(child, className, manager) {
-    child.memberName = child.prototype.memberName = helpers.camelize(child.className, true);
+    child.memberName = child.prototype.memberName = camelize(child.className, true);
     child.manager = child.prototype.manager = manager || ComponentManager;
 };
 
 Class.extend(Component, "Component");
 
 Component.className = Component.prototype.className = "Component";
-Component.memberName = Component.prototype.memberName = helpers.camelize(Component.className, true);
+Component.memberName = Component.prototype.memberName = camelize(Component.className, true);
 Component.manager = Component.prototype.manager = ComponentManager;
 
 Component.prototype.construct = function() {
@@ -31,9 +31,9 @@ Component.prototype.construct = function() {
     return this;
 };
 
-Component.prototype.destruct = function() {
+Component.prototype.destructor = function() {
 
-    ClassPrototype.destruct.call(this);
+    ClassPrototype.destructor.call(this);
 
     this.sceneObject = null;
 

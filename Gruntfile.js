@@ -3,9 +3,7 @@ module.exports = function(grunt) {
     grunt.initConfig({
         jsbeautifier: {
             files: [
-                "**/*.js",
-                "!**/*.min.js",
-                "!**/node_modules/**/*"
+                "src/**/*.js"
             ]
         },
         jshint: {
@@ -19,41 +17,27 @@ module.exports = function(grunt) {
                 proto: true
             },
             files: [
-                "**/*.js",
-                "!odin.js",
-                "!odin.min.js",
-                "!**/node_modules/**/*"
+                "src/**/*.js"
             ]
         },
-        uglify: {
-            compile: {
-                options: {
-                    mangle: true
-                },
-                files: {
-                    "odin.min.js": [
-                        "odin.js"
-                    ]
-                }
-            }
-        },
         comn: {
-            compile: {
-                index: "./src/index.js",
-                out: "odin.js",
-                exportName: "odin"
+            test: {
+                options: {
+                    index: "example/test/src/index.js",
+                    out: "example/test/index.min.js"
+                }
             }
         },
         watch: {
             options: {
                 livereload: 35729
             },
-            js: {
+            test_js: {
                 files: [
                     "src/**/*.js",
-                    "example/**/*.js"
+                    "example/test/src/**/*.js"
                 ],
-                tasks: ["comn"],
+                tasks: ["comn:test"],
                 options: {
                     spawn: false
                 }
@@ -61,21 +45,14 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.registerMultiTask("comn", "compile js files", function() {
-        var comn = require("comn"),
-            data = this.data;
-
-        comn.compile(data.index, data.out, {
-            exportName: data.exportName
-        });
-    });
-
     grunt.loadNpmTasks("grunt-contrib-watch");
     grunt.loadNpmTasks("grunt-contrib-uglify");
+    grunt.loadNpmTasks("grunt-comn");
 
     grunt.loadNpmTasks("grunt-jsbeautifier");
     grunt.loadNpmTasks("grunt-contrib-jshint");
+
     grunt.registerTask("default", ["jsbeautifier", "jshint"]);
 
-    grunt.registerTask("build", ["comn", "uglify"]);
+    grunt.registerTask("test", ["comn:test", "watch:test_js"]);
 };

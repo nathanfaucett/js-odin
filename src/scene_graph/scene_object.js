@@ -1,4 +1,4 @@
-var utils = require("utils"),
+var indexOf = require("index_of"),
     Class = require("../base/class");
 
 
@@ -31,9 +31,9 @@ SceneObject.prototype.construct = function(name) {
     return this;
 };
 
-SceneObject.prototype.destruct = function() {
+SceneObject.prototype.destructor = function() {
 
-    ClassPrototype.destruct.call(this);
+    ClassPrototype.destructor.call(this);
 
     this.name = null;
 
@@ -82,7 +82,7 @@ SceneObject.prototype.addComponent = function() {
 };
 
 function SceneObject_addComponent(_this, component) {
-    var name = component.memberName,
+    var name = component.className,
         componentHash = _this.__componentHash,
         components = _this.__components,
         scene = _this.scene;
@@ -117,7 +117,7 @@ SceneObject.prototype.removeComponent = function() {
 };
 
 function SceneObject_removeComponent(_this, component) {
-    var name = component.memberName,
+    var name = component.className,
         componentHash = _this.__componentHash,
         components = _this.__components,
         index = components.indexOf(components, component),
@@ -152,7 +152,7 @@ SceneObject.prototype.add = function() {
 
 function SceneObject_add(_this, sceneObject) {
     var children = _this.children,
-        index = utils.indexOf(children, sceneObject),
+        index = indexOf(children, sceneObject),
         root = _this,
         depth = 0,
         scene = _this.scene;
@@ -200,7 +200,7 @@ SceneObject.prototype.remove = function() {
 
 function SceneObject_remove(_this, sceneObject) {
     var children = _this.children,
-        index = utils.indexOf(children, sceneObject),
+        index = indexOf(children, sceneObject),
         scene = _this.scene;
 
     if (index !== -1) {
