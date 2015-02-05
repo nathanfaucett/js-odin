@@ -14,7 +14,6 @@ module.exports = BaseApplication;
 
 
 function BaseApplication() {
-
     Class.call(this);
 }
 Class.extend(BaseApplication, "BaseApplication");

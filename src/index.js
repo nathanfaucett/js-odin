@@ -8,12 +8,13 @@ odin.JSONAsset = require("./assets/json_asset");
 odin.Texture = require("./assets/texture");
 odin.Geometry = require("./assets/geometry/index");
 
+odin.Canvas = require("./base/canvas");
 odin.Class = require("./base/class");
+odin.createLoop = require("./base/create_loop");
+odin.Time = require("./base/time");
+odin.uuid = require("./base/uuid");
 
-odin.BaseApplication = require("./application/base_application");
-odin.Application = require("./application/application");
-
-odin.WebGLRenderer = require("./renderer/webgl_renderer");
+odin.Renderer = require("./renderer/renderer");
 
 odin.Scene = require("./scene_graph/scene");
 odin.SceneObject = require("./scene_graph/scene_object");

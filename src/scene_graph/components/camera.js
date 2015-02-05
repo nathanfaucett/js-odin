@@ -14,7 +14,6 @@ module.exports = Camera;
 
 
 function Camera() {
-
     Component.call(this);
 }
 Component.extend(Camera, "Camera", CameraManager);
@@ -98,6 +97,18 @@ Camera.prototype.set = function(width, height) {
 
     this.aspect = width / height;
     this.needsUpdate = true;
+
+    return this;
+};
+
+Camera.prototype.setActive = function() {
+    var manager = this.manager;
+
+    if (manager) {
+        manager.setActive(this);
+    } else {
+        this.__active = true;
+    }
 
     return this;
 };
@@ -246,6 +257,8 @@ Camera.prototype.toJSON = function(json) {
 
     json = ComponentPrototype.toJSON.call(this, json);
 
+    json.__active = this.__active;
+
     json.width = this.width;
     json.height = this.height;
     json.aspect = this.aspect;
@@ -268,6 +281,8 @@ Camera.prototype.toJSON = function(json) {
 Camera.prototype.fromJSON = function(json) {
 
     ComponentPrototype.fromJSON.call(this, json);
+
+    this.__active = json.__active;
 
     this.width = json.width;
     this.height = json.height;

@@ -11,7 +11,6 @@ module.exports = Scene;
 
 
 function Scene() {
-
     Class.call(this);
 }
 Class.extend(Scene, "Scene");
@@ -113,7 +112,7 @@ Scene.prototype.destroy = function() {
 };
 
 Scene.prototype.has = function(sceneObject) {
-    return indexOf(this.__sceneObjects, sceneObject) !== -1;
+    return !!this.__sceneObjectHash[sceneObject.__id];
 };
 
 Scene.prototype.find = function(name) {
@@ -131,6 +130,14 @@ Scene.prototype.find = function(name) {
     }
 
     return undefined;
+};
+
+Scene.prototype.hasManager = function(name) {
+    return !!this.__managerHash[name];
+};
+
+Scene.prototype.getManager = function(name) {
+    return this.__managerHash[name];
 };
 
 Scene.prototype.add = function() {
@@ -187,16 +194,20 @@ Scene.prototype.__addComponent = function(component) {
         manager = managerHash[className];
 
     if (!manager) {
-        manager = component.manager.create();
+        manager = component.ComponentManager.create();
 
+        manager.scene = this;
         managers[managers.length] = manager;
         managerHash[className] = manager;
 
         sortManagers(this);
+
+        manager.onAddToScene();
     }
 
     manager.add(component);
-    manager.__sort();
+    manager.sort();
+    component.manager = manager;
 
     this.emit("add" + className, component);
 
@@ -267,9 +278,13 @@ Scene.prototype.__removeComponent = function(component) {
     this.emit("remove" + className, component);
 
     manager.remove(component);
-    manager.__sort();
+    manager.sort();
+    component.manager = null;
 
     if (manager.isEmpty()) {
+        manager.onRemoveFromScene();
+
+        manager.scene = null;
         managers.splice(indexOf(managers, manager), 1);
         delete managerHash[className];
 
@@ -280,7 +295,6 @@ Scene.prototype.__removeComponent = function(component) {
 };
 
 function sortManagers(_this) {
-
     _this.__managers.sort(sortManagersFn);
 }
 

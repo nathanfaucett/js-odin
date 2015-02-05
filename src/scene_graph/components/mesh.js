@@ -9,7 +9,6 @@ module.exports = Mesh;
 
 
 function Mesh() {
-
     Component.call(this);
 }
 Component.extend(Mesh, "Mesh", MeshManager);

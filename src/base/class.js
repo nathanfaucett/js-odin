@@ -1,9 +1,7 @@
 var isFunction = require("is_function"),
     inherits = require("inherits"),
-    EventEmitter = require("event_emitter");
-
-
-var CLASS_ID = 1;
+    EventEmitter = require("event_emitter"),
+    uuid = require("./uuid");
 
 
 module.exports = Class;
@@ -48,7 +46,7 @@ Class.create = function() {
 
 Class.prototype.construct = function() {
 
-    this.__id = CLASS_ID++;
+    this.__id = uuid();
 
     return this;
 };

@@ -1,5 +1,6 @@
 var gl = require("./gl");
 
+
 module.exports = {
     RGB: gl.RGB,
     RGBA: gl.RGBA,

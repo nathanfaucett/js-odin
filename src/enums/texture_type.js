@@ -1,5 +1,6 @@
 var gl = require("./gl");
 
+
 module.exports = {
     UnsignedByte: gl.UNSIGNED_BYTE,
     Float: gl.FLOAT,

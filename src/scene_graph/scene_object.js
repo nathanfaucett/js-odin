@@ -82,16 +82,16 @@ SceneObject.prototype.addComponent = function() {
 };
 
 function SceneObject_addComponent(_this, component) {
-    var name = component.className,
+    var className = component.className,
         componentHash = _this.__componentHash,
         components = _this.__components,
         scene = _this.scene;
 
-    if (!componentHash[name]) {
+    if (!componentHash[className]) {
         component.sceneObject = _this;
 
         components[components.length] = component;
-        componentHash[name] = component;
+        componentHash[className] = component;
 
         if (scene) {
             scene.__addComponent(component);
@@ -117,7 +117,7 @@ SceneObject.prototype.removeComponent = function() {
 };
 
 function SceneObject_removeComponent(_this, component) {
-    var name = component.className,
+    var className = component.className,
         componentHash = _this.__componentHash,
         components = _this.__components,
         index = components.indexOf(components, component),
@@ -131,7 +131,7 @@ function SceneObject_removeComponent(_this, component) {
         component.sceneObject = null;
 
         components.splice(index, 1);
-        delete componentHash[name];
+        delete componentHash[className];
     } else {
         throw new Error(
             "SceneObject removeComponent(...components) trying to remove " +

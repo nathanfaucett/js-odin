@@ -15,14 +15,14 @@ function Component() {
 
 Component.onExtend = function(child, className, manager) {
     child.memberName = child.prototype.memberName = camelize(child.className, true);
-    child.manager = child.prototype.manager = manager || ComponentManager;
+    child.ComponentManager = child.prototype.ComponentManager = manager || ComponentManager;
 };
 
 Class.extend(Component, "Component");
 
 Component.className = Component.prototype.className = "Component";
 Component.memberName = Component.prototype.memberName = camelize(Component.className, true);
-Component.manager = Component.prototype.manager = ComponentManager;
+Component.ComponentManager = Component.prototype.ComponentManager = ComponentManager;
 
 Component.prototype.construct = function() {
 
@@ -35,6 +35,7 @@ Component.prototype.destructor = function() {
 
     ClassPrototype.destructor.call(this);
 
+    this.manager = null;
     this.sceneObject = null;
 
     return this;

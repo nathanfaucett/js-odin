@@ -1,17 +1,41 @@
-var WeakMapShim = require("weak_map_shim"),
-    WebGLRenderer = require("./webgl_renderer");
+var Class = require("../base/class");
 
 
-var WebGLRendererPrototype = Class.prototype;
+var ClassPrototype = Class.prototype;
 
 
 module.exports = Renderer;
 
 
 function Renderer() {
-    WebGLRenderer.call(this);
+    Class.call(this);
 }
-WebGLRenderer.extend(Renderer, "Renderer");
+Class.extend(Renderer, "Renderer");
+
+Renderer.prototype.construct = function(scene) {
+
+    ClassPrototype.construct.call(this);
+
+    if (scene) {
+        this.setScene(scene);
+    }
+
+    Renderer_createRenderers(this);
+
+    this.__renderers = extend({}, Renderer.__renderers);
+
+    return this;
+};
+
+Renderer.prototype.destructor = function() {
+
+    ClassPrototype.destructor.call(this);
+
+    this.__scene = null;
+    this.__renderers = null;
+
+    return this;
+};
 
 Renderer.prototype.addRenderer = function(type, fn, override) {
     var renderers = this.__renderers,
@@ -61,45 +85,13 @@ Renderer.prototype.disableRenderer = function(type) {
     return this;
 };
 
-Renderer.prototype.construct = function(options) {
-
-    WebGLRendererPrototype.construct.call(this, options);
-
-    Renderer_createRenderers(this);
-
-    this.__scenes = new WeakMapShim();
-    this.__renderers = extend({}, Renderer.__renderers);
-
-    return this;
-};
-
-Renderer.prototype.destructor = function() {
-
-    WebGLRendererPrototype.destructor.call(this);
-
-    this.__scenes = null;
-    this.__renderers = null;
-
-    return this;
-};
-
-Renderer.prototype.render = function(scene, camera) {
-    var _this, renderers, managers, scenes, internalScene, i, il;
+Renderer.prototype.render = function(camera) {
+    var _this, renderers, scene, managers, i, il;
 
     _this = this;
-
-    managers = scene.__managers;
     renderers = this.__renderers;
-
-    scenes = this.__scenes;
-    internalScene = scenes.get(scene);
-
-    if (!internalScene) {
-        internalScene = {};
-        scenes.set(scene, internalScene);
-    } else {
-        setSceneEvents(scene);
-    }
+    scene = this.__scene;
+    managers = scene.__managers;
 
     i = -1;
     il = manager.length - 1;
@@ -117,16 +109,6 @@ Renderer.prototype.render = function(scene, camera) {
 
     return this;
 };
-
-function addSceneEvents(scene) {
-    scene.once("destroy", function() {
-        removeSceneEvents(scene);
-    });
-}
-
-function removeSceneEvents(scene) {
-
-}
 
 function Renderer_createRenderers(_this) {
     _this.addRenderer("Mesh", function renderMesh(renderer, meshFilter, camera) {

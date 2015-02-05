@@ -9,12 +9,10 @@ module.exports = ComponentManager;
 
 
 function ComponentManager() {
-
     Class.call(this);
 }
 
 ComponentManager.onExtend = function(child, className, order) {
-
     child.order = child.prototype.order = order != null ? order : 0;
 };
 
@@ -35,8 +33,17 @@ ComponentManager.prototype.destructor = function() {
 
     ClassPrototype.destructor.call(this);
 
+    this.scene = null;
     this.__components = null;
 
+    return this;
+};
+
+ComponentManager.prototype.onAddToScene = function() {
+    return this;
+};
+
+ComponentManager.prototype.onRemoveFromScene = function() {
     return this;
 };
 
@@ -45,15 +52,13 @@ ComponentManager.prototype.isEmpty = function() {
     return this.__components.length === 0;
 };
 
-ComponentManager.prototype.__sort = function() {
-
-    this.__components.sort(this.sort);
+ComponentManager.prototype.sort = function() {
+    this.__components.sort(this.sortFunction);
     return this;
 };
 
-ComponentManager.prototype.sort = function(a, b) {
-
-    return a.__id - b.__id;
+ComponentManager.prototype.sortFunction = function(a, b) {
+    return 0;
 };
 
 ComponentManager.prototype.init = function() {
@@ -106,6 +111,10 @@ ComponentManager.prototype.forEach = function(callback) {
     return true;
 };
 
+ComponentManager.prototype.has = function(component) {
+    return indexOf(this.__components, component) !== -1;
+};
+
 ComponentManager.prototype.add = function(component) {
     var components = this.__components,
         index = indexOf(components, component);
@@ -113,6 +122,8 @@ ComponentManager.prototype.add = function(component) {
     if (index === -1) {
         components[components.length] = component;
     }
+
+    return this;
 };
 
 ComponentManager.prototype.remove = function(component) {
@@ -122,4 +133,6 @@ ComponentManager.prototype.remove = function(component) {
     if (index !== -1) {
         components.splice(index, 1);
     }
+
+    return this;
 };

@@ -15,15 +15,15 @@ var ClassPrototype = Class.prototype,
     NativeUint8Array = typeof(Uint8Array) !== "undefined" ? Uint8Array : Array;
 
 
-module.exports = WebGLRenderer;
+module.exports = WebGLContext;
 
 
-function WebGLRenderer() {
+function WebGLContext() {
     Class.call(this);
 }
-Class.extend(WebGLRenderer, "WebGLRenderer");
+Class.extend(WebGLContext, "WebGLContext");
 
-WebGLRenderer.prototype.construct = function(options) {
+WebGLContext.prototype.construct = function(options) {
 
     ClassPrototype.construct.call(this);
 
@@ -42,7 +42,7 @@ WebGLRenderer.prototype.construct = function(options) {
     return this;
 };
 
-WebGLRenderer.prototype.destructor = function() {
+WebGLContext.prototype.destructor = function() {
 
     ClassPrototype.destructor.call(this);
 
@@ -99,7 +99,7 @@ WebGLRenderer.prototype.destructor = function() {
     return this;
 };
 
-WebGLRenderer.prototype.setElement = function(element) {
+WebGLContext.prototype.setElement = function(element) {
     var _this = this,
         thisElement = this.element;
 
@@ -111,21 +111,21 @@ WebGLRenderer.prototype.setElement = function(element) {
     this.element = element;
 
     this.__handlerContextLost = this.__handlerContextLost || function(e) {
-        handleWebGLRendererContextLost(_this, e);
+        handleWebGLContextContextLost(_this, e);
     };
     this.__handlerContextRestored = this.__handlerContextRestored || function(e) {
-        handleWebGLRendererContextRestored(_this, e);
+        handleWebGLContextContextRestored(_this, e);
     };
 
     eventListener.on(element, "webglcontextlost", this.__handlerContextLost);
     eventListener.on(element, "webglcontextrestored", this.__handlerContextRestored);
 
-    getGLContext(this);
+    WebGLContext_getGLContext(this);
 
     return this;
 };
 
-WebGLRenderer.prototype.resetGL = function() {
+WebGLContext.prototype.resetGL = function() {
 
     this.__viewportX = null;
     this.__viewportY = null;
@@ -163,7 +163,7 @@ WebGLRenderer.prototype.resetGL = function() {
     return this;
 };
 
-WebGLRenderer.prototype.clampMaxSize = function(image, isCubeMap) {
+WebGLContext.prototype.clampMaxSize = function(image, isCubeMap) {
     var maxSize = isCubeMap ? this.__maxCubeTextureSize : this.__maxTextureSize,
         maxDim, newWidth, newHeight, canvas, ctx;
 
@@ -184,7 +184,7 @@ WebGLRenderer.prototype.clampMaxSize = function(image, isCubeMap) {
     return canvas;
 };
 
-WebGLRenderer.prototype.setViewport = function(x, y, width, height) {
+WebGLContext.prototype.setViewport = function(x, y, width, height) {
     x = x || 0;
     y = y || 0;
     width = width || 1;
@@ -207,7 +207,7 @@ WebGLRenderer.prototype.setViewport = function(x, y, width, height) {
     return this;
 };
 
-WebGLRenderer.prototype.setDepthTest = function(depthTest) {
+WebGLContext.prototype.setDepthTest = function(depthTest) {
     var gl = this.gl;
 
     if (this.__depthTest !== depthTest) {
@@ -224,7 +224,7 @@ WebGLRenderer.prototype.setDepthTest = function(depthTest) {
     return this;
 };
 
-WebGLRenderer.prototype.setDepthWrite = function(depthWrite) {
+WebGLContext.prototype.setDepthWrite = function(depthWrite) {
 
     if (this.__depthWrite !== depthWrite) {
 
@@ -235,7 +235,7 @@ WebGLRenderer.prototype.setDepthWrite = function(depthWrite) {
     return this;
 };
 
-WebGLRenderer.prototype.setLineWidth = function(width) {
+WebGLContext.prototype.setLineWidth = function(width) {
 
     if (this.__lineWidth !== width) {
 
@@ -246,7 +246,7 @@ WebGLRenderer.prototype.setLineWidth = function(width) {
     return this;
 };
 
-WebGLRenderer.prototype.setCullFace = function(cullFace) {
+WebGLContext.prototype.setCullFace = function(cullFace) {
     var gl = this.gl;
 
     if (this.__cullFace !== cullFace) {
@@ -279,7 +279,7 @@ WebGLRenderer.prototype.setCullFace = function(cullFace) {
     return this;
 };
 
-WebGLRenderer.prototype.setBlending = function(blending) {
+WebGLContext.prototype.setBlending = function(blending) {
     var gl = this.gl;
 
     if (this.__blending !== blending) {
@@ -321,13 +321,13 @@ WebGLRenderer.prototype.setBlending = function(blending) {
     return this;
 };
 
-WebGLRenderer.prototype.setScissor = function(x, y, width, height) {
+WebGLContext.prototype.setScissor = function(x, y, width, height) {
 
     this.gl.scissor(x, y, width, height);
     return this;
 };
 
-WebGLRenderer.prototype.setClearColor = function(clearColor, alpha) {
+WebGLContext.prototype.setClearColor = function(clearColor, alpha) {
     alpha = alpha || 1;
 
     if (color.notEqual(this.__clearColor, clearColor) || alpha !== this.__clearAlpha) {
@@ -341,7 +341,7 @@ WebGLRenderer.prototype.setClearColor = function(clearColor, alpha) {
     return this;
 };
 
-WebGLRenderer.prototype.setProgram = function(program) {
+WebGLContext.prototype.setProgram = function(program) {
 
     if (this.__program !== program) {
         this.__program = program;
@@ -358,7 +358,7 @@ WebGLRenderer.prototype.setProgram = function(program) {
     return this;
 };
 
-WebGLRenderer.prototype.clearCanvas = function(color, depth, stencil) {
+WebGLContext.prototype.clearCanvas = function(color, depth, stencil) {
     var gl = this.gl,
         bits = 0;
 
@@ -377,28 +377,28 @@ WebGLRenderer.prototype.clearCanvas = function(color, depth, stencil) {
     return this;
 };
 
-WebGLRenderer.prototype.clearColor = function() {
+WebGLContext.prototype.clearColor = function() {
     var gl = this.gl;
 
     gl.clear(gl.COLOR_BUFFER_BIT);
     return this;
 };
 
-WebGLRenderer.prototype.clearDepth = function() {
+WebGLContext.prototype.clearDepth = function() {
     var gl = this.gl;
 
     gl.clear(gl.DEPTH_BUFFER_BIT);
     return this;
 };
 
-WebGLRenderer.prototype.clearStencil = function() {
+WebGLContext.prototype.clearStencil = function() {
     var gl = this.gl;
 
     gl.clear(gl.STENCIL_BUFFER_BIT);
     return this;
 };
 
-WebGLRenderer.prototype.enableAttribute = function(attribute) {
+WebGLContext.prototype.enableAttribute = function(attribute) {
     var enabledAttributes = this.__enabledAttributes;
 
     if (enabledAttributes[attribute] === 0) {
@@ -409,7 +409,7 @@ WebGLRenderer.prototype.enableAttribute = function(attribute) {
     return this;
 };
 
-WebGLRenderer.prototype.disableAttribute = function(attribute) {
+WebGLContext.prototype.disableAttribute = function(attribute) {
     var enabledAttributes = this.__enabledAttributes;
 
     if (enabledAttributes[attribute] === 1) {
@@ -420,7 +420,7 @@ WebGLRenderer.prototype.disableAttribute = function(attribute) {
     return this;
 };
 
-WebGLRenderer.prototype.disableAttributes = function() {
+WebGLContext.prototype.disableAttributes = function() {
     var gl = this.gl,
         i = this.__maxAttributes,
         enabledAttributes = this.__enabledAttributes;
@@ -438,7 +438,7 @@ WebGLRenderer.prototype.disableAttributes = function() {
 var getExtension_lowerPrefixes = ["webkit", "moz", "o", "ms"],
     getExtension_upperPrefixes = ["WEBKIT", "MOZ", "O", "MS"];
 
-WebGLRenderer.prototype.getExtension = function(name) {
+WebGLContext.prototype.getExtension = function(name) {
     var gl = this.gl,
         extensions = this.__extensions || (this.__extensions = {}),
         extension = extensions[name] || (extensions[name] = gl.getExtension(name)),
@@ -466,26 +466,26 @@ WebGLRenderer.prototype.getExtension = function(name) {
     }
 
     if (extension == null) {
-        throw new Error("WebGLRenderer.getExtension: could not get Extension " + name);
+        throw new Error("WebGLContext.getExtension: could not get Extension " + name);
     }
 
     return extension;
 };
 
 
-function handleWebGLRendererContextLost(_this, e) {
+function handleWebGLContextContextLost(_this, e) {
     e.preventDefault();
     clearGLContext(_this);
     _this.emit("webglcontextlost", e);
 }
 
-function handleWebGLRendererContextRestored(e) {
+function handleWebGLContextContextRestored(_this, e) {
     e.preventDefault();
-    getGLContext(_this);
+    WebGLContext_getGLContext(_this);
     _this.emit("webglcontextrestored", e);
 }
 
-function getGLContext(_this) {
+function WebGLContext_getGLContext(_this) {
     var gl;
 
     if (_this.gl != null) {
@@ -606,7 +606,7 @@ function getWebGLContext(canvas, attributes) {
         } catch (err) {}
     }
     if (!gl) {
-        throw new Error("WebGLRenderer: could not get a WebGL Context");
+        throw new Error("WebGLContext: could not get a WebGL Context");
     }
 
     return gl;

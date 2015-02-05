@@ -13,7 +13,6 @@ module.exports = Transform;
 
 
 function Transform() {
-
     Component.call(this);
 }
 Component.extend(Transform, "Transform", TransformManager);
