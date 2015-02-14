@@ -14,10 +14,36 @@ module.exports = Camera;
 
 
 function Camera() {
+
     Component.call(this);
+
+    this.width = null;
+    this.height = null;
+    this.invWidth = null;
+    this.invHeight = null;
+
+    this.autoResize = null;
+    this.background = null;
+
+    this.aspect = null;
+    this.fov = null;
+
+    this.near = null;
+    this.far = null;
+
+    this.orthographic = null;
+    this.orthographicSize = null;
+
+    this.minOrthographicSize = null;
+    this.maxOrthographicSize = null;
+
+    this.projection = mat4.create();
+    this.view = mat4.create();
+
+    this.needsUpdate = null;
+    this.__active = null;
 }
 Component.extend(Camera, "Camera", CameraManager);
-
 
 Camera.prototype.construct = function(options) {
 
@@ -44,9 +70,6 @@ Camera.prototype.construct = function(options) {
 
     this.minOrthographicSize = options.minOrthographicSize != null ? options.minOrthographicSize : mathf.EPSILON;
     this.maxOrthographicSize = options.maxOrthographicSize != null ? options.maxOrthographicSize : 1024;
-
-    this.projection = mat4.create();
-    this.view = mat4.create();
 
     this.needsUpdate = true;
     this.__active = false;
@@ -78,8 +101,8 @@ Camera.prototype.destructor = function() {
     this.minOrthographicSize = null;
     this.maxOrthographicSize = null;
 
-    this.projection = null;
-    this.view = null;
+    mat4.identity(this.projection);
+    mat4.identity(this.view);
 
     this.needsUpdate = null;
     this.__active = null;

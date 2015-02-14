@@ -1,4 +1,4 @@
-var Class = require("../base/class");
+var Class = require("../class");
 
 
 var ClassPrototype = Class.prototype;
@@ -8,7 +8,12 @@ module.exports = Asset;
 
 
 function Asset() {
+
     Class.call(this);
+
+    this.name = null;
+    this.src = null;
+    this.data = null;
 }
 Class.extend(Asset, "Asset");
 
@@ -45,6 +50,7 @@ Asset.prototype.parse = function() {
 };
 
 Asset.prototype.load = function(callback) {
+    this.emit("load");
     callback();
     return this;
 };

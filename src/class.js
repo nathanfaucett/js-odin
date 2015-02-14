@@ -1,7 +1,7 @@
 var isFunction = require("is_function"),
     inherits = require("inherits"),
     EventEmitter = require("event_emitter"),
-    uuid = require("./uuid");
+    uuid = require("uuid");
 
 
 module.exports = Class;
@@ -11,7 +11,7 @@ function Class() {
 
     EventEmitter.call(this, -1);
 
-    this.destructor();
+    this.__id = null;
 }
 EventEmitter.extend(Class);
 
@@ -20,8 +20,6 @@ Class.extend = function(child, className) {
     Class.__classes[className] = child;
 
     inherits(child, this);
-    child.extend = this.extend;
-    child.create = this.create;
     child.className = child.prototype.className = className;
 
     if (isFunction(this.onExtend)) {
@@ -66,9 +64,7 @@ Class.prototype.toJSON = function(json) {
     return json;
 };
 
-Class.prototype.fromJSON = function(json) {
-
-    this.className = json.className;
+Class.prototype.fromJSON = function( /* json */ ) {
 
     return this;
 };

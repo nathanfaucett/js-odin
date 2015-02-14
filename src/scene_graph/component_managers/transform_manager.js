@@ -10,6 +10,5 @@ function TransformManager() {
 ComponentManager.extend(TransformManager, "TransformManager", -9999);
 
 TransformManager.prototype.sortFunction = function(a, b) {
-
     return a.sceneObject.depth - b.sceneObject.depth;
 };

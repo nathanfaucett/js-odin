@@ -1,30 +1,35 @@
 var vec3 = require("vec3"),
+    mathf = require("mathf"),
     aabb3 = require("aabb3"),
+    FastHash = require("fast_hash"),
     Attribute = require("./attribute"),
-    Attributes = require("./attributes"),
     JSONAsset = require("../json_asset");
 
 
-var JSONAssetPrototype = JSONAsset.prototype;
+var JSONAssetPrototype = JSONAsset.prototype,
+    NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array,
+    NativeUint16Array = typeof(Uint16Array) !== "undefined" ? Uint16Array : Array;
 
 
 module.exports = Geometry;
 
 
 function Geometry() {
+
     JSONAsset.call(this);
+
+    this.index = null;
+    this.attributes = new FastHash("name");
+    this.aabb = aabb3.create();
+
+    this.boundingCenter = vec3.create();
+    this.boundingRadius = 0;
 }
 JSONAsset.extend(Geometry, "Geometry");
 
 Geometry.prototype.construct = function(name, src, options) {
 
     JSONAssetPrototype.construct.call(this, name, src, options);
-
-    this.attributes = Attributes.create();
-    this.aabb = aabb3.create();
-
-    this.boundingCenter = vec3.create();
-    this.boundingRadius = 0;
 
     return this;
 };
@@ -33,47 +38,65 @@ Geometry.prototype.destructor = function() {
 
     JSONAssetPrototype.destructor.call(this);
 
-    this.attributes = null;
-    this.aabb = null;
+    this.index = null;
+    this.attributes.clear();
+    aabb3.clear(this.aabb);
 
-    this.boundingCenter = null;
-    this.boundingRadius = null;
+    vec3.set(this.boundingCenter, 0, 0, 0);
+    this.boundingRadius = 0;
 
+    return this;
+};
+
+Geometry.prototype.getAttribute = function(name) {
+    return this.attributes.get(name);
+};
+
+Geometry.prototype.addAttribute = function(name, length, itemSize, ArrayType, dynamic, items) {
+    this.attributes.add(Attribute.create(this, name, length, itemSize, ArrayType, dynamic, items));
+    return this;
+};
+
+Geometry.prototype.removeAttribute = function(name) {
+    this.attributes.remove(name);
     return this;
 };
 
 Geometry.prototype.parse = function() {
     var data = this.data,
-        attributes = this.attributes,
         items;
 
+    if ((items = (data.index || data.indices || data.faces)) && items.length) {
+        this.index = new NativeUint16Array(items);
+    }
+
     if ((items = (data.position || data.vertices)) && items.length) {
-        attributes.add(Attribute.create("position", items.length, 3, Float32Array).set(items));
+        this.addAttribute("position", items.length, 3, NativeFloat32Array, false, items);
     }
     if ((items = (data.normal || data.normals)) && items.length) {
-        attributes.add(Attribute.create("normal", items.length, 3, Float32Array).set(items));
+        this.addAttribute("normal", items.length, 3, NativeFloat32Array, false, items);
     }
     if ((items = (data.tangent || data.tangents)) && items.length) {
-        attributes.add(Attribute.create("tangent", items.length, 4, Float32Array).set(items));
-    }
-    if ((items = (data.index || data.indices || data.faces)) && items.length) {
-        attributes.add(Attribute.create("index", items.length, 1, Uint16Array).set(items));
+        this.addAttribute("tangent", items.length, 4, NativeFloat32Array, false, items);
     }
     if ((items = (data.color || data.colors)) && items.length) {
-        attributes.add(Attribute.create("color", items.length, 3, Float32Array).set(items));
+        this.addAttribute("color", items.length, 3, NativeFloat32Array, false, items);
     }
     if ((items = (data.uv || data.uvs)) && items.length) {
-        attributes.add(Attribute.create("uv", items.length, 2, Float32Array).set(items));
+        this.addAttribute("uv", items.length, 2, NativeFloat32Array, false, items);
     }
     if ((items = (data.uv2 || data.uvs2)) && items.length) {
-        attributes.add(Attribute.create("uv2", items.length, 2, Float32Array).set(items));
+        this.addAttribute("uv2", items.length, 2, NativeFloat32Array, false, items);
     }
     if ((items = (data.boneWeight || data.boneWeights)) && items.length) {
-        attributes.add(Attribute.create("boneWeight", items.length, 1, Float32Array).set(items));
+        this.addAttribute("boneWeight", items.length, 1, NativeFloat32Array, false, items);
     }
     if ((items = (data.boneIndex || data.boneIndices)) && items.length) {
-        attributes.add(Attribute.create("boneIndex", items.length, 1, Float32Array).set(items));
+        this.addAttribute("boneIndex", items.length, 1, NativeFloat32Array, false, items);
     }
+
+    this.calculateAABB();
+    this.calculateBoundingSphere();
 
     return this;
 };
@@ -155,11 +178,10 @@ Geometry.prototype.calculateNormals = function() {
         attributesHash = attributes.__hash,
         position = attributesHash.position,
         normal = attributesHash.normal,
-        index = attributesHash.index,
+        index = this.index,
         x, y, z, nx, ny, nz, length, i, il;
 
     position = position ? position.array : null;
-    index = index ? index.array : null;
 
     if (position == null) {
         throw new Error("Geometry.calculateNormals: missing required attribures position");
@@ -171,9 +193,8 @@ Geometry.prototype.calculateNormals = function() {
     length = position.length;
 
     if (normal == null) {
-        normal = Attribute.create("normal", length, 3, Float32Array);
-        attributes.add(normal);
-        normal = normal.array;
+        this.addAttribute("normal", length, 3, NativeFloat32Array);
+        normal = attributesHash.normal.array;
     } else {
         normal = normal.array;
         i = length;
@@ -249,7 +270,7 @@ Geometry.prototype.calculateNormals = function() {
             i += 3;
         }
 
-        attributeHash.normal.needsUpdate = true;
+        this.emit("update");
     }
 
     return this;
@@ -276,8 +297,8 @@ Geometry.prototype.calculateTangents = function() {
         tmp3 = calculateTangents_tmp3,
 
         attributes = this.attributes,
+        index = this.index,
         attributeHash = attributes.__hash,
-        index = attributeHash.index,
         position = attributeHash.position,
         normal = attributeHash.normal,
         tangent = attributeHash.tangent,
@@ -295,7 +316,6 @@ Geometry.prototype.calculateTangents = function() {
         length, r, w, i, il, j, tmp;
 
     position = position ? position.array : null;
-    index = index ? index.array : null;
     uv = uv ? uv.array : null;
     normal = normal ? normal.array : null;
 
@@ -306,7 +326,7 @@ Geometry.prototype.calculateTangents = function() {
         throw new Error("Geometry.calculateTangents: missing required attribure uv");
     }
     if (index == null) {
-        throw new Error("Geometry.calculateTangents: missing required attribure index");
+        throw new Error("Geometry.calculateTangents: missing indices");
     }
     if (position == null) {
         throw new Error("Geometry.calculateTangents: missing required attribure position");
@@ -315,9 +335,8 @@ Geometry.prototype.calculateTangents = function() {
     length = position.length;
 
     if (tangent == null) {
-        tangent = Attribute.create("tangent", (4 / 3) * length, 4, Float32Array);
-        attributes.add(tangent);
-        tangent = tangent.array;
+        this.addAttribute("tangent", (4 / 3) * length, 4, NativeFloat32Array);
+        tangent = attributeHash.tangent.array;
     } else {
         tangent = tangent.array;
         i = length;
@@ -433,7 +452,7 @@ Geometry.prototype.calculateTangents = function() {
         i += 3;
     }
 
-    attributeHash.tangent.needUpdate = true;
+    this.emit("update");
 
     return this;
 };

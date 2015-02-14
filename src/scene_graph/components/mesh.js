@@ -9,19 +9,21 @@ module.exports = Mesh;
 
 
 function Mesh() {
+
     Component.call(this);
+
+    this.geometry = null;
+    this.material = null;
 }
 Component.extend(Mesh, "Mesh", MeshManager);
 
 
-Mesh.prototype.construct = function(options) {
+Mesh.prototype.construct = function(geometry, material) {
 
     ComponentPrototype.construct.call(this);
 
-    options = options || {};
-
-    this.geometries = [];
-    this.materials = [];
+    this.geometry = geometry;
+    this.material = material;
 
     return this;
 };
@@ -30,13 +32,13 @@ Mesh.prototype.destructor = function() {
 
     ComponentPrototype.destructor.call(this);
 
-    this.geometries = null;
-    this.materials = null;
+    this.geometry = null;
+    this.material = null;
 
     return this;
 };
 
-Mesh.prototype.update = function(force) {
+Mesh.prototype.update = function() {
 
     ComponentPrototype.update.call(this);
 

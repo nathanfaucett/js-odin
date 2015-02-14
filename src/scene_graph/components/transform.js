@@ -13,14 +13,8 @@ module.exports = Transform;
 
 
 function Transform() {
+
     Component.call(this);
-}
-Component.extend(Transform, "Transform", TransformManager);
-
-
-Transform.prototype.construct = function() {
-
-    ComponentPrototype.construct.call(this);
 
     this.position = vec3.create();
     this.rotation = quat.create();
@@ -28,9 +22,12 @@ Transform.prototype.construct = function() {
 
     this.matrix = mat4.create();
     this.matrixWorld = mat4.create();
+}
+Component.extend(Transform, "Transform", TransformManager);
 
-    this.modelView = mat4.create();
-    this.normalMatrix = mat3.create();
+Transform.prototype.construct = function() {
+
+    ComponentPrototype.construct.call(this);
 
     return this;
 };
@@ -39,15 +36,12 @@ Transform.prototype.destructor = function() {
 
     ComponentPrototype.destructor.call(this);
 
-    this.position = null;
-    this.rotation = null;
-    this.scale = null;
+    vec3.set(this.position, 0, 0, 0);
+    quat.set(this.rotation, 0, 0, 0, 1);
+    vec3.set(this.scale, 1, 1, 1);
 
-    this.matrix = null;
-    this.matrixWorld = null;
-
-    this.modelView = null;
-    this.normalMatrix = null;
+    mat4.identity(this.matrix);
+    mat4.identity(this.matrixWorld);
 
     return this;
 };
@@ -77,9 +71,63 @@ Transform.prototype.setScale = function(x, y, z) {
     return this;
 };
 
+var translate_vec3 = vec3.create();
+Transform.prototype.translate = function(translation, relativeTo) {
+    var thisPosition = this.position,
+        v = vec3.copy(translate_vec3, translation);
+
+    if (relativeTo && relativeTo.position) {
+        vec3.transformQuat(v, v, relativeTo.position);
+    } else if (relativeTo) {
+        vec3.transformQuat(v, v, relativeTo);
+    }
+
+    vec3.add(thisPosition, thisPosition, v);
+
+    return this;
+};
+
+var rotate_vec3 = vec3.create();
+Transform.prototype.rotate = function(rotation, relativeTo) {
+    var thisRotation = this.rotation,
+        v = vec3.copy(rotate_vec3, rotation);
+
+    if (relativeTo && relativeTo.rotation) {
+        vec3.transformQuat(v, v, relativeTo.rotation);
+    } else if (relativeTo) {
+        vec3.transformQuat(v, v, relativeTo);
+    }
+
+    quat.rotate(thisRotation, thisRotation, v[0], v[1], v[2]);
+
+    return this;
+};
+
+var lookAt_mat = mat4.create(),
+    lookAt_vec = vec3.create(),
+    lookAt_dup = vec3.create(0, 0, 1);
+Transform.prototype.lookAt = function(target, up) {
+    var mat = lookAt_mat,
+        vec = lookAt_vec;
+
+    up = up || lookAt_dup;
+
+    if (target.matrixWorld) {
+        vec3.transformMat4(vec3.set(vec, 0, 0, 0), target.matrixWorld);
+    } else {
+        vec3.copy(vec, target);
+    }
+
+    mat4.lookAt(mat, this.position, vec, up);
+    quat.fromMat4(this.rotation, mat);
+
+    return this;
+};
+
 Transform.prototype.awake = function() {
 
     ComponentPrototype.awake.call(this);
+
     return this;
 };
 
@@ -100,6 +148,16 @@ Transform.prototype.update = function() {
     }
 
     return this;
+};
+
+Transform.prototype.calculateModelView = function(viewMatrix, modelView) {
+
+    return mat4.mul(modelView, viewMatrix, this.matrixWorld);
+};
+
+Transform.prototype.calculateNormalMatrix = function(modelView, normalMatrix) {
+
+    return mat3.transpose(normalMatrix, mat3.inverseMat4(normalMatrix, modelView));
 };
 
 Transform.prototype.toJSON = function(json) {

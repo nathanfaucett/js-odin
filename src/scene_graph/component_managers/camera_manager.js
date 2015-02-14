@@ -8,7 +8,10 @@ module.exports = CameraManager;
 
 
 function CameraManager() {
+
     ComponentManager.call(this);
+
+    this.__active = null;
 }
 ComponentManager.extend(CameraManager, "CameraManager");
 

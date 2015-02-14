@@ -1,5 +1,5 @@
 var camelize = require("camelize"),
-    Class = require("../../base/class"),
+    Class = require("../../class"),
     ComponentManager = require("../component_managers/component_manager");
 
 
@@ -10,19 +10,26 @@ module.exports = Component;
 
 
 function Component() {
+
     Class.call(this);
+
+    this.manager = null;
+    this.sceneObject = null;
 }
 
 Component.onExtend = function(child, className, manager) {
+    manager = manager || ComponentManager;
+
     child.memberName = child.prototype.memberName = camelize(child.className, true);
-    child.ComponentManager = child.prototype.ComponentManager = manager || ComponentManager;
+    child.Manager = child.prototype.Manager = manager;
+    manager.prototype.componentName = child.className;
 };
 
 Class.extend(Component, "Component");
 
 Component.className = Component.prototype.className = "Component";
 Component.memberName = Component.prototype.memberName = camelize(Component.className, true);
-Component.ComponentManager = Component.prototype.ComponentManager = ComponentManager;
+Component.Manager = Component.prototype.Manager = ComponentManager;
 
 Component.prototype.construct = function() {
 
@@ -59,14 +66,16 @@ Component.prototype.update = function() {
     return this;
 };
 
-Component.prototype.destroy = function() {
+Component.prototype.destroy = function(emitEvent) {
     var sceneObject = this.sceneObject;
 
     if (!sceneObject) {
         return this;
     }
 
-    this.emit("destroy");
+    if (emitEvent !== false) {
+        this.emit("destroy");
+    }
     sceneObject.removeComponent(this);
 
     return this;

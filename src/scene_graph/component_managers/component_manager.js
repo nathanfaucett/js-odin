@@ -1,5 +1,5 @@
 var indexOf = require("index_of"),
-    Class = require("../../base/class");
+    Class = require("../../class");
 
 
 var ClassPrototype = Class.prototype;
@@ -9,7 +9,11 @@ module.exports = ComponentManager;
 
 
 function ComponentManager() {
+
     Class.call(this);
+
+    this.scene = null;
+    this.__components = [];
 }
 
 ComponentManager.onExtend = function(child, className, order) {
@@ -24,8 +28,6 @@ ComponentManager.prototype.construct = function() {
 
     ClassPrototype.construct.call(this);
 
-    this.__components = [];
-
     return this;
 };
 
@@ -34,7 +36,7 @@ ComponentManager.prototype.destructor = function() {
     ClassPrototype.destructor.call(this);
 
     this.scene = null;
-    this.__components = null;
+    this.__components.length = 0;
 
     return this;
 };
@@ -57,7 +59,7 @@ ComponentManager.prototype.sort = function() {
     return this;
 };
 
-ComponentManager.prototype.sortFunction = function(a, b) {
+ComponentManager.prototype.sortFunction = function() {
     return 0;
 };
 

@@ -1,10 +1,10 @@
 var isString = require("is_string"),
     isNumber = require("is_number"),
     indexOf = require("index_of"),
-    Class = require("../base/class"),
+    Class = require("../class"),
     Assets = require("../assets/assets"),
-    Scene = require("../scene_graph/scene"),
-    createLoop = require("./create_loop");
+    createLoop = require("create_loop"),
+    Scene = require("../scene_graph/scene");
 
 
 var ClassPrototype = Class.prototype;
@@ -14,37 +14,85 @@ module.exports = BaseApplication;
 
 
 function BaseApplication() {
-    Class.call(this);
-}
-Class.extend(BaseApplication, "BaseApplication");
-
-BaseApplication.prototype.construct = function() {
     var _this = this;
 
-    ClassPrototype.construct.call(this);
+    Class.call(this);
 
     this.assets = Assets.create();
 
     this.__scenes = [];
     this.__sceneHash = {};
 
-    this.__loop = createLoop(function(ms) {
-        _this.loop(ms);
-    }, this.canvas ? this.canvas.element : undefined);
+    this.__loop = createLoop(function loop() {
+        _this.loop();
+    }, null);
+
+}
+Class.extend(BaseApplication, "BaseApplication");
+
+BaseApplication.prototype.construct = function() {
+
+    ClassPrototype.construct.call(this);
 
     return this;
 };
 
 BaseApplication.prototype.destructor = function() {
+    var scenes = this.__scenes,
+        sceneHash = this.__sceneHash,
+        i = scenes.length,
+        scene;
 
     ClassPrototype.destructor.call(this);
 
-    this.assets = null;
+    while (i--) {
+        scene = scenes[i];
+        scene.destructor();
+        delete sceneHash[scene.name];
+        scenes.splice(i, 1);
+    }
 
-    this.__scenes = null;
-    this.__sceneHash = null;
+    this.assets.destructor();
+    this.__loop.pause();
 
-    this.__loop = null;
+    return this;
+};
+
+BaseApplication.prototype.init = function() {
+
+    this.__loop.run();
+    this.emit("init");
+
+    return this;
+};
+
+BaseApplication.prototype.pause = function() {
+
+    this.__loop.pause();
+    this.emit("pause");
+
+    return this;
+};
+
+BaseApplication.prototype.resume = function() {
+
+    this.__loop.run();
+    this.emit("resume");
+
+    return this;
+};
+
+BaseApplication.prototype.isRunning = function() {
+    return this.__loop.isRunning();
+};
+
+BaseApplication.prototype.isPaused = function() {
+    return this.__loop.isPaused();
+};
+
+BaseApplication.prototype.loop = function() {
+
+    this.emit("loop");
 
     return this;
 };
@@ -110,39 +158,3 @@ function BaseApplication_removeScene(_this, scene) {
         throw new Error("Application removeScene(...scenes) Scene not a member of Application");
     }
 }
-
-BaseApplication.prototype.init = function() {
-
-    this.__loop.run();
-    this.emit("init");
-
-    return this;
-};
-
-BaseApplication.prototype.pause = function() {
-
-    this.__loop.pause();
-    this.emit("pause");
-
-    return this;
-};
-
-BaseApplication.prototype.resume = function() {
-
-    this.__loop.run();
-    this.emit("resume");
-
-    return this;
-};
-
-BaseApplication.prototype.isRunning = function() {
-    return this.__loop.isRunning();
-};
-
-BaseApplication.prototype.isPaused = function() {
-    return this.__loop.isPaused();
-};
-
-BaseApplication.prototype.loop = function() {
-
-};

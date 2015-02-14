@@ -1,7 +1,7 @@
-var Input = require("input"),
-    indexOf = require("index_of"),
-    Class = require("../base/class"),
-    Time = require("../base/time");
+var indexOf = require("index_of"),
+    Input = require("../input/index"),
+    Class = require("../class"),
+    Time = require("../time");
 
 
 var ClassPrototype = Class.prototype;
@@ -11,7 +11,19 @@ module.exports = Scene;
 
 
 function Scene() {
+
     Class.call(this);
+
+    this.name = null;
+    this.time = new Time();
+    this.input = new Input();
+    this.application = null;
+
+    this.__sceneObjects = [];
+    this.__sceneObjectHash = {};
+
+    this.__managers = [];
+    this.__managerHash = {};
 }
 Class.extend(Scene, "Scene");
 
@@ -20,32 +32,25 @@ Scene.prototype.construct = function(name) {
     ClassPrototype.construct.call(this);
 
     this.name = name;
-    this.time = Time.create();
-    this.input = Input.create();
-
-    this.__sceneObjects = [];
-    this.__sceneObjectHash = {};
-
-    this.__managers = [];
-    this.__managerHash = {};
+    this.time.construct();
+    this.input.construct();
 
     return this;
 };
 
 Scene.prototype.destructor = function() {
+    var sceneObjects = this.__sceneObjects,
+        i = sceneObjects.length;
 
     ClassPrototype.destructor.call(this);
 
+    while (i--) {
+        sceneObjects[i].destroy(false).destructor();
+    }
+
     this.name = null;
-    this.time = null;
-    this.input = null;
+    this.input.destructor();
     this.application = null;
-
-    this.__sceneObjects = null;
-    this.__sceneObjectHash = null;
-
-    this.__managers = null;
-    this.__managerHash = null;
 
     return this;
 };
@@ -194,7 +199,7 @@ Scene.prototype.__addComponent = function(component) {
         manager = managerHash[className];
 
     if (!manager) {
-        manager = component.ComponentManager.create();
+        manager = component.Manager.create();
 
         manager.scene = this;
         managers[managers.length] = manager;
@@ -202,6 +207,7 @@ Scene.prototype.__addComponent = function(component) {
 
         sortManagers(this);
 
+        this.emit("addManager", manager);
         manager.onAddToScene();
     }
 
@@ -282,6 +288,8 @@ Scene.prototype.__removeComponent = function(component) {
     component.manager = null;
 
     if (manager.isEmpty()) {
+        this.emit("removeManager", manager);
+
         manager.onRemoveFromScene();
 
         manager.scene = null;

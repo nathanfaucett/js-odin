@@ -1,5 +1,5 @@
 var indexOf = require("index_of"),
-    Class = require("../base/class");
+    Class = require("../class");
 
 
 var ClassPrototype = Class.prototype;
@@ -9,7 +9,19 @@ module.exports = SceneObject;
 
 
 function SceneObject() {
+
     Class.call(this);
+
+    this.name = null;
+
+    this.__components = [];
+    this.__componentHash = {};
+
+    this.depth = null;
+    this.scene = null;
+    this.root = null;
+    this.parent = null;
+    this.children = [];
 }
 Class.extend(SceneObject, "SceneObject");
 
@@ -17,46 +29,45 @@ SceneObject.prototype.construct = function(name) {
 
     ClassPrototype.construct.call(this);
 
-    this.name = name || "SceneObject" + this.__id;
-
-    this.__components = [];
-    this.__componentHash = {};
+    this.name = name || this.__id;
 
     this.depth = 0;
-    this.scene = null;
     this.root = this;
-    this.parent = null;
-    this.children = [];
 
     return this;
 };
 
 SceneObject.prototype.destructor = function() {
+    var components = this.__components,
+        i = components.length;
 
     ClassPrototype.destructor.call(this);
 
-    this.name = null;
+    while (i--) {
+        components[i].destroy(false).destructor();
+    }
 
-    this.__components = null;
-    this.__componentHash = null;
+    this.name = null;
 
     this.depth = null;
     this.scene = null;
     this.root = null;
     this.parent = null;
-    this.children = null;
+    this.children.length = 0;
 
     return this;
 };
 
-SceneObject.prototype.destroy = function() {
+SceneObject.prototype.destroy = function(emitEvent) {
     var scene = this.scene;
 
     if (!scene) {
         return this;
     }
 
-    this.emit("destroy");
+    if (emitEvent !== false) {
+        this.emit("destroy");
+    }
     scene.remove(this);
 
     return this;

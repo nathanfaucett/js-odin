@@ -11,7 +11,10 @@ module.exports = ImageAsset;
 
 
 function ImageAsset() {
+
     Asset.call(this);
+
+    this.__listenedTo = null;
 }
 Asset.extend(ImageAsset, "ImageAsset");
 

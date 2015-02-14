@@ -1,7 +1,6 @@
 var isString = require("is_string"),
     isNumber = require("is_number"),
-    Class = require("../base/class"),
-    Canvas = require("./canvas"),
+    Class = require("../class"),
     BaseApplication = require("./base_application");
 
 
@@ -12,15 +11,12 @@ module.exports = Application;
 
 
 function Application() {
+
     BaseApplication.call(this);
 }
 BaseApplication.extend(Application, "Application");
 
-Application.prototype.construct = function(options) {
-
-    options = options || {};
-
-    this.canvas = options.useCanvas === false ? null : Canvas.create(options.canvas);
+Application.prototype.construct = function() {
 
     BaseApplicationPrototype.construct.call(this);
 
@@ -31,16 +27,20 @@ Application.prototype.destructor = function() {
 
     BaseApplicationPrototype.destructor.call(this);
 
-    this.scene = null;
-    this.camera = null;
-    this.canvas = null;
+    return this;
+};
+
+Application.prototype.setElement = function(element) {
+
+    this.__loop.setElement(element);
 
     return this;
 };
 
-Application.prototype.setScene = function(scene) {
+Application.prototype.createScene = function(scene) {
     var scenes = this.__scenes,
-        sceneHash = this.__sceneHash;
+        sceneHash = this.__sceneHash,
+        newScene;
 
     if (isString(scene)) {
         scene = sceneHash[scene];
@@ -49,53 +49,21 @@ Application.prototype.setScene = function(scene) {
     }
 
     if (sceneHash[scene.name]) {
-        if (this.scene) {
-            this.scene.destroy();
-        }
+        newScene = Class.createFromJSON(scene);
 
-        scene = Class.createFromJSON(scene);
-        this.scene = scene;
+        newScene.application = this;
+        newScene.init();
 
-        scene.application = this;
-        scene.init();
+        this.emit("createScene", newScene);
 
-        this.emit("setScene", scene);
+        newScene.awake();
 
-        scene.awake();
+        return newScene;
     } else {
-        throw new Error("Application.setScene(scene) Scene could not be found in Application");
+        throw new Error("Application.createScene(scene) Scene could not be found in Application");
     }
 
-    return this;
-};
-
-Application.prototype.setCamera = function(sceneObject) {
-    var scene = this.scene,
-        lastCamera = this.camera,
-        camera;
-
-    if (!scene) {
-        throw new Error("Application.setCamera: can't set camera without an active scene, use Application.setScene first");
-    }
-
-    if (!scene.has(sceneObject)) {
-        throw new Error("Application.setCamera: SceneObject is not a member of the active Scene, adding it...");
-    }
-
-    camera = this.camera = sceneObject.getComponent("Camera") || sceneObject.getComponent("Camera2D");
-
-    if (camera) {
-        camera.__active = true;
-        if (lastCamera) {
-            lastCamera.__active = false;
-        }
-
-        this.emit("setCamera", camera);
-    } else {
-        throw new Error("Application.setCamera: SceneObject does't have a Camera or a Camera2D Component");
-    }
-
-    return this;
+    return null;
 };
 
 Application.prototype.init = function() {
@@ -106,14 +74,8 @@ Application.prototype.init = function() {
 };
 
 Application.prototype.loop = function() {
-    var scene = this.scene,
-        camera = this.camera;
 
-    if (scene) {
-        scene.update();
+    BaseApplicationPrototype.loop.call(this);
 
-        if (camera) {
-
-        }
-    }
+    return this;
 };

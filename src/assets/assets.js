@@ -1,4 +1,5 @@
-var Class = require("../base/class");
+var Class = require("../class"),
+    indexOf = require("index_of");
 
 
 var ClassPrototype = Class.prototype;
@@ -8,7 +9,12 @@ module.exports = Assets;
 
 
 function Assets() {
+
     Class.call(this);
+
+    this.__notLoaded = [];
+    this.__array = [];
+    this.__hash = {};
 }
 Class.extend(Assets, "Assets");
 
@@ -16,20 +22,26 @@ Assets.prototype.construct = function() {
 
     ClassPrototype.construct.call(this);
 
-    this.__notLoaded = [];
-    this.__array = [];
-    this.__hash = {};
-
     return this;
 };
 
 Assets.prototype.destructor = function() {
+    var array = this.__array,
+        hash = this.__hash,
+        i = array.length,
+        asset;
 
     ClassPrototype.destructor.call(this);
 
-    this.__notLoaded = null;
-    this.__array = null;
-    this.__hash = null;
+    while (i--) {
+        asset = array[i];
+        asset.destructor();
+
+        array.splice(i, 1);
+        delete hash[asset.name];
+    }
+
+    this.__notLoaded.length = 0;
 
     return this;
 };
@@ -71,6 +83,36 @@ function Assets_add(_this, asset) {
     }
 }
 
+Assets.prototype.remove = function() {
+    var i = -1,
+        il = arguments.length - 1;
+
+    while (i++ < il) {
+        Assets_remove(this, arguments[i]);
+    }
+
+    return this;
+};
+
+function Assets_remove(_this, asset) {
+    var name = asset.name,
+        hash = _this.__hash,
+        notLoaded = _this.__notLoaded,
+        array = _this.__array,
+        index;
+
+    if (hash[name]) {
+        delete hash[name];
+        array.splice(indexOf(array, asset), 1);
+
+        if ((index = indexOf(notLoaded, asset))) {
+            notLoaded.splice(index, 1);
+        }
+    } else {
+        throw new Error("Assets remove(...assets) Assets do not have a member named " + name);
+    }
+}
+
 Assets.prototype.load = function(callback) {
     var _this = this,
         notLoaded = this.__notLoaded,
@@ -93,7 +135,6 @@ Assets.prototype.load = function(callback) {
     while (i++ < il) {
         notLoaded[i].load(done);
     }
-
     notLoaded.length = 0;
 
     return this;
