@@ -1,4 +1,5 @@
 var environment = require("environment"),
+    mathf = require("mathf"),
     eventListener = require("event_listener");
 
 
@@ -59,6 +60,20 @@ eventListener.on(environment.window, "load", function() {
     var scene = odin.Scene.create("scene").add(camera, object),
         cameraComponent = camera.getComponent("Camera");
 
+    for (var i = 10; i--;) {
+        scene.add(
+            odin.SceneObject.create().addComponent(
+                odin.Transform.create().setPosition(0, 0, 0),
+                odin.Mesh.create(geometry, material)
+            )
+        );
+    }
+
+    canvas.on("resize", function(w, h) {
+        cameraComponent.set(w, h);
+    });
+    cameraComponent.set(canvas.pixelWidth, canvas.pixelHeight);
+
     renderer.setCanvas(canvas.element);
 
     var rotate = [0, 0, 0];
@@ -72,10 +87,11 @@ eventListener.on(environment.window, "load", function() {
         renderer.render(scene, cameraComponent);
     }, canvas.element);
 
+    canvas.on("resize", function(w, h) {
+        cameraComponent.set(w, h);
+    });
+
     assets.load(function() {
         loop.run();
-
-        scene.update();
-        renderer.render(scene, cameraComponent);
     });
 });

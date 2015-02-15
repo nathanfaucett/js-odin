@@ -125,6 +125,14 @@ Canvas.prototype.destructor = function() {
     return this;
 };
 
+Canvas.prototype.setFixed = function(value) {
+    if (value) {
+        return Canvas_setFixed(this);
+    } else {
+        return Canvas_removeFixed(this);
+    }
+};
+
 function Canvas_setFixed(_this) {
     var style = _this.element.style;
 
@@ -143,6 +151,8 @@ function Canvas_setFixed(_this) {
 
     eventListener.on(window, "resize orientationchange", _this.__handler);
     Canvas_update(_this);
+
+    return _this;
 }
 
 function Canvas_removeFixed(_this) {
@@ -158,6 +168,8 @@ function Canvas_removeFixed(_this) {
     if (_this.__handler) {
         eventListener.off(window, "resize orientationchange", _this.__handler);
     }
+
+    return _this;
 }
 
 function Canvas_update(_this) {
@@ -194,5 +206,5 @@ function Canvas_update(_this) {
     style.width = (width | 0) + "px";
     style.height = (height | 0) + "px";
 
-    _this.emit("resize");
+    _this.emit("resize", _this.pixelWidth, _this.pixelHeight);
 }

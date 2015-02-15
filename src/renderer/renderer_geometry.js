@@ -32,11 +32,8 @@ RendererGeometry.prototype.construct = function(context, geometry) {
     this.context = context;
     this.geometry = geometry;
 
-    this.glVertexBuffer = context.createBuffer();
-    this.glIndexBuffer = context.createBuffer();
-    this.glIndexLineBuffer = null;
-
-    this.needsCompile = true;
+    this.needsVertexCompile = true;
+    this.needsIndexCompile = true;
     this.needsLineCompile = true;
 
     return this;
@@ -53,19 +50,25 @@ RendererGeometry.prototype.destructor = function() {
     this.glIndexBuffer = null;
     this.glIndexLineBuffer = null;
 
-    this.needsCompile = null;
+    this.needsVertexCompile = null;
+    this.needsIndexCompile = null;
     this.needsLineCompile = null;
 
     return this;
 };
 
-RendererGeometry.prototype.compile = function() {
-    if (this.needsCompile === false) {
-        return this;
+RendererGeometry.prototype.getVertexBuffer = function() {
+    var glVertexBuffer = this.glVertexBuffer;
+
+    if (glVertexBuffer) {
+        if (this.needsVertexCompile === false) {
+            return glVertexBuffer;
+        } else {
+            glVertexBuffer.needsCompile = true;
+            return RendererGeometry_compileVertexBuffer(this);
+        }
     } else {
-        this.glVertexBuffer.needsCompile = true;
-        this.glIndexBuffer.needsCompile = true;
-        return RendererGeometry_compile(this);
+        return RendererGeometry_compileVertexBuffer(this);
     }
 };
 
@@ -77,14 +80,29 @@ RendererGeometry.prototype.getLineBuffer = function() {
             return glIndexLineBuffer;
         } else {
             glIndexLineBuffer.needsCompile = true;
-            return RendererGeometry_compileLineBuffer(this);
+            return RendererGeometry_compileLineIndexBuffer(this);
         }
     } else {
-        return RendererGeometry_compileLineBuffer(this);
+        return RendererGeometry_compileLineIndexBuffer(this);
     }
 };
 
-function RendererGeometry_compileLineBuffer(_this) {
+RendererGeometry.prototype.getIndexBuffer = function() {
+    var glIndexBuffer = this.glIndexBuffer;
+
+    if (glIndexBuffer) {
+        if (this.needsIndexCompile === false) {
+            return glIndexBuffer;
+        } else {
+            glIndexBuffer.needsCompile = true;
+            return RendererGeometry_compileIndexBuffer(this);
+        }
+    } else {
+        return RendererGeometry_compileIndexBuffer(this);
+    }
+};
+
+function RendererGeometry_compileLineIndexBuffer(_this) {
     var context = _this.context,
         gl = context.gl,
 
@@ -120,14 +138,25 @@ function RendererGeometry_compileLineBuffer(_this) {
     return glIndexLineBuffer.compile(gl.ELEMENT_ARRAY_BUFFER, lineBuffer, 0, gl.STATIC_DRAW);
 }
 
-function RendererGeometry_compile(_this) {
+function RendererGeometry_compileIndexBuffer(_this) {
+    var context = _this.context,
+        gl = context.gl,
+        glIndexBuffer = _this.glIndexBuffer || (_this.glIndexBuffer = context.createBuffer());
+
+    glIndexBuffer.compile(gl.ELEMENT_ARRAY_BUFFER, _this.geometry.index, 0, gl.STATIC_DRAW);
+    _this.needsIndexCompile = false;
+
+    return glIndexBuffer;
+}
+
+function RendererGeometry_compileVertexBuffer(_this) {
     var context = _this.context,
         gl = context.gl,
 
         geometry = _this.geometry,
-        indexArray = geometry.index,
         attributes = geometry.attributes.__array,
 
+        glVertexBuffer = _this.glVertexBuffer || (_this.glVertexBuffer = context.createBuffer()),
         buffers = _this.buffers,
 
         vertexLength = 0,
@@ -179,12 +208,10 @@ function RendererGeometry_compile(_this) {
         buffers.add(new DataBuffer(attribute.name, offset * 4));
     }
 
-    _this.glVertexBuffer.compile(gl.ARRAY_BUFFER, vertexArray, stride * 4, gl.STATIC_DRAW);
-    _this.glIndexBuffer.compile(gl.ELEMENT_ARRAY_BUFFER, indexArray, 0, gl.STATIC_DRAW);
+    glVertexBuffer.compile(gl.ARRAY_BUFFER, vertexArray, stride * 4, gl.STATIC_DRAW);
+    _this.needsVertexCompile = false;
 
-    _this.needsCompile = false;
-
-    return _this;
+    return glVertexBuffer;
 }
 
 function DataBuffer(name, offset) {

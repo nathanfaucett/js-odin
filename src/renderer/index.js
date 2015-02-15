@@ -166,7 +166,7 @@ function Renderer_createRenderers(_this) {
 
             meshMaterial = mesh.material,
             material = renderer.material(meshMaterial),
-            geometry = renderer.geometry(mesh.geometry).compile(),
+            geometry = renderer.geometry(mesh.geometry),
 
             program = material.getProgram(),
 
@@ -178,11 +178,13 @@ function Renderer_createRenderers(_this) {
         transform.calculateModelView(camera.view, modelView);
         transform.calculateNormalMatrix(modelView, normalMatrix);
 
+        context.setProgram(material.program);
+
         bindUniforms(camera.projection, modelView, normalMatrix, program.uniforms, meshMaterial.uniforms);
-        bindAttributes(program.attributes, geometry.glVertexBuffer, geometry.buffers.__hash);
+        bindAttributes(program.attributes, geometry.getVertexBuffer(), geometry.buffers.__hash);
 
         if (meshMaterial.wireframe !== true) {
-            indexBuffer = geometry.glIndexBuffer;
+            indexBuffer = geometry.getIndexBuffer();
             context.setElementArrayBuffer(indexBuffer);
             gl.drawElements(gl.TRIANGLES, indexBuffer.length, gl.UNSIGNED_SHORT, 0);
         } else {
