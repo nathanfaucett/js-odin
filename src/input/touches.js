@@ -58,11 +58,11 @@ Touches.prototype.__end = function(index) {
 };
 
 Touches.prototype.__move = function(index, targetTouch) {
-    var array = this.__array,
-        touch = array[index];
+    return this.__array[index].update(targetTouch);
+};
 
-    touch.update(targetTouch);
-    return touch;
+Touches.prototype.get = function(index) {
+    return this.__array[index];
 };
 
 Touches.prototype.allOff = function() {

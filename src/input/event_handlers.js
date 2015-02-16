@@ -33,13 +33,13 @@ eventHandlers.mousemove = function(input, e) {
 eventHandlers.mousedown = function(input, e, time, frame) {
     var button = input.buttons.on(mouseButtons[e.button], time, frame);
 
-    input.emit("mousedown", e, button);
+    input.emit("mousedown", e, button, input.mouse);
 };
 
 eventHandlers.mouseup = function(input, e, time, frame) {
     var button = input.buttons.off(mouseButtons[e.button], time, frame);
 
-    input.emit("mouseup", e, button);
+    input.emit("mouseup", e, button, input.mouse);
 };
 
 eventHandlers.mouseout = function(input, e, time, frame) {
@@ -47,13 +47,14 @@ eventHandlers.mouseout = function(input, e, time, frame) {
     input.mouse.update(e);
     input.buttons.allOff(time, frame);
 
-    input.emit("mouseout", e);
+    input.emit("mouseout", e, input.mouse);
 };
 
 eventHandlers.wheel = function(input, e) {
+    var value = mathf.sign(e.deltaY);
 
-    input.mouse.wheel = mathf.sign(e.deltaY);
-    input.emit("wheel", e);
+    input.mouse.wheel = value;
+    input.emit("wheel", e, value, input.mouse);
 };
 
 
@@ -64,7 +65,7 @@ eventHandlers.touchstart = function(input, e) {
         il = targetTouches.length - 1;
 
     while (i++ < il) {
-        input.emit("touchstart", e, touches.__start(i, targetTouches[i]));
+        input.emit("touchstart", e, touches.__start(i, targetTouches[i]), touches);
     }
 };
 
@@ -75,13 +76,13 @@ eventHandlers.touchend = function(input, e) {
         il = changedTouches.length - 1;
 
     while (i++ < il) {
-        input.emit("touchend", e, touches.__end(i));
+        input.emit("touchend", e, touches.__end(i), touches);
     }
 };
 
 eventHandlers.touchcancel = function(input, e) {
     input.touches.allOff();
-    input.emit("touchcancel", e);
+    input.emit("touchcancel", e, touches);
 };
 
 eventHandlers.touchmove = function(input, e) {
@@ -91,7 +92,7 @@ eventHandlers.touchmove = function(input, e) {
         il = changedTouches.length - 1;
 
     while (i++ < il) {
-        input.emit("touchmove", e, touches.__move(i, changedTouches[i]));
+        input.emit("touchmove", e, touches.__move(i, changedTouches[i]), touches);
     }
 };
 

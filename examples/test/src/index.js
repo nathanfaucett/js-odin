@@ -60,8 +60,9 @@ eventListener.on(environment.window, "load", function() {
     assets.add(geometry, material, texture);
 
     var camera = odin.SceneObject.create("main_camera").addComponent(
-        odin.Transform.create().setPosition(0, 0, 10),
-        odin.Camera.create().setActive()
+        odin.Transform.create().setPosition(0, 5, 5),
+        odin.Camera.create().setActive(),
+        odin.OrbitControl.create()
     );
 
     var object = odin.SceneObject.create().addComponent(
@@ -89,6 +90,7 @@ eventListener.on(environment.window, "load", function() {
     cameraComponent.set(canvas.pixelWidth, canvas.pixelHeight);
 
     renderer.setCanvas(canvas.element);
+    scene.init(canvas.element);
 
     var loop = odin.createLoop(function() {
         scene.update();

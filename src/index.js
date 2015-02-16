@@ -29,3 +29,5 @@ odin.Component = require("./scene_graph/components/component");
 odin.Transform = require("./scene_graph/components/transform");
 odin.Camera = require("./scene_graph/components/camera");
 odin.Mesh = require("./scene_graph/components/mesh");
+
+odin.OrbitControl = require("./scene_graph/components/orbit_control");

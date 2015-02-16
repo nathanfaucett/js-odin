@@ -54,6 +54,14 @@ Component.prototype.init = function() {
     return this;
 };
 
+Component.prototype.clear = function(emitEvent) {
+
+    if (emitEvent !== false) {
+        this.emit("clear");
+    }
+    return this;
+};
+
 Component.prototype.awake = function() {
 
     this.emit("awake");
@@ -74,6 +82,7 @@ Component.prototype.destroy = function(emitEvent) {
     }
 
     if (emitEvent !== false) {
+        this.clear(emitEvent);
         this.emit("destroy");
     }
     sceneObject.removeComponent(this);

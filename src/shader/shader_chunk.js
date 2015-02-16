@@ -8,7 +8,6 @@ module.exports = ShaderChunk;
 function ShaderChunk() {
     this.code = null;
     this.template = null;
-    this.fallback = null;
     this.requires = null;
     this.extensions = null;
 }
@@ -23,7 +22,6 @@ ShaderChunk.prototype.construct = function(options) {
 
     this.code = options.code;
     this.template = options.template;
-    this.fallback = isString(options.fallback) ? options.fallback : null;
     this.requires = isArray(options.requires) ? options.requires : [];
     this.extensions = isArray(options.extensions) ? options.extensions : [];
 
@@ -34,7 +32,6 @@ ShaderChunk.prototype.destructor = function() {
 
     this.code = null;
     this.template = null;
-    this.fallback = null;
     this.requires = null;
     this.extensions = null;
 

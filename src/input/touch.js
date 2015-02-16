@@ -83,6 +83,8 @@ Touch.prototype.update = function(e) {
     this.force = e.force;
 
     this.__first = true;
+
+    return this;
 };
 
 Touch.prototype.toJSON = function(json) {

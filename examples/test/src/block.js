@@ -21,6 +21,8 @@ Block.prototype.update = function() {
         transform = sceneObject.getComponent("Transform");
 
     this.velocity[0] = mathf.sin(time.time) * this.random * time.delta;
+    this.velocity[1] = mathf.cos(time.time) * this.random * time.delta;
+    this.velocity[2] = mathf.sin(time.time) * this.random * time.delta;
     transform.translate(this.velocity);
 
     this.angularVelocity[0] = mathf.sin(time.time) * this.random * time.delta;

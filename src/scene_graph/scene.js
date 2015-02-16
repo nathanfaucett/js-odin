@@ -55,12 +55,12 @@ Scene.prototype.destructor = function() {
     return this;
 };
 
-Scene.prototype.init = function() {
+Scene.prototype.init = function(element) {
     var managers = this.__managers,
         i = -1,
         il = managers.length - 1;
 
-    this.input.attach(this.application.canvas.element);
+    this.input.attach(element);
 
     while (i++ < il) {
         managers[i].init();
@@ -100,17 +100,12 @@ Scene.prototype.update = function() {
 Scene.prototype.destroy = function() {
     var sceneObjects = this.__sceneObjects,
         i = -1,
-        il = sceneObjects.length - 1,
-        application = this.application;
+        il = sceneObjects.length - 1;
 
     this.emit("destroy");
 
     while (i++ < il) {
         sceneObjects.destroy();
-    }
-
-    if (application) {
-        application.removeScene(this);
     }
 
     return this;
@@ -216,10 +211,7 @@ Scene.prototype.__addComponent = function(component) {
     component.manager = manager;
 
     this.emit("add" + className, component);
-
-    if (this.application) {
-        component.awake();
-    }
+    component.awake();
 
     return this;
 };
