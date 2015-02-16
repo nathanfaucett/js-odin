@@ -23,7 +23,6 @@ function Renderer() {
     this.__renderers = {};
     this.__geometries = {};
     this.__materials = {};
-    this.__texturess = {};
 }
 Class.extend(Renderer, "Renderer");
 
@@ -208,8 +207,8 @@ function bindUniforms(projection, modelView, normalMatrix, glUniforms, uniforms)
     if (glHash.perspectiveMatrix) {
         glHash.perspectiveMatrix.set(projection);
     }
-    if (glHash.normalMatrixMatrix) {
-        glHash.normalMatrixMatrix.set(normalMatrix);
+    if (glHash.normalMatrix) {
+        glHash.normalMatrix.set(normalMatrix);
     }
 
     while (i++ < il) {

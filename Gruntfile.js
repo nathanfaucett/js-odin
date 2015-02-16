@@ -3,7 +3,7 @@ module.exports = function(grunt) {
     grunt.initConfig({
         jsbeautifier: {
             files: [
-                "src/**/*.js"
+                "**/*.js"
             ]
         },
         jshint: {
@@ -23,8 +23,8 @@ module.exports = function(grunt) {
         comn: {
             test: {
                 options: {
-                    index: "example/test/src/index.js",
-                    out: "example/test/index.min.js"
+                    index: "examples/test/src/index.js",
+                    out: "examples/test/index.min.js"
                 }
             }
         },
@@ -35,7 +35,7 @@ module.exports = function(grunt) {
             test_js: {
                 files: [
                     "src/**/*.js",
-                    "example/test/src/**/*.js"
+                    "examples/test/src/**/*.js"
                 ],
                 tasks: ["comn:test"],
                 options: {

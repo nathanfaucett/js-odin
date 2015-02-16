@@ -1,9 +1,10 @@
 var environment = require("environment"),
     mathf = require("mathf"),
-    eventListener = require("event_listener");
+    eventListener = require("event_listener"),
+    Block = require("./block");
 
 
-global.odin = require("../../../src/index");
+var odin = require("../../../src/index");
 
 
 eventListener.on(environment.window, "load", function() {
@@ -17,35 +18,46 @@ eventListener.on(environment.window, "load", function() {
 
     var geometry = odin.Geometry.create("geo_box", "../content/geometry/box.json");
 
-    var material = odin.Material.create("mat_box", null, {
-        vertex: [
+    var texture = odin.Texture.create("image_hospital", "../content/images/hospital.png");
+
+    var shader = odin.Shader.create(
+        [
             "uniform mat4 perspectiveMatrix;",
             "uniform mat4 modelViewMatrix;",
-            "uniform mat3 normalMatrixMatrix;",
 
-            "attribute vec3 position;",
-            "attribute vec3 normal;",
-            "attribute vec2 uv;",
-
-            "varying vec3 vColor;",
+            "varying vec2 vUv;",
 
             "void main(void) {",
-                "vColor = normalMatrixMatrix * normal + vec3(uv, 0.0);",
-                "gl_Position = perspectiveMatrix * modelViewMatrix * vec4(position, 1.0);",
+            "    vUv = uv;",
+            "    gl_Position = perspectiveMatrix * modelViewMatrix * getPosition();",
             "}"
         ].join("\n"),
-        fragment: [
-            "varying vec3 vColor;",
+        [
+            "uniform sampler2D texture;",
+
+            "varying vec2 vUv;",
 
             "void main(void) {",
-                "gl_FragColor = vec4(vColor, 1.0);",
+            "    gl_FragColor = texture2D(texture, vec2(vUv.s, vUv.t));",
             "}"
         ].join("\n")
+    );
+
+    var material = odin.Material.create("mat_box", null, {
+        vertex: shader.vertex({
+            boneWeightCount: 2,
+            boneCount: 5
+        }),
+        fragment: shader.fragment({
+            boneWeightCount: 2,
+            boneCount: 5
+        }),
+        uniforms: {
+            texture: texture
+        }
     });
 
-    material.wireframe = true;
-
-    assets.add(geometry, material);
+    assets.add(geometry, material, texture);
 
     var camera = odin.SceneObject.create("main_camera").addComponent(
         odin.Transform.create().setPosition(0, 0, 10),
@@ -54,7 +66,8 @@ eventListener.on(environment.window, "load", function() {
 
     var object = odin.SceneObject.create().addComponent(
         odin.Transform.create().setPosition(0, 0, 0),
-        odin.Mesh.create(geometry, material)
+        odin.Mesh.create(geometry, material),
+        Block.create()
     );
 
     var scene = odin.Scene.create("scene").add(camera, object),
@@ -64,7 +77,8 @@ eventListener.on(environment.window, "load", function() {
         scene.add(
             odin.SceneObject.create().addComponent(
                 odin.Transform.create().setPosition(0, 0, 0),
-                odin.Mesh.create(geometry, material)
+                odin.Mesh.create(geometry, material),
+                Block.create()
             )
         );
     }
@@ -76,13 +90,7 @@ eventListener.on(environment.window, "load", function() {
 
     renderer.setCanvas(canvas.element);
 
-    var rotate = [0, 0, 0];
-
     var loop = odin.createLoop(function() {
-
-        rotate[0] = rotate[1] = rotate[2] = scene.time.delta;
-        object.getComponent("Transform").rotate(rotate);
-
         scene.update();
         renderer.render(scene, cameraComponent);
     }, canvas.element);

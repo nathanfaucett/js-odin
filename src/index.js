@@ -18,6 +18,8 @@ odin.Geometry = require("./assets/geometry/index");
 odin.Canvas = require("./canvas");
 odin.Renderer = require("./renderer/index");
 
+odin.Shader = require("./shader/shader");
+
 odin.Scene = require("./scene_graph/scene");
 odin.SceneObject = require("./scene_graph/scene_object");
 
