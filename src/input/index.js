@@ -1,5 +1,4 @@
 var vec3 = require("vec3"),
-    time = require("time"),
     EventEmitter = require("event_emitter"),
     Handler = require("./handler"),
     Mouse = require("./mouse"),
@@ -68,10 +67,8 @@ Input.prototype.destructor = function() {
     return this;
 };
 
-Input.prototype.attach = function(element, isStatic) {
+Input.prototype.attach = function(element) {
     var handler = this.__handler;
-
-    isStatic = isStatic != null ? !!isStatic : false;
 
     if (!handler) {
         handler = this.__handler = Handler.create(this);
@@ -79,45 +76,17 @@ Input.prototype.attach = function(element, isStatic) {
         handler.detach(element);
     }
 
-    handler.attach(element, isStatic);
+    handler.attach(element);
 
     return this;
 };
 
-Input.prototype.server = function(socket, isStatic) {
-    var _this = this,
-        stack = this.__stack,
-        frame, update, emitting, updated;
+Input.prototype.server = function(socket) {
+    var stack = this.__stack;
 
-    isStatic = isStatic != null ? !!isStatic : false;
-
-    if (isStatic) {
-        frame = 0;
-        emitting = true;
-        updated = false;
-
-        update = function() {
-            emitting = false;
-            if (updated === false) {
-                updated = true;
-                _this.update(time.stamp(), frame++);
-            }
-        };
-
-        socket.on("inputevent", function(e) {
-            stack[stack.length] = e;
-
-            if (emitting === false) {
-                emitting = true;
-                updated = false;
-                window.setTimeout(update, 0);
-            }
-        });
-    } else {
-        socket.on("inputevent", function(e) {
-            stack[stack.length] = e;
-        });
-    }
+    socket.on("inputevent", function(e) {
+        stack[stack.length] = e;
+    });
 
     return this;
 };

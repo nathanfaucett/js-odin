@@ -1,4 +1,5 @@
-var Component = require("./component"),
+var isNumber = require("is_number"),
+    Component = require("./component"),
     CameraManager = require("../component_managers/camera_manager"),
     mathf = require("mathf"),
     vec2 = require("vec2"),
@@ -17,31 +18,31 @@ function Camera() {
 
     Component.call(this);
 
-    this.width = null;
-    this.height = null;
-    this.invWidth = null;
-    this.invHeight = null;
+    this.width = 960;
+    this.height = 640;
+    this.invWidth = 1 / this.width;
+    this.invHeight = 1 / this.height;
 
-    this.autoResize = null;
-    this.background = null;
+    this.autoResize = true;
+    this.background = color.create(0.5, 0.5, 0.5);
 
-    this.aspect = null;
-    this.fov = null;
+    this.aspect = this.width / this.height;
+    this.fov = 35;
 
-    this.near = null;
-    this.far = null;
+    this.near = 0.0625;
+    this.far = 16384;
 
-    this.orthographic = null;
-    this.orthographicSize = null;
+    this.orthographic = false;
+    this.orthographicSize = 2;
 
-    this.minOrthographicSize = null;
-    this.maxOrthographicSize = null;
+    this.minOrthographicSize = mathf.EPSILON;
+    this.maxOrthographicSize = 1024;
 
     this.projection = mat4.create();
     this.view = mat4.create();
 
-    this.needsUpdate = null;
-    this.__active = null;
+    this.needsUpdate = true;
+    this.__active = false;
 }
 Component.extend(Camera, "Camera", CameraManager);
 
@@ -51,25 +52,24 @@ Camera.prototype.construct = function(options) {
 
     options = options || {};
 
-    this.width = 960;
-    this.height = 640;
+    this.width = isNumber(options.width) ? options.width : 960;
+    this.height = isNumber(options.height) ? options.height : 640;
     this.invWidth = 1 / this.width;
     this.invHeight = 1 / this.height;
 
     this.autoResize = options.autoResize != null ? !!options.autoResize : true;
-    this.background = options.background != null ? options.background : color.create(0.5, 0.5, 0.5);
+    if (options.background) {
+        color.copy(this.background, options.background);
+    }
 
     this.aspect = this.width / this.height;
-    this.fov = options.fov != null ? options.fov : 35;
+    this.fov = isNumber(options.fov) ? options.fov : 35;
 
-    this.near = options.near != null ? options.near : 0.0625;
-    this.far = options.far != null ? options.far : 16384;
+    this.near = isNumber(options.near) ? options.near : 0.0625;
+    this.far = isNumber(options.far) ? options.far : 16384;
 
     this.orthographic = options.orthographic != null ? !!options.orthographic : false;
-    this.orthographicSize = options.orthographicSize != null ? options.orthographicSize : 2;
-
-    this.minOrthographicSize = options.minOrthographicSize != null ? options.minOrthographicSize : mathf.EPSILON;
-    this.maxOrthographicSize = options.maxOrthographicSize != null ? options.maxOrthographicSize : 1024;
+    this.orthographicSize = isNumber(options.orthographicSize) ? options.orthographicSize : 2;
 
     this.needsUpdate = true;
     this.__active = false;
@@ -81,31 +81,13 @@ Camera.prototype.destructor = function() {
 
     ComponentPrototype.destructor.call(this);
 
-    this.width = null;
-    this.height = null;
-    this.invWidth = null;
-    this.invHeight = null;
-
-    this.autoResize = null;
-    this.background = null;
-
-    this.aspect = null;
-    this.fov = null;
-
-    this.near = null;
-    this.far = null;
-
-    this.orthographic = null;
-    this.orthographicSize = null;
-
-    this.minOrthographicSize = null;
-    this.maxOrthographicSize = null;
+    color.set(this.background, 0.5, 0.5, 0.5);
 
     mat4.identity(this.projection);
     mat4.identity(this.view);
 
-    this.needsUpdate = null;
-    this.__active = null;
+    this.needsUpdate = true;
+    this.__active = false;
 
     return this;
 };
@@ -202,7 +184,7 @@ Camera.prototype.toggleOrthographic = function() {
 
 Camera.prototype.setOrthographicSize = function(size) {
 
-    this.orthographicSize = clamp(size, this.minOrthographicSize, this.maxOrthographicSize);
+    this.orthographicSize = mathf.clamp(size, this.minOrthographicSize, this.maxOrthographicSize);
     this.needsUpdate = true;
 
     return this;
@@ -242,7 +224,7 @@ Camera.prototype.toScreen = function(v, out) {
 
 Camera.prototype.update = function(force) {
     var sceneObject = this.sceneObject,
-        transform = sceneObject && (sceneObject.getComponent("Transform") || sceneObject.getComponent("Transform2D")),
+        transform = sceneObject && (sceneObject.components.Transform || sceneObject.components.Transform2D),
         orthographicSize, right, left, top, bottom;
 
     ComponentPrototype.update.call(this);

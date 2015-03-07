@@ -39,5 +39,6 @@ Material.prototype.destructor = function() {
 };
 
 Material.prototype.parse = function() {
+    JSONAssetPrototype.parse.call(this);
     return this;
 };

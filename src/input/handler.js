@@ -1,5 +1,4 @@
-var time = require("time"),
-    EventEmitter = require("event_emitter"),
+var EventEmitter = require("event_emitter"),
     environment = require("environment"),
     delegator = require("delegator");
 
@@ -16,7 +15,6 @@ function Handler() {
 
     this.__input = null;
     this.__element = null;
-    this.__isStatic = null;
     this.__handler = null;
     this.__nativeHandler = null;
     this.__handled = null;
@@ -52,7 +50,6 @@ Handler.prototype.destructor = function() {
 
     this.__input = null;
     this.__element = null;
-    this.__isStatic = null;
     this.__handler = null;
     this.__nativeHandler = null;
 
@@ -80,10 +77,10 @@ Handler.prototype.reset = function() {
     return this;
 };
 
-Handler.prototype.attach = function(element, isStatic) {
-    var _this, input, stack, handled, emitting, updated, update, frame;
+Handler.prototype.attach = function(element) {
+    var _this, input, stack, handled;
 
-    if (element === this.__element && isStatic === this.__isStatic) {
+    if (element === this.__element) {
         return this;
     }
 
@@ -94,93 +91,36 @@ Handler.prototype.attach = function(element, isStatic) {
 
     handled = this.__handled;
 
-    if (isStatic) {
-        emitting = false;
-        updated = true;
-        frame = 0;
+    this.__handler = function(e) {
+        var type = e.type;
 
-        update = function() {
-            emitting = false;
-            if (updated === false) {
-                updated = true;
-                input.update(time.stamp(), frame++);
-            }
-        };
+        if (handled[type]) {
+            return;
+        }
 
-        this.__handler = function(e) {
-            var type = e.type;
+        handled[type] = true;
 
-            if (handled[type]) {
-                return;
-            }
+        e.persist();
+        e.preventDefault();
 
-            handled[type] = true;
+        _this.emit("event", e);
+        stack[stack.length] = e;
+    };
 
-            e.persist();
-            e.preventDefault();
-            stack[stack.length] = e;
+    this.__nativeHandler = function(e) {
+        var type = e.type;
 
-            _this.emit("event", e);
+        if (handled[type]) {
+            return;
+        }
 
-            if (emitting === false) {
-                emitting = true;
-                updated = false;
-                window.setTimeout(update, 0);
-            }
-        };
+        handled[type] = true;
 
-        this.__nativeHandler = function(e) {
-            var type = e.type;
+        e.preventDefault();
 
-            if (handled[type]) {
-                return;
-            }
-
-            handled[type] = true;
-
-            e.preventDefault();
-            stack[stack.length] = e;
-
-            _this.emit("event", e);
-
-            if (emitting === false) {
-                emitting = true;
-                updated = false;
-                window.setTimeout(update, 0);
-            }
-        };
-    } else {
-        this.__handler = function(e) {
-            var type = e.type;
-
-            if (handled[type]) {
-                return;
-            }
-
-            handled[type] = true;
-
-            e.persist();
-            e.preventDefault();
-
-            _this.emit("event", e);
-            stack[stack.length] = e;
-        };
-
-        this.__nativeHandler = function(e) {
-            var type = e.type;
-
-            if (handled[type]) {
-                return;
-            }
-
-            handled[type] = true;
-
-            e.preventDefault();
-
-            _this.emit("event", e);
-            stack[stack.length] = e;
-        };
-    }
+        _this.emit("event", e);
+        stack[stack.length] = e;
+    };
 
     delegator.on(element, "mousedown mouseup mousemove mouseout wheel", this.__handler);
     delegator.on(document, "keyup keydown", this.__handler);
@@ -188,7 +128,6 @@ Handler.prototype.attach = function(element, isStatic) {
     delegator.on(window, "devicemotion", this.__nativeHandler);
 
     this.__element = element;
-    this.__isStatic = isStatic;
 
     return this;
 };

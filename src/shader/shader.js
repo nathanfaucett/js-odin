@@ -1,6 +1,5 @@
 var map = require("map"),
     keys = require("keys"),
-    forEach = require("for_each"),
     template = require("template"),
     pushUnique = require("push_unique"),
     Class = require("../class"),
@@ -53,7 +52,7 @@ Shader.prototype.destructor = function() {
     return this;
 };
 
-Shader_compile = function(_this, shader) {
+function Shader_compile(_this, shader) {
     var templateVariables = _this.templateVariables,
         shaderChunks = [],
         out = "",
@@ -75,8 +74,8 @@ Shader_compile = function(_this, shader) {
         out += shaderChunks[i].code;
     }
 
-    return template(out +"\n"+ shader);
-};
+    return template(out + "\n" + shader);
+}
 
 function requireChunk(shaderChunks, templateVariables, chunk) {
     var requires = chunk.requires,

@@ -1,5 +1,4 @@
-var isArray = require("is_array"),
-    isString = require("is_string");
+var isArray = require("is_array");
 
 
 module.exports = ShaderChunk;

@@ -53,21 +53,18 @@ Transform.prototype.init = function() {
     return this;
 };
 
-Transform.prototype.setPosition = function(x, y, z) {
-
-    vec3.set(this.position, x, y, z);
+Transform.prototype.setPosition = function(v) {
+    vec3.copy(this.position, v);
     return this;
 };
 
-Transform.prototype.setRotation = function(x, y, z, w) {
-
-    vec3.set(this.rotation, x, y, z, w);
+Transform.prototype.setRotation = function(v) {
+    quat.copy(this.rotation, v);
     return this;
 };
 
-Transform.prototype.setScale = function(x, y, z) {
-
-    vec3.set(this.scale, x, y, z);
+Transform.prototype.setScale = function(v) {
+    vec3.copy(this.scale, v);
     return this;
 };
 
@@ -135,7 +132,7 @@ Transform.prototype.update = function() {
     var matrix = this.matrix,
         sceneObject = this.sceneObject,
         parent = sceneObject && sceneObject.parent,
-        parentTransform = parent && parent.getComponent("Transform");
+        parentTransform = parent && parent.components.Transform;
 
     ComponentPrototype.update.call(this);
 

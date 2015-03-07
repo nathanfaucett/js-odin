@@ -94,6 +94,8 @@ Texture.prototype.parse = function() {
         this.setSize(data.width || 1, data.height || 1);
     }
 
+    ImageAssetPrototype.parse.call(this);
+
     return this;
 };
 

@@ -14,8 +14,8 @@ function SceneObject() {
 
     this.name = null;
 
-    this.__components = [];
-    this.__componentHash = {};
+    this.__componentArray = [];
+    this.components = {};
 
     this.depth = null;
     this.scene = null;
@@ -38,7 +38,7 @@ SceneObject.prototype.construct = function(name) {
 };
 
 SceneObject.prototype.destructor = function() {
-    var components = this.__components,
+    var components = this.__componentArray,
         i = components.length;
 
     ClassPrototype.destructor.call(this);
@@ -74,11 +74,11 @@ SceneObject.prototype.destroy = function(emitEvent) {
 };
 
 SceneObject.prototype.hasComponent = function(name) {
-    return !!this.__componentHash[name];
+    return !!this.components[name];
 };
 
 SceneObject.prototype.getComponent = function(name) {
-    return this.__componentHash[name];
+    return this.components[name];
 };
 
 SceneObject.prototype.addComponent = function() {
@@ -94,8 +94,8 @@ SceneObject.prototype.addComponent = function() {
 
 function SceneObject_addComponent(_this, component) {
     var className = component.className,
-        componentHash = _this.__componentHash,
-        components = _this.__components,
+        componentHash = _this.components,
+        components = _this.__componentArray,
         scene = _this.scene;
 
     if (!componentHash[className]) {
@@ -129,8 +129,8 @@ SceneObject.prototype.removeComponent = function() {
 
 function SceneObject_removeComponent(_this, component) {
     var className = component.className,
-        componentHash = _this.__componentHash,
-        components = _this.__components,
+        componentHash = _this.components,
+        components = _this.__componentArray,
         index = components.indexOf(components, component),
         scene = _this.scene;
 
@@ -247,7 +247,7 @@ function updateDepth(child, depth) {
 }
 
 SceneObject.prototype.toJSON = function(json) {
-    var components = this.__components,
+    var components = this.__componentArray,
         children = this.children,
         i = -1,
         il = components.length - 1,

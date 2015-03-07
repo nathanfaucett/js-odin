@@ -5,6 +5,7 @@ function RendererMaterial() {
     this.context = null;
     this.material = null;
 
+    this.parameters = null;
     this.program = null;
 }
 
@@ -17,6 +18,8 @@ RendererMaterial.prototype.construct = function(context, material) {
     this.context = context;
     this.material = material;
 
+    this.parameters = {};
+
     return this;
 };
 
@@ -25,6 +28,7 @@ RendererMaterial.prototype.destructor = function() {
     this.context = null;
     this.material = null;
 
+    this.parameters = null;
     this.program = null;
 
     return this;

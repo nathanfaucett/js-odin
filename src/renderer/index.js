@@ -1,8 +1,13 @@
-var Class = require("../class"),
+var isArray = require("is_array"),
+    indexOf = require("index_of"),
+    Class = require("../class"),
     WebGLContext = require("webgl_context"),
 
-    mat3 = require("mat3"),
+    vec3 = require("vec3"),
+    quat = require("quat"),
     mat4 = require("mat4"),
+
+    MeshRenderer = require("./mesh_renderer"),
 
     RendererGeometry = require("./renderer_geometry"),
     RendererMaterial = require("./renderer_material");
@@ -20,7 +25,9 @@ function Renderer() {
 
     this.context = new WebGLContext();
 
-    this.__renderers = {};
+    this.__rendererArray = [];
+    this.renderers = {};
+
     this.__geometries = {};
     this.__materials = {};
 }
@@ -29,7 +36,8 @@ Class.extend(Renderer, "Renderer");
 Renderer.prototype.construct = function() {
 
     ClassPrototype.construct.call(this);
-    Renderer_createRenderers(this);
+
+    this.addRenderer(MeshRenderer.create(this));
 
     return this;
 };
@@ -39,61 +47,38 @@ Renderer.prototype.destructor = function() {
     ClassPrototype.destructor.call(this);
 
     this.context.clearGL();
-    this.__renderers = {};
+    this.__rendererArray = {};
 
     return this;
 };
 
-Renderer.prototype.addRenderer = function(type, fn, override) {
-    var renderers = this.__renderers,
-        renderer = renderers[type];
+Renderer.prototype.addRenderer = function(renderer, override) {
+    var renderers = this.__rendererArray,
+        rendererHash = this.renderers,
+        index = rendererHash[renderer.componentName];
 
-    if (renderer && !override) {
-        throw new Error("renderer(type, fn[, override]) pass override=true to override renderers");
+    if (index && !override) {
+        throw new Error("Renderer.addRenderer(renderer, [, override]) pass override=true to override renderers");
     }
-
-    renderers[type] = fn;
-    fn.type = type;
-    fn.enabled = true;
+    renderers[renderers.length] = rendererHash[renderer.componentName] = renderer;
 
     return this;
 };
 
-Renderer.prototype.removeRenderer = function(type) {
-    var renderers = this.__renderers,
-        renderer = renderers[type];
+Renderer.prototype.removeRenderer = function(componentName) {
+    var renderers = this.__rendererArray,
+        rendererHash = this.renderers,
+        renderer = rendererHash[componentName];
 
     if (renderer) {
-        delete renderers[type];
-    }
-
-    return this;
-};
-
-Renderer.prototype.enableRenderer = function(type) {
-    var renderers = this.__renderers,
-        renderer = renderers[type];
-
-    if (renderer) {
-        renderer.enabled = true;
-    }
-
-    return this;
-};
-
-Renderer.prototype.disableRenderer = function(type) {
-    var renderers = this.__renderers,
-        renderer = renderers[type];
-
-    if (renderer) {
-        renderer.enabled = false;
+        renderers.splice(indexOf(renderers, renderer), 1);
+        delete rendererHash[componentName];
     }
 
     return this;
 };
 
 Renderer.prototype.setCanvas = function(canvas, attributes) {
-
     this.context.setCanvas(canvas, attributes);
     return this;
 };
@@ -108,98 +93,38 @@ Renderer.prototype.material = function(material) {
     return materials[material.__id] || (materials[material.__id] = RendererMaterial.create(this.context, material));
 };
 
-function renderEach(component) {
-    return renderEach.managerRenderer(
-        renderEach.renderer,
-        component,
-        renderEach.camera,
-        renderEach.scene,
-        renderEach.manager
-    );
-}
+var bindUniforms_mat = mat4.create(),
+    bindUniforms_position = vec3.create(),
+    bindUniforms_scale = vec3.create(),
+    bindUniforms_rotation = quat.create();
 
-renderEach.set = function(renderer, managerRenderer, camera, scene, manager) {
-    renderEach.renderer = renderer;
-    renderEach.managerRenderer = managerRenderer;
-    renderEach.camera = camera;
-    renderEach.scene = scene;
-    renderEach.manager = manager;
-    return renderEach;
-};
-
-Renderer.prototype.render = function(scene, camera) {
-    var _this, context, renderers, renderer, managers, manager, i, il;
-
-    _this = this;
-    context = this.context;
-    renderers = this.__renderers;
-    managers = scene.__managers;
-
-    context.setViewport(0, 0, camera.width, camera.height);
-    context.setClearColor(camera.background, 1);
-    context.clearCanvas();
-
-    i = -1;
-    il = managers.length - 1;
+function bindBones(bones, length, glHash) {
+    var mat = bindUniforms_mat,
+        position = bindUniforms_position,
+        scale = bindUniforms_scale,
+        rotation = bindUniforms_rotation,
+        bonePosition = glHash.bonePosition,
+        boneScale = glHash.boneScale,
+        boneRotation = glHash.boneRotation,
+        i = -1,
+        il = length - 1,
+        bone;
 
     while (i++ < il) {
-        manager = managers[i];
-        renderer = renderers[manager.componentName];
+        bone = bones[i].components.Bone;
+        mat4.mul(mat, bone.uniform, bone.bindPose);
+        mat4.decompose(mat, position, scale, rotation);
 
-        if (renderer && renderer.enabled) {
-            manager.forEach(renderEach.set(this, renderer, camera, scene, manager));
-        }
+        bonePosition[i].set(position);
+        boneScale[i].set(scale);
+        boneRotation[i].set(rotation);
     }
-
-    return this;
-};
-
-var modelView = mat4.create(),
-    normalMatrix = mat3.create();
-
-function Renderer_createRenderers(_this) {
-    var TransformString = "Transform";
-
-    _this.addRenderer("Mesh", function renderMesh(renderer, mesh, camera) {
-        var transform = mesh.sceneObject.getComponent(TransformString),
-
-            meshMaterial = mesh.material,
-            material = renderer.material(meshMaterial),
-            geometry = renderer.geometry(mesh.geometry),
-
-            program = material.getProgram(),
-
-            context = renderer.context,
-            gl = context.gl,
-
-            indexBuffer;
-
-        transform.calculateModelView(camera.view, modelView);
-        transform.calculateNormalMatrix(modelView, normalMatrix);
-
-        context.setProgram(material.program);
-
-        bindUniforms(camera.projection, modelView, normalMatrix, program.uniforms, meshMaterial.uniforms);
-        bindAttributes(program.attributes, geometry.getVertexBuffer(), geometry.buffers.__hash);
-
-        if (meshMaterial.wireframe !== true) {
-            indexBuffer = geometry.getIndexBuffer();
-            context.setElementArrayBuffer(indexBuffer);
-            gl.drawElements(gl.TRIANGLES, indexBuffer.length, gl.UNSIGNED_SHORT, 0);
-        } else {
-            indexBuffer = geometry.getLineBuffer();
-            context.setElementArrayBuffer(indexBuffer);
-            gl.drawElements(gl.LINES, indexBuffer.length, gl.UNSIGNED_SHORT, 0);
-        }
-    });
 }
 
-function bindUniforms(projection, modelView, normalMatrix, glUniforms, uniforms) {
+Renderer.prototype.bindUniforms = function(projection, modelView, normalMatrix, uniforms, bones, glUniforms) {
     var glHash = glUniforms.__hash,
         glArray = glUniforms.__array,
-        i = -1,
-        il = glArray.length - 1,
-        glUniform, uniform;
+        glUniform, uniform, length, i, il, j, jl;
 
     if (glHash.modelViewMatrix) {
         glHash.modelViewMatrix.set(modelView);
@@ -211,16 +136,33 @@ function bindUniforms(projection, modelView, normalMatrix, glUniforms, uniforms)
         glHash.normalMatrix.set(normalMatrix);
     }
 
+    if (bones && (length = bones.length) !== 0) {
+        bindBones(bones, length, glHash);
+    }
+
+    i = -1;
+    il = glArray.length - 1;
+
     while (i++ < il) {
         glUniform = glArray[i];
 
         if ((uniform = uniforms[glUniform.name])) {
-            glUniform.set(uniform);
+            if (isArray(glUniform)) {
+                j = -1;
+                jl = glUniform.length - 1;
+                while (j++ < jl) {
+                    glUniform[j].set(uniform[j]);
+                }
+            } else {
+                glUniform.set(uniform);
+            }
         }
     }
-}
 
-function bindAttributes(glAttributes, vertexBuffer, buffers) {
+    return this;
+};
+
+Renderer.prototype.bindAttributes = function(buffers, vertexBuffer, glAttributes) {
     var glArray = glAttributes.__array,
         i = -1,
         il = glArray.length - 1,
@@ -231,4 +173,35 @@ function bindAttributes(glAttributes, vertexBuffer, buffers) {
         buffer = buffers[glAttribute.name];
         glAttribute.set(vertexBuffer, buffer.offset);
     }
-}
+
+    return this;
+};
+
+Renderer.prototype.render = function(scene, camera) {
+    var _this, context, renderers, renderer, managerHash, manager, i, il;
+
+    _this = this;
+    context = this.context;
+    renderers = this.__rendererArray;
+    managerHash = scene.managers;
+
+    context.setViewport(0, 0, camera.width, camera.height);
+    context.setClearColor(camera.background, 1);
+    context.clearCanvas();
+
+    i = -1;
+    il = renderers.length - 1;
+
+    while (i++ < il) {
+        renderer = renderers[i];
+        manager = managerHash[renderer.componentName];
+
+        if (manager !== undefined && renderer.enabled) {
+            renderer.beforeRender(camera, scene, manager);
+            manager.forEach(renderer.bindRender(camera, scene, manager));
+            renderer.afterRender(camera, scene, manager);
+        }
+    }
+
+    return this;
+};

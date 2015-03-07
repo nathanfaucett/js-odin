@@ -157,15 +157,8 @@ OrbitControl.prototype.clear = function(emitEvent) {
     return this;
 };
 
-OrbitControl.prototype.update = function() {
-
-    ComponentPrototype.update.call(this);
-
-    return this;
-};
-
 function OrbitControl_update(_this) {
-    var transform = transform = _this.sceneObject.getComponent(TRANSFORM),
+    var transform = _this.sceneObject.components.Transform,
         position = transform.position,
         target = _this.target,
         offset = _this.__offset,
@@ -199,14 +192,13 @@ function OrbitControl_update(_this) {
     vec3.set(pan, 0, 0, 0);
 }
 
-var TRANSFORM = "Transform",
-    OrbitControl_pan_panOffset = vec3.create();
+var OrbitControl_pan_panOffset = vec3.create();
 
 function OrbitControl_pan(_this, delta) {
     var panOffset = OrbitControl_pan_panOffset,
         pan = _this.__pan,
-        camera = _this.sceneObject.getComponent(CAMERA),
-        transform = _this.sceneObject.getComponent(TRANSFORM),
+        camera = _this.sceneObject.components.Camera,
+        transform = _this.sceneObject.components.Transform,
         matrixWorld = transform.matrixWorld,
         position = transform.position,
         targetDistance;
@@ -253,11 +245,9 @@ function OrbitControl_onTouchEnd(_this) {
     _this.__state = NONE;
 }
 
-var CAMERA = "Camera";
-
 function OrbitControl_onTouchMove(_this, e, touch) {
     var delta = touch.delta,
-        camera = _this.sceneObject.getComponent(CAMERA);
+        camera = _this.sceneObject.components.Camera;
 
     if (_this.__state === ROTATE) {
         _this.__thetaDelta += 2 * mathf.PI * delta[0] * camera.invWidth * _this.speed;
@@ -276,7 +266,7 @@ function OrbitControl_onMouseUp(_this) {
 var LEFT_MOUSE = "mouse0",
     MIDDLE_MOUSE = "mouse1";
 
-function OrbitControl_onMouseDown(_this, e, button, mouse) {
+function OrbitControl_onMouseDown(_this, e, button) {
     if (button.name === LEFT_MOUSE && _this.allowRotate) {
         _this.__state = ROTATE;
     } else if (button.name === MIDDLE_MOUSE && _this.allowPan) {
@@ -288,7 +278,7 @@ function OrbitControl_onMouseDown(_this, e, button, mouse) {
 
 function OrbitControl_onMouseMove(_this, e, mouse) {
     var delta = mouse.delta,
-        camera = _this.sceneObject.getComponent(CAMERA);
+        camera = _this.sceneObject.components.Camera;
 
     if (_this.__state === ROTATE) {
         _this.__thetaDelta += 2 * mathf.PI * delta[0] * camera.invWidth * _this.speed;

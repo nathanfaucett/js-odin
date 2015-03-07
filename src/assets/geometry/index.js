@@ -1,9 +1,12 @@
 var vec3 = require("vec3"),
+    quat = require("quat"),
+    mat4 = require("mat4"),
     mathf = require("mathf"),
     aabb3 = require("aabb3"),
     FastHash = require("fast_hash"),
     Attribute = require("./attribute"),
-    JSONAsset = require("../json_asset");
+    JSONAsset = require("../json_asset"),
+    GeometryBone = require("./geometry_bone");
 
 
 var JSONAssetPrototype = JSONAsset.prototype,
@@ -19,11 +22,15 @@ function Geometry() {
     JSONAsset.call(this);
 
     this.index = null;
+    this.bones = [];
+
     this.attributes = new FastHash("name");
     this.aabb = aabb3.create();
 
     this.boundingCenter = vec3.create();
     this.boundingRadius = 0;
+
+    this.boneWeightCount = 3;
 }
 JSONAsset.extend(Geometry, "Geometry");
 
@@ -39,6 +46,8 @@ Geometry.prototype.destructor = function() {
     JSONAssetPrototype.destructor.call(this);
 
     this.index = null;
+    this.bones.length = 0;
+
     this.attributes.clear();
     aabb3.clear(this.aabb);
 
@@ -64,10 +73,17 @@ Geometry.prototype.removeAttribute = function(name) {
 
 Geometry.prototype.parse = function() {
     var data = this.data,
-        items;
+        dataBones = data.bones,
+        bones = this.bones,
+        items, i, il, bone, dataBone;
 
     if ((items = (data.index || data.indices || data.faces)) && items.length) {
         this.index = new NativeUint16Array(items);
+    }
+    if (data.boneWeightCount) {
+        this.boneWeightCount = data.boneWeightCount;
+    } else {
+        data.boneWeightCount = 3;
     }
 
     if ((items = (data.position || data.vertices)) && items.length) {
@@ -89,14 +105,31 @@ Geometry.prototype.parse = function() {
         this.addAttribute("uv2", items.length, 2, NativeFloat32Array, false, items);
     }
     if ((items = (data.boneWeight || data.boneWeights)) && items.length) {
-        this.addAttribute("boneWeight", items.length, 1, NativeFloat32Array, false, items);
+        this.addAttribute("boneWeight", items.length, this.boneWeightCount, NativeFloat32Array, false, items);
     }
     if ((items = (data.boneIndex || data.boneIndices)) && items.length) {
-        this.addAttribute("boneIndex", items.length, 1, NativeFloat32Array, false, items);
+        this.addAttribute("boneIndex", items.length, this.boneWeightCount, NativeFloat32Array, false, items);
+    }
+
+    i = -1;
+    il = dataBones.length - 1;
+    while (i++ < il) {
+        dataBone = dataBones[i];
+        bone = GeometryBone.create(dataBone.parent, dataBone.name);
+
+        vec3.copy(bone.position, dataBone.position);
+        quat.copy(bone.rotation, dataBone.rotation);
+        vec3.copy(bone.scale, dataBone.scale);
+        mat4.copy(bone.bindPose, dataBone.bindPose);
+        bone.skinned = !!dataBone.skinned;
+
+        bones[bones.length] = bone;
     }
 
     this.calculateAABB();
     this.calculateBoundingSphere();
+
+    JSONAssetPrototype.parse.call(this);
 
     return this;
 };
@@ -179,7 +212,7 @@ Geometry.prototype.calculateNormals = function() {
         position = attributesHash.position,
         normal = attributesHash.normal,
         index = this.index,
-        x, y, z, nx, ny, nz, length, i, il;
+        x, y, z, nx, ny, nz, length, i, il, a, b, c, n;
 
     position = position ? position.array : null;
 

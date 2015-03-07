@@ -1,10 +1,11 @@
 var environment = require("environment"),
-    mathf = require("mathf"),
-    eventListener = require("event_listener"),
-    Block = require("./block");
+    eventListener = require("event_listener");
 
 
 var odin = require("../../../src/index");
+
+
+global.odin = odin;
 
 
 eventListener.on(environment.window, "load", function() {
@@ -16,7 +17,9 @@ eventListener.on(environment.window, "load", function() {
         }),
         renderer = odin.Renderer.create();
 
-    var geometry = odin.Geometry.create("geo_box", "../content/geometry/box.json");
+    var animation = odin.JSONAsset.create("anim", "../content/geometry/finger_anim.json");
+
+    var geometry = odin.Geometry.create("geo", "../content/geometry/finger.json");
 
     var texture = odin.Texture.create("image_hospital", "../content/images/hospital.png");
 
@@ -26,19 +29,23 @@ eventListener.on(environment.window, "load", function() {
             "uniform mat4 modelViewMatrix;",
 
             "varying vec2 vUv;",
+            "varying vec3 vNormal;",
 
             "void main(void) {",
             "    vUv = uv;",
+            "    vNormal = getNormal();",
             "    gl_Position = perspectiveMatrix * modelViewMatrix * getPosition();",
             "}"
-        ].join("\n"),
-        [
+        ].join("\n"), [
             "uniform sampler2D texture;",
 
             "varying vec2 vUv;",
+            "varying vec3 vNormal;",
 
             "void main(void) {",
-            "    gl_FragColor = texture2D(texture, vec2(vUv.s, vUv.t));",
+            "    vec3 light = vec3(0.5, 0.2, 1.0);",
+            "    float dprod = max(0.0, dot(vNormal, light));",
+            "    gl_FragColor = texture2D(texture, vec2(vUv.s, vUv.t)) * vec4(dprod, dprod, dprod, 1.0);",
             "}"
         ].join("\n")
     );
@@ -46,43 +53,42 @@ eventListener.on(environment.window, "load", function() {
     var material = odin.Material.create("mat_box", null, {
         vertex: shader.vertex({
             boneWeightCount: 2,
-            boneCount: 5
+            boneCount: 5,
+            useBones: true
         }),
         fragment: shader.fragment({
             boneWeightCount: 2,
-            boneCount: 5
+            boneCount: 5,
+            useBones: true
         }),
         uniforms: {
             texture: texture
         }
     });
 
-    assets.add(geometry, material, texture);
+    assets.add(geometry, animation, material, texture);
 
     var camera = odin.SceneObject.create("main_camera").addComponent(
-        odin.Transform.create().setPosition(0, 5, 5),
+        odin.Transform.create().setPosition([0, -10, 10]),
         odin.Camera.create().setActive(),
         odin.OrbitControl.create()
     );
 
-    var object = odin.SceneObject.create().addComponent(
-        odin.Transform.create().setPosition(0, 0, 0),
-        odin.Mesh.create(geometry, material),
-        Block.create()
+    var sprite = global.sprite = odin.SceneObject.create().addComponent(
+        odin.Transform.create(),
+        new odin.Sprite().setMaterial(material)
     );
 
-    var scene = odin.Scene.create("scene").add(camera, object),
-        cameraComponent = camera.getComponent("Camera");
+    var object = global.object = odin.SceneObject.create().addComponent(
+        odin.Transform.create(),
+        odin.Mesh.create(geometry, material),
+        odin.MeshAnimation.create(animation, {
+            current: "idle"
+        })
+    );
 
-    for (var i = 10; i--;) {
-        scene.add(
-            odin.SceneObject.create().addComponent(
-                odin.Transform.create().setPosition(0, 0, 0),
-                odin.Mesh.create(geometry, material),
-                Block.create()
-            )
-        );
-    }
+    var scene = global.scene = odin.Scene.create("scene").add(camera, sprite, object),
+        cameraComponent = camera.getComponent("Camera");
 
     canvas.on("resize", function(w, h) {
         cameraComponent.set(w, h);
@@ -90,7 +96,6 @@ eventListener.on(environment.window, "load", function() {
     cameraComponent.set(canvas.pixelWidth, canvas.pixelHeight);
 
     renderer.setCanvas(canvas.element);
-    scene.init(canvas.element);
 
     var loop = odin.createLoop(function() {
         scene.update();
@@ -102,6 +107,8 @@ eventListener.on(environment.window, "load", function() {
     });
 
     assets.load(function() {
+        scene.init(canvas.element);
+        scene.awake();
         loop.run();
     });
 });

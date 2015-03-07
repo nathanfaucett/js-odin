@@ -45,7 +45,7 @@ Asset.prototype.setSrc = function(src) {
 };
 
 Asset.prototype.parse = function() {
-
+    this.emit("parse");
     return this;
 };
 

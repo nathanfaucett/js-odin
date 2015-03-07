@@ -22,8 +22,10 @@ function Scene() {
     this.__sceneObjects = [];
     this.__sceneObjectHash = {};
 
-    this.__managers = [];
-    this.__managerHash = {};
+    this.__managerArray = [];
+    this.managers = {};
+
+    this.__init = false;
 }
 Class.extend(Scene, "Scene");
 
@@ -34,6 +36,8 @@ Scene.prototype.construct = function(name) {
     this.name = name;
     this.time.construct();
     this.input.construct();
+
+    this.__init = false;
 
     return this;
 };
@@ -52,36 +56,47 @@ Scene.prototype.destructor = function() {
     this.input.destructor();
     this.application = null;
 
+    this.__init = false;
+
     return this;
 };
 
 Scene.prototype.init = function(element) {
-    var managers = this.__managers,
+    var managers = this.__managerArray,
         i = -1,
         il = managers.length - 1;
 
     this.input.attach(element);
 
     while (i++ < il) {
+        managers[i].sort();
         managers[i].init();
     }
+
+    this.__init = true;
+
+    this.emit("init");
+
     return this;
 };
 
 Scene.prototype.awake = function() {
-    var managers = this.__managers,
+    var managers = this.__managerArray,
         i = -1,
         il = managers.length - 1;
 
     while (i++ < il) {
         managers[i].awake();
     }
+
+    this.emit("awake");
+
     return this;
 };
 
 Scene.prototype.update = function() {
     var time = this.time,
-        managers = this.__managers,
+        managers = this.__managerArray,
         i = -1,
         il = managers.length - 1;
 
@@ -133,11 +148,11 @@ Scene.prototype.find = function(name) {
 };
 
 Scene.prototype.hasManager = function(name) {
-    return !!this.__managerHash[name];
+    return !!this.managers[name];
 };
 
 Scene.prototype.getManager = function(name) {
-    return this.__managerHash[name];
+    return this.managers[name];
 };
 
 Scene.prototype.add = function() {
@@ -160,7 +175,7 @@ function Scene_add(_this, sceneObject) {
         sceneObjects[sceneObjects.length] = sceneObject;
         sceneObjectHash[id] = sceneObject;
 
-        Scene_addObjectComponents(_this, sceneObject.__components);
+        Scene_addObjectComponents(_this, sceneObject.__componentArray);
         Scene_addObjectChildren(_this, sceneObject.children);
 
         _this.emit("addChild", sceneObject);
@@ -189,8 +204,8 @@ function Scene_addObjectChildren(_this, children) {
 
 Scene.prototype.__addComponent = function(component) {
     var className = component.className,
-        managerHash = this.__managerHash,
-        managers = this.__managers,
+        managerHash = this.managers,
+        managers = this.__managerArray,
         manager = managerHash[className];
 
     if (!manager) {
@@ -207,11 +222,14 @@ Scene.prototype.__addComponent = function(component) {
     }
 
     manager.add(component);
-    manager.sort();
     component.manager = manager;
 
     this.emit("add" + className, component);
-    component.awake();
+
+    if (this.__init) {
+        manager.sort();
+        component.awake();
+    }
 
     return this;
 };
@@ -237,7 +255,7 @@ function Scene_remove(_this, sceneObject) {
         sceneObjects.splice(indexOf(sceneObjects, sceneObject), 1);
         delete sceneObjectHash[id];
 
-        Scene_removeObjectComponents(_this, sceneObject.__components);
+        Scene_removeObjectComponents(_this, sceneObject.__componentArray);
         Scene_removeObjectChildren(_this, sceneObject.children);
         _this.emit("removeChild", sceneObject);
     } else {
@@ -265,8 +283,8 @@ function Scene_removeObjectChildren(_this, children) {
 
 Scene.prototype.__removeComponent = function(component) {
     var className = component.className,
-        managerHash = this.__managerHash,
-        managers = this.__managers,
+        managerHash = this.managers,
+        managers = this.__managerArray,
         manager = managerHash[className];
 
     if (!manager) {
@@ -276,7 +294,6 @@ Scene.prototype.__removeComponent = function(component) {
     this.emit("remove" + className, component);
 
     manager.remove(component);
-    manager.sort();
     component.manager = null;
 
     if (manager.isEmpty()) {
@@ -287,15 +304,13 @@ Scene.prototype.__removeComponent = function(component) {
         manager.scene = null;
         managers.splice(indexOf(managers, manager), 1);
         delete managerHash[className];
-
-        sortManagers(this);
     }
 
     return this;
 };
 
 function sortManagers(_this) {
-    _this.__managers.sort(sortManagersFn);
+    _this.__managerArray.sort(sortManagersFn);
 }
 
 function sortManagersFn(a, b) {
