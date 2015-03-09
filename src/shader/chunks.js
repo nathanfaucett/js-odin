@@ -147,6 +147,7 @@ chunks.perturbNormal2Arb = ShaderChunk.create({
 
 chunks.composeMat4 = ShaderChunk.create({
     code: [
+        "<% if (useBones) { %>",
         "mat4 composeMat4(inout mat4 mat, vec3 position, vec3 scale, vec4 rotation) {",
         "    float x = rotation.x, y = rotation.y, z = rotation.z, w = rotation.w,",
 
@@ -180,6 +181,7 @@ chunks.composeMat4 = ShaderChunk.create({
 
         "    return mat;",
         "}",
+        "<% } %>",
         ""
     ].join("\n")
 });
@@ -251,9 +253,11 @@ chunks.getPosition = ShaderChunk.create({
 
 chunks.getBoneNormal = ShaderChunk.create({
     code: [
+        "<% if (useBones) { %>",
         "vec4 getBoneNormal() {",
         "    return getBoneMatrix() * vec4(normal, 0.0);",
         "}",
+        "<% } %>",
         ""
     ].join("\n"),
     requires: ["getBoneMatrix", "normal"]
@@ -267,7 +271,7 @@ chunks.getNormal = ShaderChunk.create({
         "    if (getNormal_bool == false) {",
         "        getNormal_bool = true;",
         "        <% if (useBones) { %>",
-        "        getNormal_result = normalMatrix* getBoneNormal().xyz;",
+        "        getNormal_result = normalMatrix * getBoneNormal().xyz;",
         "        <% } else { %>",
         "        getNormal_result = normalMatrix * normal;",
         "        <% } %>",

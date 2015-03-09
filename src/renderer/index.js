@@ -1,5 +1,4 @@
-var isArray = require("is_array"),
-    indexOf = require("index_of"),
+var indexOf = require("index_of"),
     Class = require("../class"),
     WebGLContext = require("webgl_context"),
 
@@ -47,7 +46,8 @@ Renderer.prototype.destructor = function() {
     ClassPrototype.destructor.call(this);
 
     this.context.clearGL();
-    this.__rendererArray = {};
+    this.renderers = {};
+    this.__rendererArray.length = 0;
 
     return this;
 };
@@ -99,32 +99,60 @@ var bindUniforms_mat = mat4.create(),
     bindUniforms_rotation = quat.create();
 
 function bindBones(bones, length, glHash) {
-    var mat = bindUniforms_mat,
-        position = bindUniforms_position,
-        scale = bindUniforms_scale,
-        rotation = bindUniforms_rotation,
-        bonePosition = glHash.bonePosition,
+    var bonePosition = glHash.bonePosition,
         boneScale = glHash.boneScale,
         boneRotation = glHash.boneRotation,
-        i = -1,
-        il = length - 1,
-        bone;
+        bonePositionValue, boneScaleValue, boneRotationValue, mat,
+        position, scale, rotation, i, il, index3, index4, bone;
 
-    while (i++ < il) {
-        bone = bones[i].components.Bone;
-        mat4.mul(mat, bone.uniform, bone.bindPose);
-        mat4.decompose(mat, position, scale, rotation);
 
-        bonePosition[i].set(position);
-        boneScale[i].set(scale);
-        boneRotation[i].set(rotation);
+    if (bonePosition && boneScale && boneRotation) {
+        bonePositionValue = bonePosition.value;
+        boneScaleValue = boneScale.value;
+        boneRotationValue = boneRotation.value,
+
+            mat = bindUniforms_mat;
+        position = bindUniforms_position;
+        scale = bindUniforms_scale;
+        rotation = bindUniforms_rotation;
+
+        i = -1;
+        il = length - 1;
+        index3 = 0;
+        index4 = 0;
+
+        while (i++ < il) {
+            bone = bones[i].components.Bone;
+            mat4.mul(mat, bone.uniform, bone.bindPose);
+            mat4.decompose(mat, position, scale, rotation);
+
+            bonePositionValue[index3] = position[0];
+            bonePositionValue[index3 + 1] = position[1];
+            bonePositionValue[index3 + 2] = position[2];
+
+            boneScaleValue[index3] = scale[0];
+            boneScaleValue[index3 + 1] = scale[1];
+            boneScaleValue[index3 + 2] = scale[2];
+
+            boneRotationValue[index4] = rotation[0];
+            boneRotationValue[index4 + 1] = rotation[1];
+            boneRotationValue[index4 + 2] = rotation[2];
+            boneRotationValue[index4 + 3] = rotation[3];
+
+            index3 += 3;
+            index4 += 4;
+        }
+
+        bonePosition.set(bonePositionValue);
+        boneScale.set(boneScaleValue);
+        boneRotation.set(boneRotationValue);
     }
 }
 
 Renderer.prototype.bindUniforms = function(projection, modelView, normalMatrix, uniforms, bones, glUniforms) {
     var glHash = glUniforms.__hash,
         glArray = glUniforms.__array,
-        glUniform, uniform, length, i, il, j, jl;
+        glUniform, uniform, length, i, il;
 
     if (glHash.modelViewMatrix) {
         glHash.modelViewMatrix.set(modelView);
@@ -147,15 +175,7 @@ Renderer.prototype.bindUniforms = function(projection, modelView, normalMatrix, 
         glUniform = glArray[i];
 
         if ((uniform = uniforms[glUniform.name])) {
-            if (isArray(glUniform)) {
-                j = -1;
-                jl = glUniform.length - 1;
-                while (j++ < jl) {
-                    glUniform[j].set(uniform[j]);
-                }
-            } else {
-                glUniform.set(uniform);
-            }
+            glUniform.set(uniform);
         }
     }
 

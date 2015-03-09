@@ -88,10 +88,33 @@ Sprite.prototype.setLayer = function(layer) {
     var manager = this.manager;
 
     if (manager) {
-        manager.remove(this);
-        this.layer = layer;
-        manager.add(this);
-        manager.setLayerAsDirty(layer);
+        layer = isNumber(layer) ? (layer < 0 ? 0 : layer) : this.layer;
+
+        if (layer !== this.layer) {
+            manager.remove(this);
+            this.layer = layer;
+            manager.add(this);
+            manager.setLayerAsDirty(layer);
+        }
+    } else {
+        this.layer = isNumber(layer) ? (layer < 0 ? 0 : layer) : this.layer;
+    }
+
+    return this;
+};
+
+Sprite.prototype.setZ = function(z) {
+    var manager = this.manager;
+
+    if (manager) {
+        z = isNumber(z) ? z : this.z;
+
+        if (z !== this.z) {
+            this.z = z;
+            manager.setLayerAsDirty(this.layer);
+        }
+    } else {
+        this.z = isNumber(z) ? z : this.z;
     }
 
     return this;

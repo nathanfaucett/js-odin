@@ -23,9 +23,9 @@ function Bone() {
     this.bindPose = mat4.create();
     this.uniform = mat4.create();
 
-    this.inheritPosition = null;
-    this.inheritRotation = null;
-    this.inheritScale = null;
+    this.inheritPosition = true;
+    this.inheritRotation = true;
+    this.inheritScale = true;
 }
 Component.extend(Bone, "Bone", BoneManager);
 
@@ -63,9 +63,9 @@ Bone.prototype.destructor = function() {
     mat4.identity(this.bindPose);
     mat4.identity(this.uniform);
 
-    this.inheritPosition = null;
-    this.inheritRotation = null;
-    this.inheritScale = null;
+    this.inheritPosition = true;
+    this.inheritRotation = true;
+    this.inheritScale = true;
 
     return this;
 };
@@ -95,9 +95,6 @@ Bone.prototype.update = function() {
 
     if (parent && this.parentIndex !== -1) {
         mat = MAT;
-        position = POSITION;
-        scale = SCALE;
-        rotation = ROTATION;
         mat4.copy(mat, parent.components.Bone.uniform);
 
         inheritPosition = this.inheritPosition;
@@ -105,6 +102,11 @@ Bone.prototype.update = function() {
         inheritRotation = this.inheritRotation;
 
         if (!inheritPosition || !inheritScale || !inheritRotation) {
+
+            position = POSITION;
+            scale = SCALE;
+            rotation = ROTATION;
+
             mat4.decompose(mat, position, scale, rotation);
 
             if (!inheritPosition) {

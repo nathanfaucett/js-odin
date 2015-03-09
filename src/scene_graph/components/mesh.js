@@ -47,29 +47,27 @@ Mesh.prototype.awake = function() {
     var geoBones = this.geometry.bones,
         i = -1,
         il = geoBones.length - 1,
-        sceneObject, bones, geoBone, bone, transform, subSceneObject, parent;
+        sceneObject, bones, geoBone, bone, transform, childSceneObject, parent;
 
     ComponentPrototype.awake.call(this);
 
-    if (il === -1) {
-        return this;
-    }
+    if (il !== -1) {
+        sceneObject = this.sceneObject;
+        bones = this.bones;
 
-    sceneObject = this.sceneObject;
-    bones = this.bones;
+        while (i++ < il) {
+            geoBone = geoBones[i];
+            bone = Bone.create(geoBone);
+            transform = Transform.create()
+                .setPosition(geoBone.position)
+                .setScale(geoBone.scale)
+                .setRotation(geoBone.rotation);
 
-    while (i++ < il) {
-        geoBone = geoBones[i];
-        bone = Bone.create(geoBone);
-        transform = Transform.create()
-            .setPosition(geoBone.position)
-            .setScale(geoBone.scale)
-            .setRotation(geoBone.rotation);
-
-        subSceneObject = SceneObject.create().addComponent(bone, transform);
-        bones[bones.length] = subSceneObject;
-        parent = bones[bone.parentIndex] || sceneObject;
-        parent.add(subSceneObject);
+            childSceneObject = SceneObject.create().addComponent(transform, bone);
+            bones[bones.length] = childSceneObject;
+            parent = bones[bone.parentIndex] || sceneObject;
+            parent.add(childSceneObject);
+        }
     }
 
     return this;
