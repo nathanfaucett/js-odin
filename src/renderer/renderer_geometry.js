@@ -19,7 +19,8 @@ function RendererGeometry() {
     this.glIndexBuffer = null;
     this.glIndexLineBuffer = null;
 
-    this.needsCompile = null;
+    this.needsVertexCompile = null;
+    this.needsIndexCompile = null;
     this.needsLineCompile = null;
 }
 
@@ -50,9 +51,9 @@ RendererGeometry.prototype.destructor = function() {
     this.glIndexBuffer = null;
     this.glIndexLineBuffer = null;
 
-    this.needsVertexCompile = null;
-    this.needsIndexCompile = null;
-    this.needsLineCompile = null;
+    this.needsVertexCompile = false;
+    this.needsIndexCompile = false;
+    this.needsLineCompile = false;
 
     return this;
 };

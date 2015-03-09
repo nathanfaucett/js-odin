@@ -28,15 +28,13 @@ function Shader() {
 }
 Class.extend(Shader, "Shader");
 
-Shader.prototype.construct = function(vertex, fragment, options) {
+Shader.prototype.construct = function(vertex, fragment) {
 
     ClassPrototype.construct.call(this);
 
-    options = options || {};
-
-    this.templateVariables.length = 0;
-    this.vertex = Shader_compile(this, vertex);
-    this.fragment = Shader_compile(this, fragment);
+    if (vertex && fragment) {
+        this.set(vertex, fragment);
+    }
 
     return this;
 };
@@ -48,6 +46,15 @@ Shader.prototype.destructor = function() {
     this.vertex = null;
     this.fragment = null;
     this.templateVariables.length = 0;
+
+    return this;
+};
+
+Shader.prototype.set = function(vertex, fragment) {
+
+    this.templateVariables.length = 0;
+    this.vertex = Shader_compile(this, vertex);
+    this.fragment = Shader_compile(this, fragment);
 
     return this;
 };

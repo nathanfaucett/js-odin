@@ -25,9 +25,6 @@ eventListener.on(environment.window, "load", function() {
 
     var shader = odin.Shader.create(
         [
-            "uniform mat4 perspectiveMatrix;",
-            "uniform mat4 modelViewMatrix;",
-
             "varying vec2 vUv;",
             "varying vec3 vNormal;",
 
@@ -51,16 +48,7 @@ eventListener.on(environment.window, "load", function() {
     );
 
     var material = odin.Material.create("mat_box", null, {
-        vertex: shader.vertex({
-            boneWeightCount: 2,
-            boneCount: 5,
-            useBones: true
-        }),
-        fragment: shader.fragment({
-            boneWeightCount: 2,
-            boneCount: 5,
-            useBones: true
-        }),
+        shader: shader,
         uniforms: {
             texture: texture
         }

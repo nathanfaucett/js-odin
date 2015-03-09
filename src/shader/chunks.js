@@ -3,6 +3,17 @@ var ShaderChunk = require("./shader_chunk");
 
 var chunks = exports;
 
+chunks.perspectiveMatrix = ShaderChunk.create({
+    code: "uniform mat4 perspectiveMatrix;\n"
+});
+
+chunks.modelViewMatrix = ShaderChunk.create({
+    code: "uniform mat4 modelViewMatrix;\n"
+});
+
+chunks.normalMatrix = ShaderChunk.create({
+    code: "uniform mat3 normalMatrix;\n"
+});
 
 chunks.position = ShaderChunk.create({
     code: "attribute vec3 position;\n"

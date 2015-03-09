@@ -27,6 +27,7 @@ function Renderer() {
 
     this.__geometries = {};
     this.__materials = {};
+    this.__shaders = {};
 }
 Class.extend(Renderer, "Renderer");
 

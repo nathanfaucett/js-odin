@@ -24,17 +24,15 @@ MeshRenderer.prototype.render = function(mesh, camera) {
         meshMaterial = mesh.material,
         meshGeometry = mesh.geometry,
 
-        material = renderer.material(meshMaterial),
         geometry = renderer.geometry(meshGeometry),
-
-        program = material.getProgram(),
+        program = renderer.material(meshMaterial).getProgramFor(meshGeometry),
 
         indexBuffer;
 
     transform.calculateModelView(camera.view, modelView);
     transform.calculateNormalMatrix(modelView, normalMatrix);
 
-    context.setProgram(material.program);
+    context.setProgram(program);
     renderer.bindUniforms(camera.projection, modelView, normalMatrix, meshMaterial.uniforms, mesh.bones, program.uniforms);
     renderer.bindAttributes(geometry.buffers.__hash, geometry.getVertexBuffer(), program.attributes);
 
