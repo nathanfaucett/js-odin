@@ -11,14 +11,6 @@ function MeshRenderer() {
 }
 ComponentRenderer.extend(MeshRenderer, "MeshRenderer", "Mesh");
 
-MeshRenderer.prototype.beforeRender = function() {
-    return this;
-};
-
-MeshRenderer.prototype.afterRender = function() {
-    return this;
-};
-
 var modelView = mat4.create(),
     normalMatrix = mat3.create();
 

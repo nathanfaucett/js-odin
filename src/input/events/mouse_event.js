@@ -35,11 +35,11 @@ MouseEvent.prototype.destructor = function() {
 };
 
 function getMouseX(e, target) {
-    return event.clientX - ((target.offsetLeft || 0) - (window.pageXOffset || 0));
+    return e.clientX - ((target.offsetLeft || 0) - (window.pageXOffset || 0));
 }
 
 function getMouseY(e, target) {
-    return event.clientY - ((target.offsetTop || 0) - (window.pageYOffset || 0));
+    return e.clientY - ((target.offsetTop || 0) - (window.pageYOffset || 0));
 }
 
 function getButton(e) {
