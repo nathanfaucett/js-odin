@@ -2,8 +2,6 @@ var indexOf = require("index_of"),
     Class = require("../class"),
     WebGLContext = require("webgl_context"),
 
-    vec3 = require("vec3"),
-    quat = require("quat"),
     mat4 = require("mat4"),
 
     MeshRenderer = require("./mesh_renderer"),
@@ -93,59 +91,46 @@ Renderer.prototype.material = function(material) {
     return materials[material.__id] || (materials[material.__id] = RendererMaterial.create(this.context, material));
 };
 
-var bindUniforms_mat = mat4.create(),
-    bindUniforms_position = vec3.create(),
-    bindUniforms_scale = vec3.create(),
-    bindUniforms_rotation = quat.create();
+var bindUniforms_mat = mat4.create();
 
 function bindBones(bones, length, glHash) {
-    var bonePosition = glHash.bonePosition,
-        boneScale = glHash.boneScale,
-        boneRotation = glHash.boneRotation,
-        bonePositionValue, boneScaleValue, boneRotationValue, mat,
-        position, scale, rotation, i, il, index3, index4, bone;
+    var boneMatrix = glHash.boneMatrix,
+        boneMatrixValue, mat, i, il, index, bone;
 
+    if (boneMatrix) {
+        boneMatrixValue = boneMatrix.value;
 
-    if (bonePosition && boneScale && boneRotation) {
-        bonePositionValue = bonePosition.value;
-        boneScaleValue = boneScale.value;
-        boneRotationValue = boneRotation.value,
-
-            mat = bindUniforms_mat;
-        position = bindUniforms_position;
-        scale = bindUniforms_scale;
-        rotation = bindUniforms_rotation;
+        mat = bindUniforms_mat;
 
         i = -1;
         il = length - 1;
-        index3 = 0;
-        index4 = 0;
+        index = 0;
 
         while (i++ < il) {
             bone = bones[i].components.Bone;
             mat4.mul(mat, bone.uniform, bone.bindPose);
-            mat4.decompose(mat, position, scale, rotation);
 
-            bonePositionValue[index3] = position[0];
-            bonePositionValue[index3 + 1] = position[1];
-            bonePositionValue[index3 + 2] = position[2];
+            boneMatrixValue[index] = mat[0];
+            boneMatrixValue[index + 1] = mat[1];
+            boneMatrixValue[index + 2] = mat[2];
+            boneMatrixValue[index + 3] = mat[3];
+            boneMatrixValue[index + 4] = mat[4];
+            boneMatrixValue[index + 5] = mat[5];
+            boneMatrixValue[index + 6] = mat[6];
+            boneMatrixValue[index + 7] = mat[7];
+            boneMatrixValue[index + 8] = mat[8];
+            boneMatrixValue[index + 9] = mat[9];
+            boneMatrixValue[index + 10] = mat[10];
+            boneMatrixValue[index + 11] = mat[11];
+            boneMatrixValue[index + 12] = mat[12];
+            boneMatrixValue[index + 13] = mat[13];
+            boneMatrixValue[index + 14] = mat[14];
+            boneMatrixValue[index + 15] = mat[15];
 
-            boneScaleValue[index3] = scale[0];
-            boneScaleValue[index3 + 1] = scale[1];
-            boneScaleValue[index3 + 2] = scale[2];
-
-            boneRotationValue[index4] = rotation[0];
-            boneRotationValue[index4 + 1] = rotation[1];
-            boneRotationValue[index4 + 2] = rotation[2];
-            boneRotationValue[index4 + 3] = rotation[3];
-
-            index3 += 3;
-            index4 += 4;
+            index += 16;
         }
 
-        bonePosition.set(bonePositionValue);
-        boneScale.set(boneScaleValue);
-        boneRotation.set(boneRotationValue);
+        boneMatrix.set(boneMatrixValue);
     }
 }
 

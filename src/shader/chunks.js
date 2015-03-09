@@ -52,30 +52,10 @@ chunks.normalMatrix = ShaderChunk.create({
     code: "uniform mat3 normalMatrix;\n"
 });
 
-chunks.bonePosition = ShaderChunk.create({
+chunks.boneMatrix = ShaderChunk.create({
     code: [
         "<% if (useBones) { %>",
-        "uniform vec3 bonePosition[<%= boneCount %>];",
-        "<% } %>",
-        ""
-    ].join("\n"),
-    template: ["useBones", "boneCount"]
-});
-
-chunks.boneScale = ShaderChunk.create({
-    code: [
-        "<% if (useBones) { %>",
-        "uniform vec3 boneScale[<%= boneCount %>];",
-        "<% } %>",
-        ""
-    ].join("\n"),
-    template: ["useBones", "boneCount"]
-});
-
-chunks.boneRotation = ShaderChunk.create({
-    code: [
-        "<% if (useBones) { %>",
-        "uniform vec4 boneRotation[<%= boneCount %>];",
+        "uniform mat4 boneMatrix[<%= boneCount %>];",
         "<% } %>",
         ""
     ].join("\n"),
@@ -145,47 +125,6 @@ chunks.perturbNormal2Arb = ShaderChunk.create({
     extensions: ["OES_standard_derivatives"]
 });
 
-chunks.composeMat4 = ShaderChunk.create({
-    code: [
-        "<% if (useBones) { %>",
-        "mat4 composeMat4(inout mat4 mat, vec3 position, vec3 scale, vec4 rotation) {",
-        "    float x = rotation.x, y = rotation.y, z = rotation.z, w = rotation.w,",
-
-        "        x2 = x + x, y2 = y + y, z2 = z + z,",
-        "        xx = x * x2, xy = x * y2, xz = x * z2,",
-        "        yy = y * y2, yz = y * z2, zz = z * z2,",
-        "        wx = w * x2, wy = w * y2, wz = w * z2,",
-
-        "        sx = scale.x, sy = scale.y, sz = scale.z;",
-
-        "    mat[0][0] = (1.0 - (yy + zz)) * sx;",
-        "    mat[1][0] = (xy - wz) * sy;",
-        "    mat[2][0] = (xz + wy) * sz;",
-
-        "    mat[0][1] = (xy + wz) * sx;",
-        "    mat[1][1] = (1.0 - (xx + zz)) * sy;",
-        "    mat[2][1] = (yz - wx) * sz;",
-
-        "    mat[0][2] = (xz - wy) * sx;",
-        "    mat[1][2] = (yz + wx) * sy;",
-        "    mat[2][2] = (1.0 - (xx + yy)) * sz;",
-
-        "    mat[0][3] = 0.0;",
-        "    mat[1][3] = 0.0;",
-        "    mat[2][3] = 0.0;",
-        "    mat[3][3] = 1.0;",
-
-        "    mat[3][0] = position.x;",
-        "    mat[3][1] = position.y;",
-        "    mat[3][2] = position.z;",
-
-        "    return mat;",
-        "}",
-        "<% } %>",
-        ""
-    ].join("\n")
-});
-
 chunks.getBoneMatrix = ShaderChunk.create({
     code: [
         "<% if (useBones) { %>",
@@ -194,18 +133,17 @@ chunks.getBoneMatrix = ShaderChunk.create({
         "mat4 getBoneMatrix() {",
         "    if (getBoneMatrix_bool == false) {",
         "        getBoneMatrix_bool = true;",
-        "        mat4 tmp;",
         "        int index = int(boneIndex.x);",
-        "        getBoneMatrix_result = boneWeight.x * composeMat4(tmp, bonePosition[index], boneScale[index], boneRotation[index]);",
+        "        getBoneMatrix_result = boneWeight.x * boneMatrix[index];",
         "        index = int(boneIndex.y);",
-        "        getBoneMatrix_result = getBoneMatrix_result + boneWeight.y * composeMat4(tmp, bonePosition[index], boneScale[index], boneRotation[index]);",
+        "        getBoneMatrix_result = getBoneMatrix_result + boneWeight.y * boneMatrix[index];",
         "        <% if (boneWeightCount > 2) { %>",
         "        index = int(boneIndex.z);",
-        "        getBoneMatrix_result = getBoneMatrix_result + boneWeight.z * composeMat4(tmp, bonePosition[index], boneScale[index], boneRotation[index]);",
+        "        getBoneMatrix_result = getBoneMatrix_result + boneWeight.z * boneMatrix[index];",
         "        <% } %>",
         "        <% if (boneWeightCount > 3) { %>",
         "        index = int(boneIndex.w);",
-        "        getBoneMatrix_result = getBoneMatrix_result + boneWeight.w * composeMat4(tmp, bonePosition[index], boneScale[index], boneRotation[index]);",
+        "        getBoneMatrix_result = getBoneMatrix_result + boneWeight.w * boneMatrix[index];",
         "        <% } %>",
         "    }",
         "    return getBoneMatrix_result;",
@@ -214,7 +152,7 @@ chunks.getBoneMatrix = ShaderChunk.create({
         ""
     ].join("\n"),
     template: ["useBones", "boneWeightCount"],
-    requires: ["composeMat4", "boneWeight", "boneIndex", "bonePosition", "boneScale", "boneRotation"]
+    requires: ["boneWeight", "boneIndex", "boneMatrix"]
 });
 
 chunks.getBonePosition = ShaderChunk.create({

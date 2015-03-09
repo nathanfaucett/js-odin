@@ -218,7 +218,7 @@ MeshAnimation.prototype.update = function() {
 };
 
 MeshAnimation.prototype.play = function(name, mode, rate) {
-    if ((this.playing && this.current === name) || !this.animations[name]) {
+    if ((this.playing && this.current === name) || !this.animations.data[name]) {
         return this;
     }
 
