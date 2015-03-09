@@ -61,12 +61,8 @@ Touch.prototype.update = function(e) {
         delta = this.delta,
         first = this.__first,
 
-        target = e.target,
-        offsetX = target.offsetLeft,
-        offsetY = target.offsetTop,
-
-        x = e.pageX - offsetX,
-        y = e.pageY - offsetY,
+        x = e.x,
+        y = e.y,
 
         lastX = first ? position[0] : x,
         lastY = first ? position[1] : y;

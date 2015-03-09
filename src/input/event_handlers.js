@@ -1,5 +1,4 @@
-var mathf = require("mathf"),
-    keyCodes = require("./key_codes");
+var mathf = require("mathf");
 
 
 var eventHandlers = exports,
@@ -11,14 +10,14 @@ var eventHandlers = exports,
 
 
 eventHandlers.keyup = function(input, e, time, frame) {
-    var key = keyCodes[e.keyCode],
+    var key = e.key,
         button = input.buttons.off(key, time, frame);
 
     input.emit("keyup", e, button);
 };
 
 eventHandlers.keydown = function(input, e, time, frame) {
-    var key = keyCodes[e.keyCode],
+    var key = e.key,
         button = input.buttons.on(key, time, frame);
 
     input.emit("keydown", e, button);
@@ -26,7 +25,7 @@ eventHandlers.keydown = function(input, e, time, frame) {
 
 
 eventHandlers.mousemove = function(input, e) {
-    input.mouse.update(e);
+    input.mouse.update(e.x, e.y);
     input.emit("mousemove", e, input.mouse);
 };
 
@@ -44,7 +43,7 @@ eventHandlers.mouseup = function(input, e, time, frame) {
 
 eventHandlers.mouseout = function(input, e, time, frame) {
 
-    input.mouse.update(e);
+    input.mouse.update(e.x, e.y);
     input.buttons.allOff(time, frame);
 
     input.emit("mouseout", e, input.mouse);
@@ -82,7 +81,7 @@ eventHandlers.touchend = function(input, e) {
 
 eventHandlers.touchcancel = function(input, e) {
     input.touches.allOff();
-    input.emit("touchcancel", e, touches);
+    input.emit("touchcancel", e);
 };
 
 eventHandlers.touchmove = function(input, e) {
@@ -95,7 +94,6 @@ eventHandlers.touchmove = function(input, e) {
         input.emit("touchmove", e, touches.__move(i, changedTouches[i]), touches);
     }
 };
-
 
 eventHandlers.devicemotion = function(input, e) {
     var acc = e.accelerationIncludingGravity,

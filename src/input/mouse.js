@@ -33,17 +33,10 @@ Mouse.prototype.destructor = function() {
     return this;
 };
 
-Mouse.prototype.update = function(e) {
+Mouse.prototype.update = function(x, y) {
     var first = this.__first,
         position = this.position,
         delta = this.delta,
-
-        target = e.target,
-        offsetX = target.offsetLeft || 0,
-        offsetY = target.offsetTop || 0,
-
-        x = e.pageX - offsetX,
-        y = e.pageY - offsetY,
 
         lastX = first ? position[0] : x,
         lastY = first ? position[1] : y;

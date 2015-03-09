@@ -165,20 +165,17 @@ Input.prototype.update = function(time, frame) {
     var stack = this.__stack,
         i = -1,
         il = stack.length - 1,
-        event, constructor, lastTime;
+        event, lastTime;
 
     this.__frame = frame;
     this.mouse.wheel = 0;
 
     while (i++ < il) {
         event = stack[i];
-        event.isPersistent = false;
-        constructor = event.constructor;
-
         eventHandlers[event.type](this, event, time, frame);
 
-        if (constructor.destroy && event.isPersistent !== true) {
-            constructor.destroy(event);
+        if (event.destroy) {
+            event.destroy();
         }
     }
 
