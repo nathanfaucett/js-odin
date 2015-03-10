@@ -56,6 +56,7 @@
     "uuid": "nathanfaucett/uuid",
     "vec2": "nathanfaucett/vec2",
     "vec3": "nathanfaucett/vec3",
+    "vec4": "git://github.com/nathanfaucett/vec4",
     "webgl_context": "nathanfaucett/webgl_context"
   }
 }

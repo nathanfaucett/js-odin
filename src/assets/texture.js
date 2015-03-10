@@ -47,7 +47,7 @@ Texture.prototype.construct = function(name, src, options) {
     options = options || {};
 
     this.generateMipmap = options.generateMipmap != null ? !!options.generateMipmap : true;
-    this.flipY = options.flipY != null ? !!options.flipY : true;
+    this.flipY = options.flipY != null ? !!options.flipY : false;
     this.premultiplyAlpha = options.premultiplyAlpha != null ? !!options.premultiplyAlpha : false;
 
     this.anisotropy = options.anisotropy != null ? options.anisotropy : 1;

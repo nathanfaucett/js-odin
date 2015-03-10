@@ -12,8 +12,11 @@ chunks.modelViewMatrix = ShaderChunk.create({
 });
 
 chunks.normalMatrix = ShaderChunk.create({
-    code: "uniform mat3 normalMatrix;\n",
-    fragment: false
+    code: "uniform mat3 normalMatrix;\n"
+});
+
+chunks.size = ShaderChunk.create({
+    code: "uniform vec2 size;\n"
 });
 
 chunks.position = ShaderChunk.create({
@@ -195,6 +198,8 @@ chunks.getPosition = ShaderChunk.create({
         "        getPosition_bool = true;",
         "        <% if (useBones) { %>",
         "        getPosition_result = getBonePosition();",
+        "        <% } else if (isSprite) { %>",
+        "        getPosition_result = vec4(position.x * size.x, position.y * size.y, position.z, 1.0);",
         "        <% } else { %>",
         "        getPosition_result = vec4(position, 1.0);",
         "        <% } %>",
@@ -203,8 +208,8 @@ chunks.getPosition = ShaderChunk.create({
         "}",
         ""
     ].join("\n"),
-    template: ["useBones"],
-    requires: ["getBonePosition", "position"],
+    template: ["useBones", "isSprite"],
+    requires: ["size", "getBonePosition", "position"],
     fragment: false
 });
 

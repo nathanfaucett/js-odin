@@ -140,6 +140,7 @@ function RendererMaterial_getOptions(data) {
     options.boneCount = data.bones ? data.bones.length : 0;
     options.boneWeightCount = data.boneWeightCount || 0;
     options.useBones = options.boneCount !== 0;
+    options.isSprite = data.x != null && data.y != null && data.width != null && data.height != null;
 
     return options;
 }

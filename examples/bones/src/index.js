@@ -57,16 +57,9 @@ eventListener.on(environment.window, "load", function() {
     assets.add(geometry, animation, material, texture);
 
     var camera = odin.SceneObject.create("main_camera").addComponent(
-        odin.Transform.create().setPosition([5, 5, 5]),
+        odin.Transform.create().setPosition([-5, -5, 5]),
         odin.Camera.create().setActive(),
         odin.OrbitControl.create()
-    );
-
-    var sprite = global.object = odin.SceneObject.create().addComponent(
-        odin.Transform.create(),
-        odin.Sprite.create({
-            material: material
-        })
     );
 
     var object = global.object = odin.SceneObject.create().addComponent(
@@ -77,7 +70,7 @@ eventListener.on(environment.window, "load", function() {
         })
     );
 
-    var scene = global.scene = odin.Scene.create("scene").add(camera, sprite, object),
+    var scene = global.scene = odin.Scene.create("scene").add(camera, object),
         cameraComponent = camera.getComponent("Camera");
 
     canvas.on("resize", function(w, h) {

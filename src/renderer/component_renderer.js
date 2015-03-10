@@ -35,11 +35,14 @@ function ComponentRenderer() {
     };
 }
 
-ComponentRenderer.onExtend = function(child, className, componentName) {
+ComponentRenderer.onExtend = function(child, className, componentName, order) {
     child.componentName = child.prototype.componentName = componentName;
+    child.order = child.prototype.order = order || 0;
 };
 
 Class.extend(ComponentRenderer);
+
+ComponentRenderer.order = ComponentRenderer.prototype.order = 0;
 
 ComponentRenderer.prototype.construct = function(renderer) {
     this.renderer = renderer;

@@ -14,5 +14,12 @@ gulp.task("comn_bones", function() {
         out: "examples/bones/index.min.js"
     });
 });
-
 gulp.task("bones", require("./tasks/watch")("bones", ["comn_bones"]));
+
+gulp.task("comn_sprites", function() {
+    comn({
+        index: "examples/sprites/src/index.js",
+        out: "examples/sprites/index.min.js"
+    });
+});
+gulp.task("sprites", require("./tasks/watch")("sprites", ["comn_sprites"]));

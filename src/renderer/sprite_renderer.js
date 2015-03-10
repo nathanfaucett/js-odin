@@ -1,10 +1,15 @@
 var mat3 = require("mat3"),
     mat4 = require("mat4"),
+    vec2 = require("vec2"),
+    vec4 = require("vec4"),
+    enums = require("webgl_context/enums"),
     Geometry = require("../assets/geometry"),
     ComponentRenderer = require("./component_renderer");
 
 
-var NativeUint16Array = typeof(Uint16Array) !== "undefined" ? Uint16Array : Array,
+var Depth = enums.Depth,
+
+    NativeUint16Array = typeof(Uint16Array) !== "undefined" ? Uint16Array : Array,
     NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
 
 
@@ -46,14 +51,29 @@ function SpriteRenderer() {
 
     this.geometry = geometry;
     this.spriteGeometry = null;
+
+    this.__previous = null;
 }
-ComponentRenderer.extend(SpriteRenderer, "SpriteRenderer", "Sprite");
+ComponentRenderer.extend(SpriteRenderer, "SpriteRenderer", "Sprite", 0);
 
 SpriteRenderer.prototype.init = function() {
     this.spriteGeometry = this.renderer.geometry(this.geometry);
 };
 
-var modelView = mat4.create(),
+SpriteRenderer.prototype.beforeRender = function() {
+    var context = this.renderer.context;
+
+    this.__previous = context.__depthFunc;
+    context.setDepthFunc(Depth.none);
+};
+
+SpriteRenderer.prototype.afterRender = function() {
+    this.renderer.context.setDepthFunc(this.__previous);
+};
+
+var size = vec2.create(1, 1),
+    clipping = vec4.create(0, 0, 1, 1),
+    modelView = mat4.create(),
     normalMatrix = mat3.create();
 
 SpriteRenderer.prototype.render = function(sprite, camera) {
@@ -67,7 +87,10 @@ SpriteRenderer.prototype.render = function(sprite, camera) {
         spriteGeometry = this.geometry,
 
         geometry = renderer.geometry(spriteGeometry),
-        program = renderer.material(spriteMaterial).getProgramFor(spriteGeometry),
+        program = renderer.material(spriteMaterial).getProgramFor(sprite),
+
+        glUniforms = program.uniforms,
+        glUniformHash = glUniforms.__hash,
 
         indexBuffer;
 
@@ -75,7 +98,16 @@ SpriteRenderer.prototype.render = function(sprite, camera) {
     transform.calculateNormalMatrix(modelView, normalMatrix);
 
     context.setProgram(program);
-    renderer.bindUniforms(camera.projection, modelView, normalMatrix, spriteMaterial.uniforms, null, program.uniforms);
+
+    vec2.set(size, sprite.width, sprite.height);
+    glUniformHash.size.set(size);
+
+    if (glUniformHash.clipping) {
+        vec4.set(clipping, sprite.x, sprite.y, sprite.w, sprite.h);
+        glUniformHash.clipping.set(clipping);
+    }
+
+    renderer.bindUniforms(camera.projection, modelView, normalMatrix, spriteMaterial.uniforms, glUniforms);
     renderer.bindAttributes(geometry.buffers.__hash, geometry.getVertexBuffer(), program.attributes);
 
     if (spriteMaterial.wireframe !== true) {

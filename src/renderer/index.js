@@ -46,8 +46,9 @@ Renderer.prototype.construct = function() {
 
     ClassPrototype.construct.call(this);
 
-    this.addRenderer(MeshRenderer.create(this));
-    this.addRenderer(SpriteRenderer.create(this));
+    this.addRenderer(MeshRenderer.create(this), false, false);
+    this.addRenderer(SpriteRenderer.create(this), false, false);
+    this.sortRenderers();
 
     return this;
 };
@@ -87,7 +88,7 @@ Renderer.prototype.__onContextDestroy = function() {
     return this;
 };
 
-Renderer.prototype.addRenderer = function(renderer, override) {
+Renderer.prototype.addRenderer = function(renderer, override, sort) {
     var renderers = this.__rendererArray,
         rendererHash = this.renderers,
         index = rendererHash[renderer.componentName];
@@ -96,6 +97,10 @@ Renderer.prototype.addRenderer = function(renderer, override) {
         throw new Error("Renderer.addRenderer(renderer, [, override]) pass override=true to override renderers");
     }
     renderers[renderers.length] = rendererHash[renderer.componentName] = renderer;
+
+    if (sort !== false) {
+        this.sortRenderers();
+    }
 
     return this;
 };
@@ -112,6 +117,15 @@ Renderer.prototype.removeRenderer = function(componentName) {
 
     return this;
 };
+
+Renderer.prototype.sortRenderers = function() {
+    this.__rendererArray.sort(sortRenderers);
+    return this;
+};
+
+function sortRenderers(a, b) {
+    return a.order - b.order;
+}
 
 Renderer.prototype.setCanvas = function(canvas, attributes) {
     var context = this.context;
@@ -145,8 +159,8 @@ Renderer.prototype.material = function(material) {
 
 var bindUniforms_mat = mat4.create();
 
-function bindBones(bones, length, glHash) {
-    var boneMatrix = glHash.boneMatrix,
+Renderer.prototype.bindBoneUniforms = function(bones, glUniforms) {
+    var boneMatrix = glUniforms.__hash.boneMatrix,
         boneMatrixValue, mat, i, il, index, bone;
 
     if (boneMatrix) {
@@ -155,7 +169,7 @@ function bindBones(bones, length, glHash) {
         mat = bindUniforms_mat;
 
         i = -1;
-        il = length - 1;
+        il = bones.length - 1;
         index = 0;
 
         while (i++ < il) {
@@ -184,12 +198,12 @@ function bindBones(bones, length, glHash) {
 
         boneMatrix.set(boneMatrixValue);
     }
-}
+};
 
-Renderer.prototype.bindUniforms = function(projection, modelView, normalMatrix, uniforms, bones, glUniforms) {
+Renderer.prototype.bindUniforms = function(projection, modelView, normalMatrix, uniforms, glUniforms) {
     var glHash = glUniforms.__hash,
         glArray = glUniforms.__array,
-        glUniform, uniform, length, i, il;
+        glUniform, uniform, i, il;
 
     if (glHash.modelViewMatrix) {
         glHash.modelViewMatrix.set(modelView);
@@ -199,10 +213,6 @@ Renderer.prototype.bindUniforms = function(projection, modelView, normalMatrix, 
     }
     if (glHash.normalMatrix) {
         glHash.normalMatrix.set(normalMatrix);
-    }
-
-    if (bones && (length = bones.length) !== 0) {
-        bindBones(bones, length, glHash);
     }
 
     i = -1;
