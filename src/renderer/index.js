@@ -5,6 +5,7 @@ var indexOf = require("index_of"),
     mat4 = require("mat4"),
 
     MeshRenderer = require("./mesh_renderer"),
+    SpriteRenderer = require("./sprite_renderer"),
 
     RendererGeometry = require("./renderer_geometry"),
     RendererMaterial = require("./renderer_material");
@@ -17,6 +18,7 @@ module.exports = Renderer;
 
 
 function Renderer() {
+    var _this = this;
 
     Class.call(this);
 
@@ -27,7 +29,16 @@ function Renderer() {
 
     this.__geometries = {};
     this.__materials = {};
-    this.__shaders = {};
+
+    this.__programHash = {};
+    this.__programs = [];
+
+    this.onContextCreation = function() {
+        _this.__onContextCreation();
+    };
+    this.onContextDestroy = function() {
+        _this.__onContextDestroy();
+    };
 }
 Class.extend(Renderer, "Renderer");
 
@@ -36,6 +47,7 @@ Renderer.prototype.construct = function() {
     ClassPrototype.construct.call(this);
 
     this.addRenderer(MeshRenderer.create(this));
+    this.addRenderer(SpriteRenderer.create(this));
 
     return this;
 };
@@ -47,6 +59,30 @@ Renderer.prototype.destructor = function() {
     this.context.clearGL();
     this.renderers = {};
     this.__rendererArray.length = 0;
+
+    return this;
+};
+
+Renderer.prototype.__onContextCreation = function() {
+    var renderers = this.__rendererArray,
+        i = -1,
+        il = renderers.length - 1;
+
+    while (i++ < il) {
+        renderers[i].init();
+    }
+
+    return this;
+};
+
+Renderer.prototype.__onContextDestroy = function() {
+    var renderers = this.__rendererArray,
+        i = -1,
+        il = renderers.length - 1;
+
+    while (i++ < il) {
+        renderers[i].clear();
+    }
 
     return this;
 };
@@ -78,7 +114,22 @@ Renderer.prototype.removeRenderer = function(componentName) {
 };
 
 Renderer.prototype.setCanvas = function(canvas, attributes) {
-    this.context.setCanvas(canvas, attributes);
+    var context = this.context;
+
+    if (canvas && context.canvas !== canvas) {
+        context.off("webglcontextcreation", this.onContextCreation);
+        context.off("webglcontextrestored", this.onContextCreation);
+        context.off("webglcontextcreationfailed", this.onContextDestroy);
+        context.off("webglcontextlost", this.onContextDestroy);
+    }
+
+    context.on("webglcontextcreation", this.onContextCreation);
+    context.on("webglcontextrestored", this.onContextCreation);
+    context.on("webglcontextcreationfailed", this.onContextDestroy);
+    context.on("webglcontextlost", this.onContextDestroy);
+
+    context.setCanvas(canvas, attributes);
+
     return this;
 };
 
@@ -89,7 +140,7 @@ Renderer.prototype.geometry = function(geometry) {
 
 Renderer.prototype.material = function(material) {
     var materials = this.__materials;
-    return materials[material.__id] || (materials[material.__id] = RendererMaterial.create(this.context, material));
+    return materials[material.__id] || (materials[material.__id] = RendererMaterial.create(this, this.context, material));
 };
 
 var bindUniforms_mat = mat4.create();

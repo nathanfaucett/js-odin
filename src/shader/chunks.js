@@ -12,31 +12,38 @@ chunks.modelViewMatrix = ShaderChunk.create({
 });
 
 chunks.normalMatrix = ShaderChunk.create({
-    code: "uniform mat3 normalMatrix;\n"
+    code: "uniform mat3 normalMatrix;\n",
+    fragment: false
 });
 
 chunks.position = ShaderChunk.create({
-    code: "attribute vec3 position;\n"
+    code: "attribute vec3 position;\n",
+    fragment: false
 });
 
 chunks.normal = ShaderChunk.create({
-    code: "attribute vec3 normal;\n"
+    code: "attribute vec3 normal;\n",
+    fragment: false
 });
 
 chunks.tangent = ShaderChunk.create({
-    code: "attribute vec4 tangent;\n"
+    code: "attribute vec4 tangent;\n",
+    fragment: false
 });
 
 chunks.color = ShaderChunk.create({
-    code: "attribute vec3 color;\n"
+    code: "attribute vec3 color;\n",
+    fragment: false
 });
 
 chunks.uv = ShaderChunk.create({
-    code: "attribute vec2 uv;\n"
+    code: "attribute vec2 uv;\n",
+    fragment: false
 });
 
 chunks.uv2 = ShaderChunk.create({
-    code: "attribute vec2 uv2;\n"
+    code: "attribute vec2 uv2;\n",
+    fragment: false
 });
 
 chunks.boneWeight = ShaderChunk.create({
@@ -46,7 +53,8 @@ chunks.boneWeight = ShaderChunk.create({
         "<% } %>",
         ""
     ].join("\n"),
-    template: ["useBones", "boneWeightCount"]
+    template: ["useBones", "boneWeightCount"],
+    fragment: false
 });
 
 chunks.boneIndex = ShaderChunk.create({
@@ -56,7 +64,8 @@ chunks.boneIndex = ShaderChunk.create({
         "<% } %>",
         ""
     ].join("\n"),
-    template: ["useBones", "boneWeightCount"]
+    template: ["useBones", "boneWeightCount"],
+    fragment: false
 });
 
 chunks.normalMatrix = ShaderChunk.create({
@@ -159,7 +168,8 @@ chunks.getBoneMatrix = ShaderChunk.create({
         ""
     ].join("\n"),
     template: ["useBones", "boneWeightCount"],
-    requires: ["boneWeight", "boneIndex", "boneMatrix"]
+    requires: ["boneWeight", "boneIndex", "boneMatrix"],
+    fragment: false
 });
 
 chunks.getBonePosition = ShaderChunk.create({
@@ -172,7 +182,8 @@ chunks.getBonePosition = ShaderChunk.create({
         ""
     ].join("\n"),
     template: ["useBones"],
-    requires: ["getBoneMatrix", "position"]
+    requires: ["getBoneMatrix", "position"],
+    fragment: false
 });
 
 chunks.getPosition = ShaderChunk.create({
@@ -193,7 +204,8 @@ chunks.getPosition = ShaderChunk.create({
         ""
     ].join("\n"),
     template: ["useBones"],
-    requires: ["getBonePosition", "position"]
+    requires: ["getBonePosition", "position"],
+    fragment: false
 });
 
 chunks.getBoneNormal = ShaderChunk.create({
@@ -205,7 +217,8 @@ chunks.getBoneNormal = ShaderChunk.create({
         "<% } %>",
         ""
     ].join("\n"),
-    requires: ["getBoneMatrix", "normal"]
+    requires: ["getBoneMatrix", "normal"],
+    fragment: false
 });
 
 chunks.getNormal = ShaderChunk.create({
@@ -226,5 +239,6 @@ chunks.getNormal = ShaderChunk.create({
         ""
     ].join("\n"),
     template: ["useBones"],
-    requires: ["getBoneNormal", "normalMatrix", "normal"]
+    requires: ["getBoneNormal", "normalMatrix", "normal"],
+    fragment: false
 });

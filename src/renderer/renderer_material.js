@@ -1,54 +1,62 @@
+var has = require("has");
+
+
 module.exports = RendererMaterial;
 
 
 function RendererMaterial() {
 
+    this.renderer = null;
     this.context = null;
     this.material = null;
 
-    this.programs = null;
+    this.programs = {};
 
     this.needsCompile = null;
 }
 
-RendererMaterial.create = function(context, material) {
-    return (new RendererMaterial()).construct(context, material);
+RendererMaterial.create = function(renderer, context, material) {
+    return (new RendererMaterial()).construct(renderer, context, material);
 };
 
-RendererMaterial.prototype.construct = function(context, material) {
+RendererMaterial.prototype.construct = function(renderer, context, material) {
 
+    this.renderer = renderer;
     this.context = context;
     this.material = material;
-
-    this.programs = {};
-
-    this.needsCompile = true;
-
-    console.log(this);
 
     return this;
 };
 
 RendererMaterial.prototype.destructor = function() {
+    var programs = this.programs,
+        id;
 
+    this.renderer = null;
     this.context = null;
     this.material = null;
 
-    this.programs = null;
+    for (id in programs) {
+        if (has(programs, id)) {
+            delete programs[id];
+        }
+    }
 
-    this.needsCompile = null;
+    this.programs = null;
 
     return this;
 };
 
 RendererMaterial.prototype.getProgramFor = function(data) {
-    var program = this.programs[data.__id];
+    var programData = this.renderer.__programHash[data.__id],
+        program;
 
-    if (program) {
-        if (this.needsCompile === false) {
+    if (programData) {
+        program = programData.program;
+
+        if (program.needsCompile === false) {
             return program;
         } else {
-            program.needsCompile = true;
             return RendererMaterial_compile(this, data);
         }
     } else {
@@ -56,21 +64,75 @@ RendererMaterial.prototype.getProgramFor = function(data) {
     }
 };
 
+function ProgramData() {
+    var _this = this;
+
+    this.used = 1;
+    this.program = null;
+    this.vertex = null;
+    this.fragment = null;
+
+    this.onUpdate = function() {
+        _this.program.needsUpdate = true;
+    };
+}
+
 function RendererMaterial_compile(_this, data) {
-    var program = _this.programs[data.__id] || (_this.programs[data.__id] = _this.context.createProgram()),
-        shader = _this.material.shader,
+    var id = data.__id,
 
-        options = RendererMaterial_getOptions(data),
+        renderer = _this.renderer,
 
-        vertex = shader.vertex(options),
+        programs = renderer.__programs,
+        programHash = renderer.__programHash,
+
+        programData = programHash[id],
+
+        i = -1,
+        il = programs.length - 1,
+        program, shader, options, vertex, fragment;
+
+    if (programData) {
+        if (_this.programs[id] !== programData) {
+            _this.programs[id] = programData;
+            programData.used += 1;
+            data.on("update", programData.onUpdate);
+        }
+        program = programData.program;
+    } else {
+        shader = _this.material.shader;
+        options = RendererMaterial_getOptions(data);
+
+        vertex = shader.vertex(options);
         fragment = shader.fragment(options);
 
-    program.compile(vertex, fragment);
-    _this.needsCompile = false;
+        while (i++ < il) {
+            program = programs[i];
+
+            if (program.vertex === vertex && program.fragment === fragment) {
+                programData = program;
+                break;
+            }
+        }
+
+        if (!programData) {
+            programData = new ProgramData();
+            program = programData.program = _this.context.createProgram();
+        } else {
+            programData.used += 1;
+            program = programData.program;
+        }
+
+        programData.vertex = vertex;
+        programData.fragment = fragment;
+
+        program.compile(vertex, fragment);
+
+        _this.programs[id] = programHash[id] = programs[programs.length] = programData;
+        data.on("update", programData.onUpdate);
+    }
 
     return program;
 }
-
 
 function RendererMaterial_getOptions(data) {
     var options = {};

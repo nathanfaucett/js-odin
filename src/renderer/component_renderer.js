@@ -65,6 +65,10 @@ ComponentRenderer.prototype.disable = function() {
     return this;
 };
 
+ComponentRenderer.prototype.init = function() {};
+
+ComponentRenderer.prototype.clear = function() {};
+
 ComponentRenderer.prototype.beforeRender = function( /* camera, scene, manager */ ) {};
 
 ComponentRenderer.prototype.afterRender = function( /* camera, scene, manager */ ) {};

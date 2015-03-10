@@ -35,6 +35,7 @@
     "fast_hash": "nathanfaucett/fast_hash",
     "focus_node": "nathanfaucett/focus_node",
     "get_active_element": "nathanfaucett/get_active_element",
+    "has": "git://github.com/nathanfaucett/has",
     "http_error": "nathanfaucett/http_error",
     "index_of": "nathanfaucett/index_of",
     "inherits": "nathanfaucett/inherits",

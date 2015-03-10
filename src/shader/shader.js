@@ -7,6 +7,10 @@ var map = require("map"),
 
 
 var ClassPrototype = Class.prototype,
+
+    VERTEX = "vertex",
+    FRAGMENT = "fragment",
+
     chunkRegExps = map(keys(chunks), function(key) {
         return {
             key: key,
@@ -53,13 +57,13 @@ Shader.prototype.destructor = function() {
 Shader.prototype.set = function(vertex, fragment) {
 
     this.templateVariables.length = 0;
-    this.vertex = Shader_compile(this, vertex);
-    this.fragment = Shader_compile(this, fragment);
+    this.vertex = Shader_compile(this, vertex, VERTEX);
+    this.fragment = Shader_compile(this, fragment, FRAGMENT);
 
     return this;
 };
 
-function Shader_compile(_this, shader) {
+function Shader_compile(_this, shader, type) {
     var templateVariables = _this.templateVariables,
         shaderChunks = [],
         out = "",
@@ -71,7 +75,7 @@ function Shader_compile(_this, shader) {
         chunkRegExp = chunkRegExps[i];
 
         if (chunkRegExp.regexp.test(shader)) {
-            requireChunk(shaderChunks, templateVariables, chunks[chunkRegExp.key]);
+            requireChunk(shaderChunks, templateVariables, chunks[chunkRegExp.key], type);
         }
     }
 
@@ -84,18 +88,25 @@ function Shader_compile(_this, shader) {
     return template(out + "\n" + shader);
 }
 
-function requireChunk(shaderChunks, templateVariables, chunk) {
-    var requires = chunk.requires,
-        i = -1,
+function requireChunk(shaderChunks, templateVariables, chunk, type) {
+    var requires, i, il;
+
+    if (
+        type === VERTEX && chunk.vertex ||
+        type === FRAGMENT && chunk.fragment
+    ) {
+        requires = chunk.requires;
+        i = -1;
         il = requires.length - 1;
 
-    while (i++ < il) {
-        requireChunk(shaderChunks, templateVariables, chunks[requires[i]]);
-    }
+        while (i++ < il) {
+            requireChunk(shaderChunks, templateVariables, chunks[requires[i]], type);
+        }
 
-    pushUnique(shaderChunks, chunk);
+        pushUnique(shaderChunks, chunk);
 
-    if (chunk.template) {
-        pushUnique.array(templateVariables, chunk.template);
+        if (chunk.template) {
+            pushUnique.array(templateVariables, chunk.template);
+        }
     }
 }
