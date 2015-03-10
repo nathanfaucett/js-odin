@@ -49,8 +49,6 @@ Mesh.prototype.awake = function() {
         il = geoBones.length - 1,
         sceneObject, bones, geoBone, bone, transform, childSceneObject, parent;
 
-    ComponentPrototype.awake.call(this);
-
     if (il !== -1) {
         sceneObject = this.sceneObject;
         bones = this.bones;
@@ -69,6 +67,8 @@ Mesh.prototype.awake = function() {
             parent.add(childSceneObject);
         }
     }
+
+    ComponentPrototype.awake.call(this);
 
     return this;
 };

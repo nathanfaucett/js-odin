@@ -1,10 +1,12 @@
-var vec2 = require("vec2");
+var vec2 = require("vec2"),
+    createPool = require("create_pool");
 
 
 module.exports = Touch;
 
 
 function Touch() {
+
     this.id = null;
     this.index = null;
 
@@ -15,25 +17,28 @@ function Touch() {
 
     this.delta = vec2.create();
     this.position = vec2.create();
-
-    this.__first = null;
 }
+createPool(Touch);
 
-Touch.create = function() {
-    return (new Touch()).construct();
+Touch.create = function(e) {
+    return (Touch.getPooled()).construct(e);
 };
 
-Touch.prototype.construct = function() {
+Touch.prototype.destroy = function() {
+    return Touch.release(this);
+};
 
-    this.id = -1;
-    this.index = -1;
+Touch.prototype.construct = function(e) {
 
-    this.radiusX = 0;
-    this.radiusY = 0;
-    this.rotationAngle = 0;
-    this.force = 1;
+    this.id = e.identifier;
 
-    this.__first = false;
+    vec2.set(this.delta, 0, 0);
+    vec2.set(this.position, e.x, e.y);
+
+    this.radiusX = e.radiusX;
+    this.radiusY = e.radiusY;
+    this.rotationAngle = e.rotationAngle;
+    this.force = e.force;
 
     return this;
 };
@@ -41,7 +46,6 @@ Touch.prototype.construct = function() {
 Touch.prototype.destructor = function() {
 
     this.id = null;
-    this.index = null;
 
     this.radiusX = null;
     this.radiusY = null;
@@ -51,21 +55,18 @@ Touch.prototype.destructor = function() {
     vec2.set(this.delta, 0, 0);
     vec2.set(this.position, 0, 0);
 
-    this.__first = null;
-
     return this;
 };
 
 Touch.prototype.update = function(e) {
     var position = this.position,
         delta = this.delta,
-        first = this.__first,
 
         x = e.x,
         y = e.y,
 
-        lastX = first ? position[0] : x,
-        lastY = first ? position[1] : y;
+        lastX = position[0],
+        lastY = position[1];
 
     position[0] = x;
     position[1] = y;
@@ -78,8 +79,6 @@ Touch.prototype.update = function(e) {
     this.rotationAngle = e.rotationAngle;
     this.force = e.force;
 
-    this.__first = true;
-
     return this;
 };
 
@@ -87,7 +86,6 @@ Touch.prototype.toJSON = function(json) {
     json = json || {};
 
     json.id = this.id;
-    json.index = this.index;
 
     json.radiusX = this.radiusX;
     json.radiusY = this.radiusY;
@@ -104,7 +102,6 @@ Touch.prototype.toJSON = function(json) {
 Touch.prototype.fromJSON = function(json) {
 
     this.id = json.id;
-    this.index = json.index;
 
     this.radiusX = json.radiusX;
     this.radiusY = json.radiusY;

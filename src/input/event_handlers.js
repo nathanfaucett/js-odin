@@ -61,10 +61,15 @@ eventHandlers.touchstart = function(input, e) {
     var touches = input.touches,
         targetTouches = e.targetTouches,
         i = -1,
-        il = targetTouches.length - 1;
+        il = targetTouches.length - 1,
+        touch;
 
     while (i++ < il) {
-        input.emit("touchstart", e, touches.__start(i, targetTouches[i]), touches);
+        touch = touches.__start(targetTouches[i]);
+
+        if (touch) {
+            input.emit("touchstart", e, touch, touches);
+        }
     }
 };
 
@@ -72,27 +77,38 @@ eventHandlers.touchend = function(input, e) {
     var touches = input.touches,
         changedTouches = e.changedTouches,
         i = -1,
-        il = changedTouches.length - 1;
+        il = changedTouches.length - 1,
+        touch;
 
     while (i++ < il) {
-        input.emit("touchend", e, touches.__end(i), touches);
-    }
-};
+        touch = touches.__end(changedTouches[i]);
 
-eventHandlers.touchcancel = function(input, e) {
-    input.touches.allOff();
-    input.emit("touchcancel", e);
+        if (touch) {
+            input.emit("touchend", e, touch, touches);
+            touch.destroy();
+        }
+    }
 };
 
 eventHandlers.touchmove = function(input, e) {
     var touches = input.touches,
         changedTouches = e.changedTouches,
         i = -1,
-        il = changedTouches.length - 1;
+        il = changedTouches.length - 1,
+        touch;
 
     while (i++ < il) {
-        input.emit("touchmove", e, touches.__move(i, changedTouches[i]), touches);
+        touch = touches.__move(changedTouches[i]);
+
+        if (touch) {
+            input.emit("touchmove", e, touch, touches);
+        }
     }
+};
+
+eventHandlers.touchcancel = function(input, e) {
+    input.emit("touchcancel", e);
+    input.touches.allOff();
 };
 
 eventHandlers.devicemotion = function(input, e) {

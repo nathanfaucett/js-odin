@@ -17,10 +17,6 @@ eventListener.on(environment.window, "load", function() {
         }),
         renderer = odin.Renderer.create();
 
-    var animation = odin.JSONAsset.create("anim", "../content/geometry/finger_anim.json");
-
-    var geometry = odin.Geometry.create("geo", "../content/geometry/finger.json");
-
     var texture = odin.Texture.create("image_hospital", "../content/images/hospital.png");
 
     var shader = odin.Shader.create(
@@ -54,11 +50,14 @@ eventListener.on(environment.window, "load", function() {
         }
     });
 
-    assets.add(geometry, animation, material, texture);
+    assets.add(material, texture);
 
     var camera = odin.SceneObject.create("main_camera").addComponent(
-        odin.Transform.create().setPosition([-5, -5, 5]),
-        odin.Camera.create().setActive(),
+        odin.Transform.create()
+            .setPosition([-5, -5, 5]),
+        odin.Camera.create()
+            .setOrthographic(true)
+            .setActive(),
         odin.OrbitControl.create()
     );
 
@@ -79,15 +78,7 @@ eventListener.on(environment.window, "load", function() {
         })
     );
 
-    var object = global.object = odin.SceneObject.create().addComponent(
-        odin.Transform.create(),
-        odin.Mesh.create(geometry, material),
-        odin.MeshAnimation.create(animation, {
-            current: "idle"
-        })
-    );
-
-    var scene = global.scene = odin.Scene.create("scene").add(camera, sprite2, sprite, object),
+    var scene = global.scene = odin.Scene.create("scene").add(camera, sprite2, sprite),
         cameraComponent = camera.getComponent("Camera");
 
     canvas.on("resize", function(w, h) {

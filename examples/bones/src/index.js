@@ -72,13 +72,18 @@ eventListener.on(environment.window, "load", function() {
         })
     );
 
-    var box = global.object = odin.SceneObject.create().addComponent(
-        odin.Transform.create(),
-        odin.Mesh.create(geometryBox, material),
-        odin.MeshAnimation.create(animation, {
-            current: "idle"
-        })
+    var box = global.box = odin.SceneObject.create().addComponent(
+        odin.Transform.create()
+            .setPosition([0, 0.5, 0])
+            .setScale([0.25, 0.25, 0.25]),
+        odin.Mesh.create(geometryBox, material)
     );
+
+    var objectMesh = object.components.Mesh;
+    objectMesh.on("awake", function() {
+        var child = objectMesh.bones[3];
+        child.add(box);
+    });
 
     var scene = global.scene = odin.Scene.create("scene").add(camera, object, box),
         cameraComponent = camera.getComponent("Camera");

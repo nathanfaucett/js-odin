@@ -48,7 +48,7 @@ function getTouches(touches, nativeTouches, target) {
 
 function destroyTouches(touches) {
     var i = -1,
-        il = touches.legnth - 1;
+        il = touches.length - 1;
 
     while (i++ < il) {
         touches[i].destroy();
@@ -73,6 +73,10 @@ Touch.create = function(nativeTouch, target) {
 };
 
 Touch.prototype.destroy = function() {
+    Touch.release(this);
+};
+
+Touch.prototype.destructor = function() {
     this.identifier = null;
     this.x = null;
     this.y = null;

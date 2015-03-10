@@ -20,21 +20,6 @@ function Handler() {
 
     this.__focusHandler = null;
     this.__blurHandler = null;
-
-    this.__handled = {
-        mousedown: false,
-        mouseup: false,
-        mousemove: false,
-        mouseout: false,
-        wheel: false,
-        keyup: false,
-        keydown: false,
-        touchstart: false,
-        touchmove: false,
-        touchend: false,
-        touchcancel: false,
-        devicemotion: false
-    };
 }
 EventEmitter.extend(Handler);
 
@@ -59,32 +44,11 @@ Handler.prototype.destructor = function() {
     this.__focusHandler = null;
     this.__blurHandler = null;
 
-    this.reset();
-
-    return this;
-};
-
-Handler.prototype.reset = function() {
-    var handled = this.__handled;
-
-    handled.mousedown = false;
-    handled.mouseup = false;
-    handled.mousemove = false;
-    handled.mouseout = false;
-    handled.wheel = false;
-    handled.keyup = false;
-    handled.keydown = false;
-    handled.touchstart = false;
-    handled.touchmove = false;
-    handled.touchend = false;
-    handled.touchcancel = false;
-    handled.devicemotion = false;
-
     return this;
 };
 
 Handler.prototype.attach = function(element) {
-    var _this, input, stack, handled;
+    var _this, input, stack;
 
     if (element === this.__element) {
         return this;
@@ -95,17 +59,9 @@ Handler.prototype.attach = function(element) {
     input = this.__input;
     stack = input.__stack;
 
-    handled = this.__handled;
-
     this.__handler = function(e) {
         var type = e.type,
             event;
-
-        if (handled[type]) {
-            return;
-        }
-
-        handled[type] = true;
 
         e.preventDefault();
 
@@ -128,6 +84,7 @@ Handler.prototype.attach = function(element) {
     };
 
     element.setAttribute("tabindex", 1);
+    focusNode(element);
     eventListener.on(element, "mouseover touchstart", this.__focusHandler);
     eventListener.on(element, "mouseout touchcancel", this.__blurHandler);
 

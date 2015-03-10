@@ -1,16 +1,5 @@
-var Touch = require("./touch");
-
-
-var touchPool = [];
-
-
-function createTouch() {
-    return touchPool.length !== 0 ? touchPool.pop() : new Touch();
-}
-
-function destroyTouch(touch) {
-    touchPool[touchPool.length] = touch;
-}
+var indexOf = require("index_of"),
+    Touch = require("./touch");
 
 
 module.exports = Touches;
@@ -33,32 +22,55 @@ Touches.prototype.destructor = function() {
     return this;
 };
 
-Touches.prototype.__start = function(index, targetTouch) {
+function findTouch(array, id) {
+    var i = -1,
+        il = array.length - 1,
+        touch;
+
+    while (i++ < il) {
+        touch = array[i];
+
+        if (touch.id === id) {
+            return touch;
+        }
+    }
+
+    return null;
+}
+
+Touches.prototype.__start = function(targetTouch) {
     var array = this.__array,
-        touch = createTouch();
+        oldTouch = findTouch(array, targetTouch.identifier),
+        touch;
 
-    touch.id = targetTouch.identifier;
-    touch.index = index;
-    touch.update(targetTouch);
+    if (oldTouch === null) {
+        touch = Touch.create(targetTouch);
+        array[array.length] = touch;
+        return touch;
+    } else {
+        return oldTouch;
+    }
+};
 
-    array[array.length] = touch;
+Touches.prototype.__end = function(changedTouch) {
+    var array = this.__array,
+        touch = findTouch(array, changedTouch.identifier);
+
+    if (touch !== null) {
+        array.splice(indexOf(array, touch), 1);
+    }
 
     return touch;
 };
 
-Touches.prototype.__end = function(index) {
-    var array = this.__array,
-        touch = array[index];
+Touches.prototype.__move = function(changedTouch) {
+    var touch = findTouch(this.__array, changedTouch.identifier);
 
-    array.splice(index, 1);
-    destroyTouch(touch);
-    touch.__first = false;
+    if (touch !== null) {
+        touch.update(changedTouch);
+    }
 
     return touch;
-};
-
-Touches.prototype.__move = function(index, targetTouch) {
-    return this.__array[index].update(targetTouch);
 };
 
 Touches.prototype.get = function(index) {
@@ -70,7 +82,7 @@ Touches.prototype.allOff = function() {
         i = array.length;
 
     while (i--) {
-        destroyTouch(array[i]);
+        array[i].destroy();
     }
     array.length = 0;
 };
@@ -106,7 +118,7 @@ Touches.prototype.fromJSON = function(json) {
     array.length = 0;
 
     while (i++ < il) {
-        button = createTouch();
+        button = Touch.create();
         button.fromJSON(jsonArray[i]);
 
         array[array.length] = button;

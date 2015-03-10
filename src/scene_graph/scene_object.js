@@ -188,7 +188,7 @@ function SceneObject_add(_this, sceneObject) {
 
         _this.emit("addChild", sceneObject);
 
-        if (scene) {
+        if (scene && sceneObject.scene !== scene) {
             scene.add(sceneObject);
         }
     } else {
@@ -215,7 +215,7 @@ function SceneObject_remove(_this, sceneObject) {
         scene = _this.scene;
 
     if (index !== -1) {
-        children.splice(index, -1);
+        children.splice(index, 1);
 
         sceneObject.parent = null;
         sceneObject.root = sceneObject;
@@ -224,7 +224,7 @@ function SceneObject_remove(_this, sceneObject) {
 
         _this.emit("removeChild", sceneObject);
 
-        if (scene) {
+        if (scene && sceneObject.scene === scene) {
             scene.remove(sceneObject);
         }
     } else {

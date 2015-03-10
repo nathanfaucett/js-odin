@@ -172,6 +172,7 @@ Input.prototype.update = function(time, frame) {
 
     while (i++ < il) {
         event = stack[i];
+
         eventHandlers[event.type](this, event, time, frame);
 
         if (event.destroy) {
@@ -186,10 +187,6 @@ Input.prototype.update = function(time, frame) {
 
     this.axes.update(this, time - lastTime);
     this.emit("update");
-
-    if (this.__handler) {
-        this.__handler.reset();
-    }
 
     return this;
 };

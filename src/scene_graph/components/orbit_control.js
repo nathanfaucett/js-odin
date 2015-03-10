@@ -158,7 +158,9 @@ OrbitControl.prototype.clear = function(emitEvent) {
 };
 
 function OrbitControl_update(_this) {
-    var transform = _this.sceneObject.components.Transform,
+    var components = _this.sceneObject.components,
+        camera = components.Camera,
+        transform = components.Transform,
         position = transform.position,
         target = _this.target,
         offset = _this.__offset,
@@ -176,6 +178,10 @@ function OrbitControl_update(_this) {
     phi = mathf.max(mathf.EPSILON, mathf.min(mathf.PI - mathf.EPSILON, phi));
 
     radius = vec3.length(offset) * _this.__scale;
+
+    if (camera.orthographic) {
+        camera.setOrthographicSize(camera.orthographicSize * _this.__scale);
+    }
 
     vec3.add(target, target, pan);
 
