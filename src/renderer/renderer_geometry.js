@@ -2,7 +2,8 @@ var FastHash = require("fast_hash");
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array,
-    NativeUint16Array = typeof(Uint16Array) !== "undefined" ? Uint16Array : Array;
+    NativeUint16Array = typeof(Uint16Array) !== "undefined" ? Uint16Array : Array,
+    RendererGeometryPrototype;
 
 
 module.exports = RendererGeometry;
@@ -23,12 +24,13 @@ function RendererGeometry() {
     this.needsIndexCompile = null;
     this.needsLineCompile = null;
 }
+RendererGeometryPrototype = RendererGeometry.prototype;
 
 RendererGeometry.create = function(context, geometry) {
     return (new RendererGeometry()).construct(context, geometry);
 };
 
-RendererGeometry.prototype.construct = function(context, geometry) {
+RendererGeometryPrototype.construct = function(context, geometry) {
 
     this.context = context;
     this.geometry = geometry;
@@ -40,7 +42,7 @@ RendererGeometry.prototype.construct = function(context, geometry) {
     return this;
 };
 
-RendererGeometry.prototype.destructor = function() {
+RendererGeometryPrototype.destructor = function() {
 
     this.context = null;
     this.geometry = null;
@@ -58,7 +60,7 @@ RendererGeometry.prototype.destructor = function() {
     return this;
 };
 
-RendererGeometry.prototype.getVertexBuffer = function() {
+RendererGeometryPrototype.getVertexBuffer = function() {
     var glVertexBuffer = this.glVertexBuffer;
 
     if (glVertexBuffer) {
@@ -73,7 +75,7 @@ RendererGeometry.prototype.getVertexBuffer = function() {
     }
 };
 
-RendererGeometry.prototype.getLineBuffer = function() {
+RendererGeometryPrototype.getLineBuffer = function() {
     var glIndexLineBuffer = this.glIndexLineBuffer;
 
     if (glIndexLineBuffer) {
@@ -88,7 +90,7 @@ RendererGeometry.prototype.getLineBuffer = function() {
     }
 };
 
-RendererGeometry.prototype.getIndexBuffer = function() {
+RendererGeometryPrototype.getIndexBuffer = function() {
     var glIndexBuffer = this.glIndexBuffer;
 
     if (glIndexBuffer) {

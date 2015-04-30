@@ -3,7 +3,8 @@ var isNumber = require("is_number"),
     SpriteManager = require("../component_managers/sprite_manager");
 
 
-var ComponentPrototype = Component.prototype;
+var ComponentPrototype = Component.prototype,
+    SpritePrototype;
 
 
 module.exports = Sprite;
@@ -32,9 +33,9 @@ function Sprite() {
     this.h = 1;
 }
 Component.extend(Sprite, "Sprite", SpriteManager);
+SpritePrototype = Sprite.prototype;
 
-
-Sprite.prototype.construct = function(options) {
+SpritePrototype.construct = function(options) {
 
     ComponentPrototype.construct.call(this);
 
@@ -60,7 +61,7 @@ Sprite.prototype.construct = function(options) {
     return this;
 };
 
-Sprite.prototype.destructor = function() {
+SpritePrototype.destructor = function() {
 
     ComponentPrototype.destructor.call(this);
 
@@ -84,7 +85,7 @@ Sprite.prototype.destructor = function() {
     return this;
 };
 
-Sprite.prototype.setLayer = function(layer) {
+SpritePrototype.setLayer = function(layer) {
     var manager = this.manager;
 
     if (manager) {
@@ -103,7 +104,7 @@ Sprite.prototype.setLayer = function(layer) {
     return this;
 };
 
-Sprite.prototype.setZ = function(z) {
+SpritePrototype.setZ = function(z) {
     var manager = this.manager;
 
     if (manager) {
@@ -120,19 +121,19 @@ Sprite.prototype.setZ = function(z) {
     return this;
 };
 
-Sprite.prototype.setMaterial = function(material) {
+SpritePrototype.setMaterial = function(material) {
     this.material = material;
     return this;
 };
 
-Sprite.prototype.toJSON = function(json) {
+SpritePrototype.toJSON = function(json) {
 
     json = ComponentPrototype.toJSON.call(this, json);
 
     return json;
 };
 
-Sprite.prototype.fromJSON = function(json) {
+SpritePrototype.fromJSON = function(json) {
 
     ComponentPrototype.fromJSON.call(this, json);
 

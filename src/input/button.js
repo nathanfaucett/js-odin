@@ -1,3 +1,6 @@
+var ButtonPrototype;
+
+
 module.exports = Button;
 
 
@@ -13,12 +16,13 @@ function Button() {
     this.value = null;
     this.__first = null;
 }
+ButtonPrototype = Button.prototype;
 
 Button.create = function(name) {
     return (new Button()).construct(name);
 };
 
-Button.prototype.construct = function(name) {
+ButtonPrototype.construct = function(name) {
 
     this.name = name;
 
@@ -34,7 +38,7 @@ Button.prototype.construct = function(name) {
     return this;
 };
 
-Button.prototype.destructor = function() {
+ButtonPrototype.destructor = function() {
 
     this.name = null;
 
@@ -50,7 +54,7 @@ Button.prototype.destructor = function() {
     return this;
 };
 
-Button.prototype.on = function(time, frame) {
+ButtonPrototype.on = function(time, frame) {
 
     if (this.__first) {
         this.frameDown = frame;
@@ -63,7 +67,7 @@ Button.prototype.on = function(time, frame) {
     return this;
 };
 
-Button.prototype.off = function(time, frame) {
+ButtonPrototype.off = function(time, frame) {
 
     this.frameUp = frame;
     this.timeUp = time;
@@ -73,7 +77,7 @@ Button.prototype.off = function(time, frame) {
     return this;
 };
 
-Button.prototype.toJSON = function(json) {
+ButtonPrototype.toJSON = function(json) {
 
     json = json || {};
 
@@ -90,7 +94,7 @@ Button.prototype.toJSON = function(json) {
     return json;
 };
 
-Button.prototype.fromJSON = function(json) {
+ButtonPrototype.fromJSON = function(json) {
 
     this.name = json.name;
 

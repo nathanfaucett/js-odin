@@ -9,10 +9,11 @@ var vec3 = require("vec3"),
 
 
 var mouseButtons = [
-    "mouse0",
-    "mouse1",
-    "mouse2"
-];
+        "mouse0",
+        "mouse1",
+        "mouse2"
+    ],
+    InputPrototype;
 
 
 module.exports = Input;
@@ -35,12 +36,13 @@ function Input() {
     this.acceleration = vec3.create();
 }
 EventEmitter.extend(Input);
+InputPrototype = Input.prototype;
 
 Input.create = function() {
     return (new Input()).construct();
 };
 
-Input.prototype.construct = function() {
+InputPrototype.construct = function() {
 
     this.mouse.construct();
     this.buttons.construct();
@@ -50,7 +52,7 @@ Input.prototype.construct = function() {
     return this;
 };
 
-Input.prototype.destructor = function() {
+InputPrototype.destructor = function() {
 
     this.__lastTime = null;
     this.__frame = null;
@@ -67,7 +69,7 @@ Input.prototype.destructor = function() {
     return this;
 };
 
-Input.prototype.attach = function(element) {
+InputPrototype.attach = function(element) {
     var handler = this.__handler;
 
     if (!handler) {
@@ -81,7 +83,7 @@ Input.prototype.attach = function(element) {
     return this;
 };
 
-Input.prototype.server = function(socket) {
+InputPrototype.server = function(socket) {
     var stack = this.__stack;
 
     socket.on("inputevent", function(e) {
@@ -91,7 +93,7 @@ Input.prototype.server = function(socket) {
     return this;
 };
 
-Input.prototype.client = function(socket) {
+InputPrototype.client = function(socket) {
     var handler = this.__handler,
         send = createSendFn(socket);
 
@@ -114,54 +116,54 @@ function createSendFn(socket) {
     }
 }
 
-Input.prototype.axis = function(name) {
+InputPrototype.axis = function(name) {
     var axis = this.axes.__hash[name];
     return axis ? axis.value : 0;
 };
 
-Input.prototype.touch = function(index) {
+InputPrototype.touch = function(index) {
     return this.touches.__array[index];
 };
 
-Input.prototype.mouseButton = function(id) {
+InputPrototype.mouseButton = function(id) {
     var button = this.buttons.__hash[mouseButtons[id]];
 
     return button && button.value;
 };
 
 
-Input.prototype.mouseButtonDown = function(id) {
+InputPrototype.mouseButtonDown = function(id) {
     var button = this.buttons.__hash[mouseButtons[id]];
 
     return !!button && button.value && (button.frameDown >= this.__frame);
 };
 
 
-Input.prototype.mouseButtonUp = function(id) {
+InputPrototype.mouseButtonUp = function(id) {
     var button = this.buttons.__hash[mouseButtons[id]];
 
     return button != null ? (button.frameUp >= this.__frame) : true;
 };
 
-Input.prototype.key = function(name) {
+InputPrototype.key = function(name) {
     var button = this.buttons.__hash[name];
 
     return !!button && button.value;
 };
 
-Input.prototype.keyDown = function(name) {
+InputPrototype.keyDown = function(name) {
     var button = this.buttons.__hash[name];
 
     return !!button && button.value && (button.frameDown >= this.__frame);
 };
 
-Input.prototype.keyUp = function(name) {
+InputPrototype.keyUp = function(name) {
     var button = this.buttons.__hash[name];
 
     return button != null ? (button.frameUp >= this.__frame) : true;
 };
 
-Input.prototype.update = function(time, frame) {
+InputPrototype.update = function(time, frame) {
     var stack = this.__stack,
         i = -1,
         il = stack.length - 1,

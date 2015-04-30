@@ -4,7 +4,8 @@ var indexOf = require("index_of"),
     Time = require("../time");
 
 
-var ClassPrototype = Class.prototype;
+var ClassPrototype = Class.prototype,
+    ScenePrototype;
 
 
 module.exports = Scene;
@@ -28,8 +29,9 @@ function Scene() {
     this.__init = false;
 }
 Class.extend(Scene, "Scene");
+ScenePrototype = Scene.prototype;
 
-Scene.prototype.construct = function(name) {
+ScenePrototype.construct = function(name) {
 
     ClassPrototype.construct.call(this);
 
@@ -42,7 +44,7 @@ Scene.prototype.construct = function(name) {
     return this;
 };
 
-Scene.prototype.destructor = function() {
+ScenePrototype.destructor = function() {
     var sceneObjects = this.__sceneObjects,
         i = sceneObjects.length;
 
@@ -61,7 +63,7 @@ Scene.prototype.destructor = function() {
     return this;
 };
 
-Scene.prototype.init = function(element) {
+ScenePrototype.init = function(element) {
     var managers = this.__managerArray,
         i = -1,
         il = managers.length - 1;
@@ -80,7 +82,7 @@ Scene.prototype.init = function(element) {
     return this;
 };
 
-Scene.prototype.awake = function() {
+ScenePrototype.awake = function() {
     var managers = this.__managerArray,
         i = -1,
         il = managers.length - 1;
@@ -94,7 +96,7 @@ Scene.prototype.awake = function() {
     return this;
 };
 
-Scene.prototype.update = function() {
+ScenePrototype.update = function() {
     var time = this.time,
         managers = this.__managerArray,
         i = -1,
@@ -112,7 +114,7 @@ Scene.prototype.update = function() {
     return this;
 };
 
-Scene.prototype.destroy = function() {
+ScenePrototype.destroy = function() {
     var sceneObjects = this.__sceneObjects,
         i = -1,
         il = sceneObjects.length - 1;
@@ -126,11 +128,11 @@ Scene.prototype.destroy = function() {
     return this;
 };
 
-Scene.prototype.has = function(sceneObject) {
+ScenePrototype.has = function(sceneObject) {
     return !!this.__sceneObjectHash[sceneObject.__id];
 };
 
-Scene.prototype.find = function(name) {
+ScenePrototype.find = function(name) {
     var sceneObjects = this.__sceneObjects,
         i = -1,
         il = sceneObjects.length - 1,
@@ -147,15 +149,15 @@ Scene.prototype.find = function(name) {
     return undefined;
 };
 
-Scene.prototype.hasManager = function(name) {
+ScenePrototype.hasManager = function(name) {
     return !!this.managers[name];
 };
 
-Scene.prototype.getManager = function(name) {
+ScenePrototype.getManager = function(name) {
     return this.managers[name];
 };
 
-Scene.prototype.add = function() {
+ScenePrototype.add = function() {
     var i = -1,
         il = arguments.length - 1;
 
@@ -202,7 +204,7 @@ function Scene_addObjectChildren(_this, children) {
     }
 }
 
-Scene.prototype.__addComponent = function(component) {
+ScenePrototype.__addComponent = function(component) {
     var className = component.className,
         managerHash = this.managers,
         managers = this.__managerArray,
@@ -234,7 +236,7 @@ Scene.prototype.__addComponent = function(component) {
     return this;
 };
 
-Scene.prototype.remove = function() {
+ScenePrototype.remove = function() {
     var i = -1,
         il = arguments.length - 1;
 
@@ -281,7 +283,7 @@ function Scene_removeObjectChildren(_this, children) {
     }
 }
 
-Scene.prototype.__removeComponent = function(component) {
+ScenePrototype.__removeComponent = function(component) {
     var className = component.className,
         managerHash = this.managers,
         managers = this.__managerArray,
@@ -317,7 +319,7 @@ function sortManagersFn(a, b) {
     return a.order - b.order;
 }
 
-Scene.prototype.toJSON = function(json) {
+ScenePrototype.toJSON = function(json) {
     var sceneObjects = this.__sceneObjects,
         i = -1,
         il = sceneObjects.length - 1,
@@ -339,7 +341,7 @@ Scene.prototype.toJSON = function(json) {
     return json;
 };
 
-Scene.prototype.fromJSON = function(json) {
+ScenePrototype.fromJSON = function(json) {
     var jsonSceneObjects = json.sceneObjects,
         i = -1,
         il = jsonSceneObjects.length - 1;

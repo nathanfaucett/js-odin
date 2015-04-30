@@ -4,7 +4,8 @@ var isString = require("is_string"),
     BaseApplication = require("./base_application");
 
 
-var BaseApplicationPrototype = BaseApplication.prototype;
+var BaseApplicationPrototype = BaseApplication.prototype,
+    ApplicationPrototype;
 
 
 module.exports = Application;
@@ -15,29 +16,30 @@ function Application() {
     BaseApplication.call(this);
 }
 BaseApplication.extend(Application, "Application");
+ApplicationPrototype = Application.prototype;
 
-Application.prototype.construct = function() {
+ApplicationPrototype.construct = function() {
 
     BaseApplicationPrototype.construct.call(this);
 
     return this;
 };
 
-Application.prototype.destructor = function() {
+ApplicationPrototype.destructor = function() {
 
     BaseApplicationPrototype.destructor.call(this);
 
     return this;
 };
 
-Application.prototype.setElement = function(element) {
+ApplicationPrototype.setElement = function(element) {
 
     this.__loop.setElement(element);
 
     return this;
 };
 
-Application.prototype.createScene = function(scene) {
+ApplicationPrototype.createScene = function(scene) {
     var scenes = this.__scenes,
         sceneHash = this.__sceneHash,
         newScene;
@@ -66,14 +68,14 @@ Application.prototype.createScene = function(scene) {
     return null;
 };
 
-Application.prototype.init = function() {
+ApplicationPrototype.init = function() {
 
     BaseApplicationPrototype.init.call(this);
 
     return this;
 };
 
-Application.prototype.loop = function() {
+ApplicationPrototype.loop = function() {
 
     BaseApplicationPrototype.loop.call(this);
 

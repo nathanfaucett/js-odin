@@ -2,7 +2,8 @@ var Class = require("../class"),
     indexOf = require("index_of");
 
 
-var ClassPrototype = Class.prototype;
+var ClassPrototype = Class.prototype,
+    AssetsPrototype;
 
 
 module.exports = Assets;
@@ -17,15 +18,16 @@ function Assets() {
     this.__hash = {};
 }
 Class.extend(Assets, "Assets");
+AssetsPrototype = Assets.prototype;
 
-Assets.prototype.construct = function() {
+AssetsPrototype.construct = function() {
 
     ClassPrototype.construct.call(this);
 
     return this;
 };
 
-Assets.prototype.destructor = function() {
+AssetsPrototype.destructor = function() {
     var array = this.__array,
         hash = this.__hash,
         i = array.length,
@@ -46,15 +48,15 @@ Assets.prototype.destructor = function() {
     return this;
 };
 
-Assets.prototype.has = function(name) {
+AssetsPrototype.has = function(name) {
     return !!this.__hash[name];
 };
 
-Assets.prototype.get = function(name) {
+AssetsPrototype.get = function(name) {
     return this.__hash[name];
 };
 
-Assets.prototype.add = function() {
+AssetsPrototype.add = function() {
     var i = -1,
         il = arguments.length - 1;
 
@@ -83,7 +85,7 @@ function Assets_add(_this, asset) {
     }
 }
 
-Assets.prototype.remove = function() {
+AssetsPrototype.remove = function() {
     var i = -1,
         il = arguments.length - 1;
 
@@ -113,7 +115,7 @@ function Assets_remove(_this, asset) {
     }
 }
 
-Assets.prototype.load = function(callback) {
+AssetsPrototype.load = function(callback) {
     var _this = this,
         notLoaded = this.__notLoaded,
         length = notLoaded.length,

@@ -1,7 +1,8 @@
 var ComponentManager = require("./component_manager");
 
 
-var ComponentManagerPrototype = ComponentManager.prototype;
+var ComponentManagerPrototype = ComponentManager.prototype,
+    CameraManagerPrototype;
 
 
 module.exports = CameraManager;
@@ -14,15 +15,16 @@ function CameraManager() {
     this.__active = null;
 }
 ComponentManager.extend(CameraManager, "CameraManager");
+CameraManagerPrototype = CameraManager.prototype;
 
-CameraManager.prototype.construct = function() {
+CameraManagerPrototype.construct = function() {
 
     ComponentManagerPrototype.construct.call(this);
 
     return this;
 };
 
-CameraManager.prototype.destructor = function() {
+CameraManagerPrototype.destructor = function() {
 
     ComponentManagerPrototype.destructor.call(this);
 
@@ -31,11 +33,11 @@ CameraManager.prototype.destructor = function() {
     return this;
 };
 
-CameraManager.prototype.sortFunction = function(a, b) {
+CameraManagerPrototype.sortFunction = function(a, b) {
     return a.__active ? 1 : (b.__active ? -1 : 0);
 };
 
-CameraManager.prototype.setActive = function(camera) {
+CameraManagerPrototype.setActive = function(camera) {
     if (this.__active) {
         this.__active.__active = false;
     }
@@ -48,11 +50,11 @@ CameraManager.prototype.setActive = function(camera) {
     return this;
 };
 
-CameraManager.prototype.getActive = function() {
+CameraManagerPrototype.getActive = function() {
     return this.__active;
 };
 
-CameraManager.prototype.add = function(component) {
+CameraManagerPrototype.add = function(component) {
 
     ComponentManagerPrototype.add.call(this, component);
 
@@ -63,7 +65,7 @@ CameraManager.prototype.add = function(component) {
     return this;
 };
 
-CameraManager.prototype.remove = function(component) {
+CameraManagerPrototype.remove = function(component) {
 
     ComponentManagerPrototype.remove.call(this, component);
 

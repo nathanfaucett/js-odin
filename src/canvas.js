@@ -5,9 +5,11 @@ var isNumber = require("is_number"),
 
 
 var ClassPrototype = Class.prototype,
+
     window = environment.window,
     document = environment.document,
 
+    CanvasPrototype,
     addMeta, reScale, viewport, viewportWidth, viewportHeight, viewportScale, windowOnResize;
 
 
@@ -65,8 +67,9 @@ function Canvas() {
     this.__handler = null;
 }
 Class.extend(Canvas);
+CanvasPrototype = Canvas.prototype;
 
-Canvas.prototype.construct = function(options) {
+CanvasPrototype.construct = function(options) {
     var element = document.createElement("canvas");
 
     ClassPrototype.construct.call(this);
@@ -101,7 +104,7 @@ Canvas.prototype.construct = function(options) {
     return this;
 };
 
-Canvas.prototype.destructor = function() {
+CanvasPrototype.destructor = function() {
 
     ClassPrototype.destructor.call(this);
 
@@ -125,7 +128,7 @@ Canvas.prototype.destructor = function() {
     return this;
 };
 
-Canvas.prototype.setFixed = function(value) {
+CanvasPrototype.setFixed = function(value) {
     if (value) {
         return Canvas_setFixed(this);
     } else {

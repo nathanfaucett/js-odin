@@ -1,6 +1,10 @@
 var createPool = require("create_pool");
 
 
+var TouchEventPrototype,
+    TouchPrototype;
+
+
 module.exports = TouchEvent;
 
 
@@ -13,16 +17,17 @@ function TouchEvent(e) {
     this.changedTouches = getTouches(this.changedTouches, e.changedTouches, target);
 }
 createPool(TouchEvent);
+TouchEventPrototype = TouchEvent.prototype;
 
 TouchEvent.create = function(e) {
     return TouchEvent.getPooled(e);
 };
 
-TouchEvent.prototype.destroy = function() {
+TouchEventPrototype.destroy = function() {
     TouchEvent.release(this);
 };
 
-TouchEvent.prototype.destructor = function() {
+TouchEventPrototype.destructor = function() {
     this.type = null;
     destroyTouches(this.touches);
     destroyTouches(this.targetTouches);
@@ -67,16 +72,17 @@ function Touch(nativeTouch, target) {
     this.force = getForce(nativeTouch);
 }
 createPool(Touch);
+TouchPrototype = Touch.prototype;
 
 Touch.create = function(nativeTouch, target) {
     return Touch.getPooled(nativeTouch, target);
 };
 
-Touch.prototype.destroy = function() {
+TouchPrototype.destroy = function() {
     Touch.release(this);
 };
 
-Touch.prototype.destructor = function() {
+TouchPrototype.destructor = function() {
     this.identifier = null;
     this.x = null;
     this.y = null;

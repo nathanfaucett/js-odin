@@ -1,6 +1,9 @@
 var has = require("has");
 
 
+var RendererMaterialPrototype;
+
+
 module.exports = RendererMaterial;
 
 
@@ -14,12 +17,13 @@ function RendererMaterial() {
 
     this.needsCompile = null;
 }
+RendererMaterialPrototype = RendererMaterial.prototype;
 
 RendererMaterial.create = function(renderer, context, material) {
     return (new RendererMaterial()).construct(renderer, context, material);
 };
 
-RendererMaterial.prototype.construct = function(renderer, context, material) {
+RendererMaterialPrototype.construct = function(renderer, context, material) {
 
     this.renderer = renderer;
     this.context = context;
@@ -28,7 +32,7 @@ RendererMaterial.prototype.construct = function(renderer, context, material) {
     return this;
 };
 
-RendererMaterial.prototype.destructor = function() {
+RendererMaterialPrototype.destructor = function() {
     var programs = this.programs,
         id;
 
@@ -47,7 +51,7 @@ RendererMaterial.prototype.destructor = function() {
     return this;
 };
 
-RendererMaterial.prototype.getProgramFor = function(data) {
+RendererMaterialPrototype.getProgramFor = function(data) {
     var programData = this.renderer.__programHash[data.__id],
         program;
 

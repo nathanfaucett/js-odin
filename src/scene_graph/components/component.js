@@ -3,7 +3,8 @@ var camelize = require("camelize"),
     ComponentManager = require("../component_managers/component_manager");
 
 
-var ClassPrototype = Class.prototype;
+var ClassPrototype = Class.prototype,
+    ComponentPrototype;
 
 
 module.exports = Component;
@@ -26,19 +27,20 @@ Component.onExtend = function(child, className, manager) {
 };
 
 Class.extend(Component, "Component");
+ComponentPrototype = Component.prototype;
 
-Component.className = Component.prototype.className = "Component";
-Component.memberName = Component.prototype.memberName = camelize(Component.className, true);
-Component.Manager = Component.prototype.Manager = ComponentManager;
+Component.className = ComponentPrototype.className = "Component";
+Component.memberName = ComponentPrototype.memberName = camelize(Component.className, true);
+Component.Manager = ComponentPrototype.Manager = ComponentManager;
 
-Component.prototype.construct = function() {
+ComponentPrototype.construct = function() {
 
     ClassPrototype.construct.call(this);
 
     return this;
 };
 
-Component.prototype.destructor = function() {
+ComponentPrototype.destructor = function() {
 
     ClassPrototype.destructor.call(this);
 
@@ -48,13 +50,13 @@ Component.prototype.destructor = function() {
     return this;
 };
 
-Component.prototype.init = function() {
+ComponentPrototype.init = function() {
 
     this.emit("init");
     return this;
 };
 
-Component.prototype.clear = function(emitEvent) {
+ComponentPrototype.clear = function(emitEvent) {
 
     if (emitEvent !== false) {
         this.emit("clear");
@@ -62,19 +64,19 @@ Component.prototype.clear = function(emitEvent) {
     return this;
 };
 
-Component.prototype.awake = function() {
+ComponentPrototype.awake = function() {
 
     this.emit("awake");
     return this;
 };
 
-Component.prototype.update = function() {
+ComponentPrototype.update = function() {
 
     this.emit("update");
     return this;
 };
 
-Component.prototype.destroy = function(emitEvent) {
+ComponentPrototype.destroy = function(emitEvent) {
     var sceneObject = this.sceneObject;
 
     if (!sceneObject) {

@@ -16,7 +16,9 @@ var ClassPrototype = Class.prototype,
             key: key,
             regexp: new RegExp("\\b" + key + "\\b")
         };
-    });
+    }),
+
+    ShaderPrototype;
 
 
 module.exports = Shader;
@@ -31,8 +33,9 @@ function Shader() {
     this.templateVariables = [];
 }
 Class.extend(Shader, "Shader");
+ShaderPrototype = Shader.prototype;
 
-Shader.prototype.construct = function(vertex, fragment) {
+ShaderPrototype.construct = function(vertex, fragment) {
 
     ClassPrototype.construct.call(this);
 
@@ -43,7 +46,7 @@ Shader.prototype.construct = function(vertex, fragment) {
     return this;
 };
 
-Shader.prototype.destructor = function() {
+ShaderPrototype.destructor = function() {
 
     ClassPrototype.destructor.call(this);
 
@@ -54,7 +57,7 @@ Shader.prototype.destructor = function() {
     return this;
 };
 
-Shader.prototype.set = function(vertex, fragment) {
+ShaderPrototype.set = function(vertex, fragment) {
 
     this.templateVariables.length = 0;
     this.vertex = Shader_compile(this, vertex, VERTEX);

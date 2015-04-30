@@ -2,7 +2,8 @@ var JSONAsset = require("./json_asset"),
     Shader = require("../shader/shader");
 
 
-var JSONAssetPrototype = JSONAsset.prototype;
+var JSONAssetPrototype = JSONAsset.prototype,
+    MaterialPrototype;
 
 
 module.exports = Material;
@@ -16,8 +17,9 @@ function Material() {
     this.uniforms = null;
 }
 JSONAsset.extend(Material, "Material");
+MaterialPrototype = Material.prototype;
 
-Material.prototype.construct = function(name, src, options) {
+MaterialPrototype.construct = function(name, src, options) {
 
     JSONAssetPrototype.construct.call(this, name, src);
 
@@ -36,7 +38,7 @@ Material.prototype.construct = function(name, src, options) {
     return this;
 };
 
-Material.prototype.destructor = function() {
+MaterialPrototype.destructor = function() {
 
     JSONAssetPrototype.destructor.call(this);
 
@@ -45,7 +47,7 @@ Material.prototype.destructor = function() {
     return this;
 };
 
-Material.prototype.parse = function() {
+MaterialPrototype.parse = function() {
     JSONAssetPrototype.parse.call(this);
     return this;
 };

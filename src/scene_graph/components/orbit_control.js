@@ -11,7 +11,9 @@ var ComponentPrototype = Component.prototype,
 
     NONE = 1,
     ROTATE = 2,
-    PAN = 3;
+    PAN = 3,
+
+    OrbitControlPrototype;
 
 
 module.exports = OrbitControl;
@@ -62,9 +64,9 @@ function OrbitControl() {
     };
 }
 Component.extend(OrbitControl, "OrbitControl");
+OrbitControlPrototype = OrbitControl.prototype;
 
-
-OrbitControl.prototype.construct = function(options) {
+OrbitControlPrototype.construct = function(options) {
 
     ComponentPrototype.construct.call(this);
 
@@ -89,7 +91,7 @@ OrbitControl.prototype.construct = function(options) {
     return this;
 };
 
-OrbitControl.prototype.destructor = function() {
+OrbitControlPrototype.destructor = function() {
 
     ComponentPrototype.destructor.call(this);
 
@@ -113,7 +115,7 @@ OrbitControl.prototype.destructor = function() {
     return this;
 };
 
-OrbitControl.prototype.awake = function() {
+OrbitControlPrototype.awake = function() {
     var sceneObject = this.sceneObject,
         scene = sceneObject.scene,
         input = scene.input;
@@ -136,7 +138,7 @@ OrbitControl.prototype.awake = function() {
     return this;
 };
 
-OrbitControl.prototype.clear = function(emitEvent) {
+OrbitControlPrototype.clear = function(emitEvent) {
     var sceneObject = this.sceneObject,
         scene = sceneObject.scene,
         input = scene.input;

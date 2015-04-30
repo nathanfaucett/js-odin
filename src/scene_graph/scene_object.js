@@ -2,7 +2,8 @@ var indexOf = require("index_of"),
     Class = require("../class");
 
 
-var ClassPrototype = Class.prototype;
+var ClassPrototype = Class.prototype,
+    SceneObjectPrototype;
 
 
 module.exports = SceneObject;
@@ -24,8 +25,9 @@ function SceneObject() {
     this.children = [];
 }
 Class.extend(SceneObject, "SceneObject");
+SceneObjectPrototype = SceneObject.prototype;
 
-SceneObject.prototype.construct = function(name) {
+SceneObjectPrototype.construct = function(name) {
 
     ClassPrototype.construct.call(this);
 
@@ -37,7 +39,7 @@ SceneObject.prototype.construct = function(name) {
     return this;
 };
 
-SceneObject.prototype.destructor = function() {
+SceneObjectPrototype.destructor = function() {
     var components = this.__componentArray,
         i = components.length;
 
@@ -58,7 +60,7 @@ SceneObject.prototype.destructor = function() {
     return this;
 };
 
-SceneObject.prototype.destroy = function(emitEvent) {
+SceneObjectPrototype.destroy = function(emitEvent) {
     var scene = this.scene;
 
     if (!scene) {
@@ -73,15 +75,15 @@ SceneObject.prototype.destroy = function(emitEvent) {
     return this;
 };
 
-SceneObject.prototype.hasComponent = function(name) {
+SceneObjectPrototype.hasComponent = function(name) {
     return !!this.components[name];
 };
 
-SceneObject.prototype.getComponent = function(name) {
+SceneObjectPrototype.getComponent = function(name) {
     return this.components[name];
 };
 
-SceneObject.prototype.addComponent = function() {
+SceneObjectPrototype.addComponent = function() {
     var i = -1,
         il = arguments.length - 1;
 
@@ -117,7 +119,7 @@ function SceneObject_addComponent(_this, component) {
     }
 }
 
-SceneObject.prototype.removeComponent = function() {
+SceneObjectPrototype.removeComponent = function() {
     var i = -1,
         il = arguments.length - 1;
 
@@ -151,7 +153,7 @@ function SceneObject_removeComponent(_this, component) {
     }
 }
 
-SceneObject.prototype.add = function() {
+SceneObjectPrototype.add = function() {
     var i = -1,
         il = arguments.length - 1;
 
@@ -199,7 +201,7 @@ function SceneObject_add(_this, sceneObject) {
     }
 }
 
-SceneObject.prototype.remove = function() {
+SceneObjectPrototype.remove = function() {
     var i = -1,
         il = arguments.length - 1;
 
@@ -246,7 +248,7 @@ function updateDepth(child, depth) {
     }
 }
 
-SceneObject.prototype.toJSON = function(json) {
+SceneObjectPrototype.toJSON = function(json) {
     var components = this.__componentArray,
         children = this.children,
         i = -1,
@@ -275,7 +277,7 @@ SceneObject.prototype.toJSON = function(json) {
     return json;
 };
 
-SceneObject.prototype.fromJSON = function(json) {
+SceneObjectPrototype.fromJSON = function(json) {
     var jsonComponents = json.components,
         jsonChildren = json.children,
         i = -1,

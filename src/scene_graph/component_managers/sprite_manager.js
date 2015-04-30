@@ -2,6 +2,9 @@ var indexOf = require("index_of"),
     ComponentManager = require("./component_manager");
 
 
+var SpriteManagerPrototype;
+
+
 module.exports = SpriteManager;
 
 
@@ -11,12 +14,13 @@ function SpriteManager() {
     this.__dirtyLayers = [];
 }
 ComponentManager.extend(SpriteManager, "SpriteManager");
+SpriteManagerPrototype = SpriteManager.prototype;
 
-SpriteManager.prototype.construct = function() {
+SpriteManagerPrototype.construct = function() {
     return this;
 };
 
-SpriteManager.prototype.destructor = function() {
+SpriteManagerPrototype.destructor = function() {
 
     this.scene = null;
     this.__layers.length = 0;
@@ -25,7 +29,7 @@ SpriteManager.prototype.destructor = function() {
     return this;
 };
 
-SpriteManager.prototype.isEmpty = function() {
+SpriteManagerPrototype.isEmpty = function() {
     var layers = this.__layers,
         i = -1,
         il = layers.length - 1,
@@ -42,7 +46,7 @@ SpriteManager.prototype.isEmpty = function() {
     return true;
 };
 
-SpriteManager.prototype.sort = function() {
+SpriteManagerPrototype.sort = function() {
     var sortFunction = this.sortFunction,
         layers = this.__layers,
         i = -1,
@@ -60,7 +64,7 @@ SpriteManager.prototype.sort = function() {
     return this;
 };
 
-SpriteManager.prototype.sortLayer = function(index) {
+SpriteManagerPrototype.sortLayer = function(index) {
     var layer = this.__layers[index];
 
     if (layer && layer.length !== 0) {
@@ -70,11 +74,11 @@ SpriteManager.prototype.sortLayer = function(index) {
     return this;
 };
 
-SpriteManager.prototype.sortFunction = function(a, b) {
+SpriteManagerPrototype.sortFunction = function(a, b) {
     return a.z - b.z;
 };
 
-SpriteManager.prototype.setLayerAsDirty = function(layer) {
+SpriteManagerPrototype.setLayerAsDirty = function(layer) {
     this.__dirtyLayers[layer] = true;
     return this;
 };
@@ -82,7 +86,7 @@ SpriteManager.prototype.setLayerAsDirty = function(layer) {
 function init(component) {
     component.awake();
 }
-SpriteManager.prototype.init = function() {
+SpriteManagerPrototype.init = function() {
     this.forEach(init);
     return this;
 };
@@ -90,12 +94,12 @@ SpriteManager.prototype.init = function() {
 function awake(component) {
     component.awake();
 }
-SpriteManager.prototype.awake = function() {
+SpriteManagerPrototype.awake = function() {
     this.forEach(awake);
     return this;
 };
 
-SpriteManager.prototype.update = function() {
+SpriteManagerPrototype.update = function() {
     var layers = this.__layers,
         dirtyLayers = this.__dirtyLayers,
         i = -1,
@@ -121,7 +125,7 @@ SpriteManager.prototype.update = function() {
     return this;
 };
 
-SpriteManager.prototype.forEach = function(callback) {
+SpriteManagerPrototype.forEach = function(callback) {
     var layers = this.__layers,
         i = -1,
         il = layers.length - 1,
@@ -143,7 +147,7 @@ SpriteManager.prototype.forEach = function(callback) {
     return true;
 };
 
-SpriteManager.prototype.has = function(component) {
+SpriteManagerPrototype.has = function(component) {
     var layers = this.__layers,
         i = -1,
         il = layers.length - 1,
@@ -165,7 +169,7 @@ SpriteManager.prototype.has = function(component) {
     return false;
 };
 
-SpriteManager.prototype.add = function(component) {
+SpriteManagerPrototype.add = function(component) {
     var layers = this.__layers,
         componentLayer = component.layer,
         layer = layers[componentLayer] || (layers[componentLayer] = []),
@@ -178,7 +182,7 @@ SpriteManager.prototype.add = function(component) {
     return this;
 };
 
-SpriteManager.prototype.remove = function(component) {
+SpriteManagerPrototype.remove = function(component) {
     var layers = this.__layers,
         componentLayer = component.layer,
         layer = layers[componentLayer],

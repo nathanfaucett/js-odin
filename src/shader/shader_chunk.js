@@ -1,6 +1,9 @@
 var isArray = require("is_array");
 
 
+var ShaderChunkPrototype;
+
+
 module.exports = ShaderChunk;
 
 
@@ -12,12 +15,13 @@ function ShaderChunk() {
     this.requires = null;
     this.extensions = null;
 }
+ShaderChunkPrototype = ShaderChunk.prototype;
 
 ShaderChunk.create = function(options) {
     return (new ShaderChunk()).construct(options);
 };
 
-ShaderChunk.prototype.construct = function(options) {
+ShaderChunkPrototype.construct = function(options) {
 
     options = options || {};
 
@@ -31,7 +35,7 @@ ShaderChunk.prototype.construct = function(options) {
     return this;
 };
 
-ShaderChunk.prototype.destructor = function() {
+ShaderChunkPrototype.destructor = function() {
 
     this.code = null;
     this.template = null;

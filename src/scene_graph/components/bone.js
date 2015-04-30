@@ -6,7 +6,8 @@ var vec3 = require("vec3"),
 
 
 var ComponentPrototype = Component.prototype,
-    UNKNOWN_BONE_COUNT = 1;
+    UNKNOWN_BONE_COUNT = 1,
+    BonePrototype;
 
 
 module.exports = Bone;
@@ -28,9 +29,9 @@ function Bone() {
     this.inheritScale = true;
 }
 Component.extend(Bone, "Bone", BoneManager);
+BonePrototype = Bone.prototype;
 
-
-Bone.prototype.construct = function(options) {
+BonePrototype.construct = function(options) {
 
     ComponentPrototype.construct.call(this);
 
@@ -52,7 +53,7 @@ Bone.prototype.construct = function(options) {
     return this;
 };
 
-Bone.prototype.destructor = function() {
+BonePrototype.destructor = function() {
 
     ComponentPrototype.destructor.call(this);
 
@@ -75,7 +76,7 @@ var MAT = mat4.create(),
     SCALE = vec3.create(),
     ROTATION = quat.create();
 
-Bone.prototype.update = function() {
+BonePrototype.update = function() {
     var sceneObject = this.sceneObject,
         transform = sceneObject.components.Transform,
         uniform = this.uniform,
@@ -128,14 +129,14 @@ Bone.prototype.update = function() {
     return this;
 };
 
-Bone.prototype.toJSON = function(json) {
+BonePrototype.toJSON = function(json) {
 
     json = ComponentPrototype.toJSON.call(this, json);
 
     return json;
 };
 
-Bone.prototype.fromJSON = function(json) {
+BonePrototype.fromJSON = function(json) {
 
     ComponentPrototype.fromJSON.call(this, json);
 

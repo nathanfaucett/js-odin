@@ -2,6 +2,9 @@ var vec2 = require("vec2"),
     createPool = require("create_pool");
 
 
+var TouchPrototype;
+
+
 module.exports = Touch;
 
 
@@ -19,16 +22,17 @@ function Touch() {
     this.position = vec2.create();
 }
 createPool(Touch);
+TouchPrototype = Touch.prototype;
 
 Touch.create = function(e) {
     return (Touch.getPooled()).construct(e);
 };
 
-Touch.prototype.destroy = function() {
+TouchPrototype.destroy = function() {
     return Touch.release(this);
 };
 
-Touch.prototype.construct = function(e) {
+TouchPrototype.construct = function(e) {
 
     this.id = e.identifier;
 
@@ -43,7 +47,7 @@ Touch.prototype.construct = function(e) {
     return this;
 };
 
-Touch.prototype.destructor = function() {
+TouchPrototype.destructor = function() {
 
     this.id = null;
 
@@ -58,7 +62,7 @@ Touch.prototype.destructor = function() {
     return this;
 };
 
-Touch.prototype.update = function(e) {
+TouchPrototype.update = function(e) {
     var position = this.position,
         delta = this.delta,
 
@@ -82,7 +86,7 @@ Touch.prototype.update = function(e) {
     return this;
 };
 
-Touch.prototype.toJSON = function(json) {
+TouchPrototype.toJSON = function(json) {
     json = json || {};
 
     json.id = this.id;
@@ -99,7 +103,7 @@ Touch.prototype.toJSON = function(json) {
 };
 
 
-Touch.prototype.fromJSON = function(json) {
+TouchPrototype.fromJSON = function(json) {
 
     this.id = json.id;
 

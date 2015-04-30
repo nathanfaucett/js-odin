@@ -1,6 +1,9 @@
 var ComponentManager = require("./component_manager");
 
 
+var MeshManagerPrototype;
+
+
 module.exports = MeshManager;
 
 
@@ -8,7 +11,8 @@ function MeshManager() {
     ComponentManager.call(this);
 }
 ComponentManager.extend(MeshManager, "MeshManager");
+MeshManagerPrototype = MeshManager.prototype;
 
-MeshManager.prototype.sortFunction = function(a, b) {
+MeshManagerPrototype.sortFunction = function(a, b) {
     return a.geometry !== b.geometry ? 1 : (a.material !== b.material ? 1 : 0);
 };

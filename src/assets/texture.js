@@ -8,7 +8,9 @@ var ImageAssetPrototype = ImageAsset.prototype,
     FilterMode = enums.FilterMode,
     TextureFormat = enums.TextureFormat,
     TextureWrap = enums.TextureWrap,
-    TextureType = enums.TextureType;
+    TextureType = enums.TextureType,
+
+    TexturePrototype;
 
 
 module.exports = Texture;
@@ -39,8 +41,9 @@ function Texture() {
     this.type = null;
 }
 ImageAsset.extend(Texture, "Texture");
+TexturePrototype = Texture.prototype;
 
-Texture.prototype.construct = function(name, src, options) {
+TexturePrototype.construct = function(name, src, options) {
 
     ImageAssetPrototype.construct.call(this, name, src);
 
@@ -60,7 +63,7 @@ Texture.prototype.construct = function(name, src, options) {
     return this;
 };
 
-Texture.prototype.destructor = function() {
+TexturePrototype.destructor = function() {
 
     ImageAssetPrototype.destructor.call(this);
 
@@ -87,7 +90,7 @@ Texture.prototype.destructor = function() {
     return this;
 };
 
-Texture.prototype.parse = function() {
+TexturePrototype.parse = function() {
     var data = this.data;
 
     if (data != null) {
@@ -99,7 +102,7 @@ Texture.prototype.parse = function() {
     return this;
 };
 
-Texture.prototype.setSize = function(width, height) {
+TexturePrototype.setSize = function(width, height) {
 
     this.width = width;
     this.height = height;
@@ -112,7 +115,7 @@ Texture.prototype.setSize = function(width, height) {
     return this;
 };
 
-Texture.prototype.setOffset = function(x, y) {
+TexturePrototype.setOffset = function(x, y) {
 
     vec2.set(this.offset, x, y);
     this.emit("update");
@@ -120,7 +123,7 @@ Texture.prototype.setOffset = function(x, y) {
     return this;
 };
 
-Texture.prototype.setRepeat = function(x, y) {
+TexturePrototype.setRepeat = function(x, y) {
 
     vec2.set(this.repeat, x, y);
     this.emit("update");
@@ -128,7 +131,7 @@ Texture.prototype.setRepeat = function(x, y) {
     return this;
 };
 
-Texture.prototype.setMipmap = function(value) {
+TexturePrototype.setMipmap = function(value) {
 
     this.generateMipmap = value != null ? !!value : this.generateMipmap;
     this.emit("update");
@@ -136,7 +139,7 @@ Texture.prototype.setMipmap = function(value) {
     return this;
 };
 
-Texture.prototype.setAnisotropy = function(value) {
+TexturePrototype.setAnisotropy = function(value) {
 
     this.anisotropy = value;
     this.emit("update");
@@ -144,7 +147,7 @@ Texture.prototype.setAnisotropy = function(value) {
     return this;
 };
 
-Texture.prototype.setFilter = function(value) {
+TexturePrototype.setFilter = function(value) {
 
     this.filter = value;
     this.emit("update");
@@ -152,7 +155,7 @@ Texture.prototype.setFilter = function(value) {
     return this;
 };
 
-Texture.prototype.setFormat = function(value) {
+TexturePrototype.setFormat = function(value) {
 
     this.format = value;
     this.emit("update");
@@ -160,7 +163,7 @@ Texture.prototype.setFormat = function(value) {
     return this;
 };
 
-Texture.prototype.setWrap = function(value) {
+TexturePrototype.setWrap = function(value) {
 
     this.wrap = value;
     this.emit("update");
@@ -168,7 +171,7 @@ Texture.prototype.setWrap = function(value) {
     return this;
 };
 
-Texture.prototype.setType = function(value) {
+TexturePrototype.setType = function(value) {
 
     this.type = value;
     this.emit("update");

@@ -16,6 +16,11 @@ gulp.task("comn_bones", function() {
 });
 gulp.task("bones", require("./tasks/watch")("bones", ["comn_bones"]));
 
+gulp.task("min_bones", require("./tasks/uglify")(
+    "examples/bones/index.min.js",
+    "examples/bones"
+));
+
 gulp.task("comn_sprites", function() {
     comn({
         index: "examples/sprites/src/index.js",
@@ -23,3 +28,8 @@ gulp.task("comn_sprites", function() {
     });
 });
 gulp.task("sprites", require("./tasks/watch")("sprites", ["comn_sprites"]));
+
+gulp.task("min_sprites", require("./tasks/uglify")(
+    "examples/sprites/index.min.js",
+    "examples/sprites"
+));

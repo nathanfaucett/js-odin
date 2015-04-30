@@ -1,7 +1,8 @@
 var Class = require("../class");
 
 
-var ClassPrototype = Class.prototype;
+var ClassPrototype = Class.prototype,
+    AssetPrototype;
 
 
 module.exports = Asset;
@@ -16,8 +17,9 @@ function Asset() {
     this.data = null;
 }
 Class.extend(Asset, "Asset");
+AssetPrototype = Asset.prototype;
 
-Asset.prototype.construct = function(name, src) {
+AssetPrototype.construct = function(name, src) {
 
     ClassPrototype.construct.call(this);
 
@@ -27,7 +29,7 @@ Asset.prototype.construct = function(name, src) {
     return this;
 };
 
-Asset.prototype.destructor = function() {
+AssetPrototype.destructor = function() {
 
     ClassPrototype.destructor.call(this);
 
@@ -38,18 +40,18 @@ Asset.prototype.destructor = function() {
     return this;
 };
 
-Asset.prototype.setSrc = function(src) {
+AssetPrototype.setSrc = function(src) {
 
     this.src = src;
     return this;
 };
 
-Asset.prototype.parse = function() {
+AssetPrototype.parse = function() {
     this.emit("parse");
     return this;
 };
 
-Asset.prototype.load = function(callback) {
+AssetPrototype.load = function(callback) {
     this.emit("load");
     callback();
     return this;

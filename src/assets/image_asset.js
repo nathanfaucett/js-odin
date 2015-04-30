@@ -4,7 +4,8 @@ var Asset = require("./asset"),
     HttpError = require("http_error");
 
 
-var AssetPrototype = Asset.prototype;
+var AssetPrototype = Asset.prototype,
+    ImageAssetPrototype;
 
 
 module.exports = ImageAsset;
@@ -17,8 +18,9 @@ function ImageAsset() {
     this.__listenedTo = null;
 }
 Asset.extend(ImageAsset, "ImageAsset");
+ImageAssetPrototype = ImageAsset.prototype;
 
-ImageAsset.prototype.construct = function(name, src) {
+ImageAssetPrototype.construct = function(name, src) {
 
     AssetPrototype.construct.call(this, name, src);
 
@@ -28,7 +30,7 @@ ImageAsset.prototype.construct = function(name, src) {
     return this;
 };
 
-ImageAsset.prototype.destructor = function() {
+ImageAssetPrototype.destructor = function() {
 
     AssetPrototype.destructor.call(this);
 
@@ -37,7 +39,7 @@ ImageAsset.prototype.destructor = function() {
     return this;
 };
 
-ImageAsset.prototype.setSrc = function(src) {
+ImageAssetPrototype.setSrc = function(src) {
 
     AssetPrototype.setSrc.call(this, src);
 
@@ -48,7 +50,7 @@ ImageAsset.prototype.setSrc = function(src) {
     return this;
 };
 
-ImageAsset.prototype.load = function(callback) {
+ImageAssetPrototype.load = function(callback) {
     var _this = this,
         src = this.src,
         image = this.data;

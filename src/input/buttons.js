@@ -1,6 +1,9 @@
 var Button = require("./button");
 
 
+var ButtonsPrototype;
+
+
 module.exports = Buttons;
 
 
@@ -8,12 +11,13 @@ function Buttons() {
     this.__array = [];
     this.__hash = {};
 }
+ButtonsPrototype = Buttons.prototype;
 
 Buttons.create = function() {
     return (new Buttons()).construct();
 };
 
-Buttons.prototype.construct = function() {
+ButtonsPrototype.construct = function() {
 
     Buttons_add(this, "mouse0");
     Buttons_add(this, "mouse1");
@@ -22,7 +26,7 @@ Buttons.prototype.construct = function() {
     return this;
 };
 
-Buttons.prototype.destructor = function() {
+ButtonsPrototype.destructor = function() {
     var array = this.__array,
         hash = this.__hash,
         i = array.length,
@@ -38,15 +42,15 @@ Buttons.prototype.destructor = function() {
     return this;
 };
 
-Buttons.prototype.on = function(name, time, frame) {
+ButtonsPrototype.on = function(name, time, frame) {
     return (this.__hash[name] || Buttons_add(this, name)).on(time, frame);
 };
 
-Buttons.prototype.off = function(name, time, frame) {
+ButtonsPrototype.off = function(name, time, frame) {
     return (this.__hash[name] || Buttons_add(this, name)).off(time, frame);
 };
 
-Buttons.prototype.allOff = function(time, frame) {
+ButtonsPrototype.allOff = function(time, frame) {
     var array = this.__array,
         i = -1,
         il = array.length - 1;
@@ -68,7 +72,7 @@ function Buttons_add(_this, name) {
     return button;
 }
 
-Buttons.prototype.toJSON = function(json) {
+ButtonsPrototype.toJSON = function(json) {
 
     json = json || {};
 
@@ -88,7 +92,7 @@ function eachToJSON(array, out) {
     return out;
 }
 
-Buttons.prototype.fromJSON = function(json) {
+ButtonsPrototype.fromJSON = function(json) {
     var jsonArray = json.array,
         i = -1,
         il = jsonArray.length - 1,

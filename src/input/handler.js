@@ -6,6 +6,9 @@ var EventEmitter = require("event_emitter"),
     events = require("./events");
 
 
+var HandlerPrototype;
+
+
 module.exports = Handler;
 
 
@@ -22,19 +25,20 @@ function Handler() {
     this.__blurHandler = null;
 }
 EventEmitter.extend(Handler);
+HandlerPrototype = Handler.prototype;
 
 Handler.create = function(input) {
     return (new Handler()).construct(input);
 };
 
-Handler.prototype.construct = function(input) {
+HandlerPrototype.construct = function(input) {
 
     this.__input = input;
 
     return this;
 };
 
-Handler.prototype.destructor = function() {
+HandlerPrototype.destructor = function() {
 
     this.__input = null;
     this.__element = null;
@@ -47,7 +51,7 @@ Handler.prototype.destructor = function() {
     return this;
 };
 
-Handler.prototype.attach = function(element) {
+HandlerPrototype.attach = function(element) {
     var _this, input, stack;
 
     if (element === this.__element) {
@@ -102,7 +106,7 @@ Handler.prototype.attach = function(element) {
     return this;
 };
 
-Handler.prototype.detach = function() {
+HandlerPrototype.detach = function() {
     var element = this.__element;
 
     if (element) {

@@ -2,6 +2,9 @@ var createPool = require("create_pool"),
     keyCodes = require("./key_codes");
 
 
+var KeyEventPrototype;
+
+
 module.exports = KeyEvent;
 
 
@@ -13,16 +16,17 @@ function KeyEvent(e) {
     this.keyCode = keyCode;
 }
 createPool(KeyEvent);
+KeyEventPrototype = KeyEvent.prototype;
 
 KeyEvent.create = function(e) {
     return KeyEvent.getPooled(e);
 };
 
-KeyEvent.prototype.destroy = function() {
+KeyEventPrototype.destroy = function() {
     KeyEvent.release(this);
 };
 
-KeyEvent.prototype.destructor = function() {
+KeyEventPrototype.destructor = function() {
     this.type = null;
     this.key = null;
     this.keyCode = null;

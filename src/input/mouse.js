@@ -1,6 +1,9 @@
 var vec2 = require("vec2");
 
 
+var MousePrototype;
+
+
 module.exports = Mouse;
 
 
@@ -10,12 +13,13 @@ function Mouse() {
     this.wheel = null;
     this.__first = null;
 }
+MousePrototype = Mouse.prototype;
 
 Mouse.create = function() {
     return (new Mouse()).construct();
 };
 
-Mouse.prototype.construct = function() {
+MousePrototype.construct = function() {
 
     this.wheel = 0;
     this.__first = false;
@@ -23,7 +27,7 @@ Mouse.prototype.construct = function() {
     return this;
 };
 
-Mouse.prototype.destructor = function() {
+MousePrototype.destructor = function() {
 
     vec2.set(this.position, 0, 0);
     vec2.set(this.delta, 0, 0);
@@ -33,7 +37,7 @@ Mouse.prototype.destructor = function() {
     return this;
 };
 
-Mouse.prototype.update = function(x, y) {
+MousePrototype.update = function(x, y) {
     var first = this.__first,
         position = this.position,
         delta = this.delta,

@@ -6,7 +6,8 @@ var Component = require("./component"),
     mat4 = require("mat4");
 
 
-var ComponentPrototype = Component.prototype;
+var ComponentPrototype = Component.prototype,
+    TransformPrototype;
 
 
 module.exports = Transform;
@@ -24,15 +25,16 @@ function Transform() {
     this.matrixWorld = mat4.create();
 }
 Component.extend(Transform, "Transform", TransformManager);
+TransformPrototype = Transform.prototype;
 
-Transform.prototype.construct = function() {
+TransformPrototype.construct = function() {
 
     ComponentPrototype.construct.call(this);
 
     return this;
 };
 
-Transform.prototype.destructor = function() {
+TransformPrototype.destructor = function() {
 
     ComponentPrototype.destructor.call(this);
 
@@ -46,30 +48,30 @@ Transform.prototype.destructor = function() {
     return this;
 };
 
-Transform.prototype.init = function() {
+TransformPrototype.init = function() {
 
     ComponentPrototype.init.call(this);
 
     return this;
 };
 
-Transform.prototype.setPosition = function(v) {
+TransformPrototype.setPosition = function(v) {
     vec3.copy(this.position, v);
     return this;
 };
 
-Transform.prototype.setRotation = function(v) {
+TransformPrototype.setRotation = function(v) {
     quat.copy(this.rotation, v);
     return this;
 };
 
-Transform.prototype.setScale = function(v) {
+TransformPrototype.setScale = function(v) {
     vec3.copy(this.scale, v);
     return this;
 };
 
 var translate_vec3 = vec3.create();
-Transform.prototype.translate = function(translation, relativeTo) {
+TransformPrototype.translate = function(translation, relativeTo) {
     var thisPosition = this.position,
         v = vec3.copy(translate_vec3, translation);
 
@@ -85,7 +87,7 @@ Transform.prototype.translate = function(translation, relativeTo) {
 };
 
 var rotate_vec3 = vec3.create();
-Transform.prototype.rotate = function(rotation, relativeTo) {
+TransformPrototype.rotate = function(rotation, relativeTo) {
     var thisRotation = this.rotation,
         v = vec3.copy(rotate_vec3, rotation);
 
@@ -103,7 +105,7 @@ Transform.prototype.rotate = function(rotation, relativeTo) {
 var lookAt_mat = mat4.create(),
     lookAt_vec = vec3.create(),
     lookAt_dup = vec3.create(0, 0, 1);
-Transform.prototype.lookAt = function(target, up) {
+TransformPrototype.lookAt = function(target, up) {
     var mat = lookAt_mat,
         vec = lookAt_vec;
 
@@ -121,14 +123,14 @@ Transform.prototype.lookAt = function(target, up) {
     return this;
 };
 
-Transform.prototype.awake = function() {
+TransformPrototype.awake = function() {
 
     ComponentPrototype.awake.call(this);
 
     return this;
 };
 
-Transform.prototype.update = function() {
+TransformPrototype.update = function() {
     var matrix = this.matrix,
         sceneObject = this.sceneObject,
         parent = sceneObject && sceneObject.parent,
@@ -147,17 +149,17 @@ Transform.prototype.update = function() {
     return this;
 };
 
-Transform.prototype.calculateModelView = function(viewMatrix, modelView) {
+TransformPrototype.calculateModelView = function(viewMatrix, modelView) {
 
     return mat4.mul(modelView, viewMatrix, this.matrixWorld);
 };
 
-Transform.prototype.calculateNormalMatrix = function(modelView, normalMatrix) {
+TransformPrototype.calculateNormalMatrix = function(modelView, normalMatrix) {
 
     return mat3.transpose(normalMatrix, mat3.inverseMat4(normalMatrix, modelView));
 };
 
-Transform.prototype.toJSON = function(json) {
+TransformPrototype.toJSON = function(json) {
 
     json = ComponentPrototype.toJSON.call(this, json);
 
@@ -168,7 +170,7 @@ Transform.prototype.toJSON = function(json) {
     return json;
 };
 
-Transform.prototype.fromJSON = function(json) {
+TransformPrototype.fromJSON = function(json) {
 
     ComponentPrototype.fromJSON.call(this, json);
 

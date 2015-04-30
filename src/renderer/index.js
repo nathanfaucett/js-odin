@@ -11,7 +11,8 @@ var indexOf = require("index_of"),
     RendererMaterial = require("./renderer_material");
 
 
-var ClassPrototype = Class.prototype;
+var ClassPrototype = Class.prototype,
+    RendererPrototype;
 
 
 module.exports = Renderer;
@@ -41,8 +42,9 @@ function Renderer() {
     };
 }
 Class.extend(Renderer, "Renderer");
+RendererPrototype = Renderer.prototype;
 
-Renderer.prototype.construct = function() {
+RendererPrototype.construct = function() {
 
     ClassPrototype.construct.call(this);
 
@@ -53,7 +55,7 @@ Renderer.prototype.construct = function() {
     return this;
 };
 
-Renderer.prototype.destructor = function() {
+RendererPrototype.destructor = function() {
 
     ClassPrototype.destructor.call(this);
 
@@ -64,7 +66,7 @@ Renderer.prototype.destructor = function() {
     return this;
 };
 
-Renderer.prototype.__onContextCreation = function() {
+RendererPrototype.__onContextCreation = function() {
     var renderers = this.__rendererArray,
         i = -1,
         il = renderers.length - 1;
@@ -76,7 +78,7 @@ Renderer.prototype.__onContextCreation = function() {
     return this;
 };
 
-Renderer.prototype.__onContextDestroy = function() {
+RendererPrototype.__onContextDestroy = function() {
     var renderers = this.__rendererArray,
         i = -1,
         il = renderers.length - 1;
@@ -88,7 +90,7 @@ Renderer.prototype.__onContextDestroy = function() {
     return this;
 };
 
-Renderer.prototype.addRenderer = function(renderer, override, sort) {
+RendererPrototype.addRenderer = function(renderer, override, sort) {
     var renderers = this.__rendererArray,
         rendererHash = this.renderers,
         index = rendererHash[renderer.componentName];
@@ -105,7 +107,7 @@ Renderer.prototype.addRenderer = function(renderer, override, sort) {
     return this;
 };
 
-Renderer.prototype.removeRenderer = function(componentName) {
+RendererPrototype.removeRenderer = function(componentName) {
     var renderers = this.__rendererArray,
         rendererHash = this.renderers,
         renderer = rendererHash[componentName];
@@ -118,7 +120,7 @@ Renderer.prototype.removeRenderer = function(componentName) {
     return this;
 };
 
-Renderer.prototype.sortRenderers = function() {
+RendererPrototype.sortRenderers = function() {
     this.__rendererArray.sort(sortRenderers);
     return this;
 };
@@ -127,7 +129,7 @@ function sortRenderers(a, b) {
     return a.order - b.order;
 }
 
-Renderer.prototype.setCanvas = function(canvas, attributes) {
+RendererPrototype.setCanvas = function(canvas, attributes) {
     var context = this.context;
 
     if (canvas && context.canvas !== canvas) {
@@ -147,19 +149,19 @@ Renderer.prototype.setCanvas = function(canvas, attributes) {
     return this;
 };
 
-Renderer.prototype.geometry = function(geometry) {
+RendererPrototype.geometry = function(geometry) {
     var geometries = this.__geometries;
     return geometries[geometry.__id] || (geometries[geometry.__id] = RendererGeometry.create(this.context, geometry));
 };
 
-Renderer.prototype.material = function(material) {
+RendererPrototype.material = function(material) {
     var materials = this.__materials;
     return materials[material.__id] || (materials[material.__id] = RendererMaterial.create(this, this.context, material));
 };
 
 var bindUniforms_mat = mat4.create();
 
-Renderer.prototype.bindBoneUniforms = function(bones, glUniforms) {
+RendererPrototype.bindBoneUniforms = function(bones, glUniforms) {
     var boneMatrix = glUniforms.__hash.boneMatrix,
         boneMatrixValue, mat, i, il, index, bone;
 
@@ -200,7 +202,7 @@ Renderer.prototype.bindBoneUniforms = function(bones, glUniforms) {
     }
 };
 
-Renderer.prototype.bindUniforms = function(projection, modelView, normalMatrix, uniforms, glUniforms) {
+RendererPrototype.bindUniforms = function(projection, modelView, normalMatrix, uniforms, glUniforms) {
     var glHash = glUniforms.__hash,
         glArray = glUniforms.__array,
         glUniform, uniform, i, il;
@@ -229,7 +231,7 @@ Renderer.prototype.bindUniforms = function(projection, modelView, normalMatrix, 
     return this;
 };
 
-Renderer.prototype.bindAttributes = function(buffers, vertexBuffer, glAttributes) {
+RendererPrototype.bindAttributes = function(buffers, vertexBuffer, glAttributes) {
     var glArray = glAttributes.__array,
         i = -1,
         il = glArray.length - 1,
@@ -244,7 +246,7 @@ Renderer.prototype.bindAttributes = function(buffers, vertexBuffer, glAttributes
     return this;
 };
 
-Renderer.prototype.render = function(scene, camera) {
+RendererPrototype.render = function(scene, camera) {
     var _this, context, renderers, renderer, managerHash, manager, i, il;
 
     _this = this;

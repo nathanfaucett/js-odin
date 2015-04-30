@@ -1,6 +1,9 @@
 var Axis = require("./axis");
 
 
+var AxesPrototype;
+
+
 module.exports = Axes;
 
 
@@ -8,12 +11,13 @@ function Axes() {
     this.__array = [];
     this.__hash = {};
 }
+AxesPrototype = Axes.prototype;
 
 Axes.create = function() {
     return (new Axes()).construct();
 };
 
-Axes.prototype.construct = function() {
+AxesPrototype.construct = function() {
 
     this.add({
         name: "horizontal",
@@ -83,7 +87,7 @@ Axes.prototype.construct = function() {
     return this;
 };
 
-Axes.prototype.destructor = function() {
+AxesPrototype.destructor = function() {
     var array = this.__array,
         hash = this.__hash,
         i = array.length,
@@ -99,7 +103,7 @@ Axes.prototype.destructor = function() {
     return this;
 };
 
-Axes.prototype.add = function(options) {
+AxesPrototype.add = function(options) {
     var hash = this.__hash,
         array = this.__array,
         instance;
@@ -125,11 +129,11 @@ Axes.prototype.add = function(options) {
     return instance;
 };
 
-Axes.prototype.get = function(name) {
+AxesPrototype.get = function(name) {
     return this.__hash[name];
 };
 
-Axes.prototype.update = function(input, dt) {
+AxesPrototype.update = function(input, dt) {
     var array = this.__array,
         i = -1,
         il = array.length - 1;
@@ -141,7 +145,7 @@ Axes.prototype.update = function(input, dt) {
     return this;
 };
 
-Axes.prototype.toJSON = function(json) {
+AxesPrototype.toJSON = function(json) {
 
     json = json || {};
 
@@ -161,7 +165,7 @@ function eachToJSON(array, out) {
     return out;
 }
 
-Axes.prototype.fromJSON = function(json) {
+AxesPrototype.fromJSON = function(json) {
     var jsonArray = json.array,
         i = -1,
         il = jsonArray.length - 1,

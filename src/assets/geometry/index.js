@@ -11,7 +11,8 @@ var vec3 = require("vec3"),
 
 var JSONAssetPrototype = JSONAsset.prototype,
     NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array,
-    NativeUint16Array = typeof(Uint16Array) !== "undefined" ? Uint16Array : Array;
+    NativeUint16Array = typeof(Uint16Array) !== "undefined" ? Uint16Array : Array,
+    GeometryPrototype;
 
 
 module.exports = Geometry;
@@ -33,15 +34,16 @@ function Geometry() {
     this.boneWeightCount = 3;
 }
 JSONAsset.extend(Geometry, "Geometry");
+GeometryPrototype = Geometry.prototype;
 
-Geometry.prototype.construct = function(name, src, options) {
+GeometryPrototype.construct = function(name, src, options) {
 
     JSONAssetPrototype.construct.call(this, name, src, options);
 
     return this;
 };
 
-Geometry.prototype.destructor = function() {
+GeometryPrototype.destructor = function() {
 
     JSONAssetPrototype.destructor.call(this);
 
@@ -57,21 +59,21 @@ Geometry.prototype.destructor = function() {
     return this;
 };
 
-Geometry.prototype.getAttribute = function(name) {
+GeometryPrototype.getAttribute = function(name) {
     return this.attributes.get(name);
 };
 
-Geometry.prototype.addAttribute = function(name, length, itemSize, ArrayType, dynamic, items) {
+GeometryPrototype.addAttribute = function(name, length, itemSize, ArrayType, dynamic, items) {
     this.attributes.add(Attribute.create(this, name, length, itemSize, ArrayType, dynamic, items));
     return this;
 };
 
-Geometry.prototype.removeAttribute = function(name) {
+GeometryPrototype.removeAttribute = function(name) {
     this.attributes.remove(name);
     return this;
 };
 
-Geometry.prototype.parse = function() {
+GeometryPrototype.parse = function() {
     var data = this.data,
         dataBones = data.bones,
         bones = this.bones,
@@ -134,7 +136,7 @@ Geometry.prototype.parse = function() {
     return this;
 };
 
-Geometry.prototype.calculateAABB = function() {
+GeometryPrototype.calculateAABB = function() {
     var position = this.attributes.__hash.position;
 
     if (position) {
@@ -143,7 +145,7 @@ Geometry.prototype.calculateAABB = function() {
     return this;
 };
 
-Geometry.prototype.calculateBoundingSphere = function() {
+GeometryPrototype.calculateBoundingSphere = function() {
     var position = this.attributes.__hash.position,
         bx = 0,
         by = 0,
@@ -197,7 +199,7 @@ var calculateNormals_u = vec3.create(),
 
     calculateNormals_faceNormal = vec3.create();
 
-Geometry.prototype.calculateNormals = function() {
+GeometryPrototype.calculateNormals = function() {
     var u = calculateNormals_u,
         v = calculateNormals_v,
         uv = calculateNormals_uv,
@@ -318,7 +320,7 @@ var calculateTangents_tan1 = [],
     calculateTangents_tmp1 = vec3.create(),
     calculateTangents_tmp2 = vec3.create(),
     calculateTangents_tmp3 = vec3.create();
-Geometry.prototype.calculateTangents = function() {
+GeometryPrototype.calculateTangents = function() {
     var tan1 = calculateTangents_tan1,
         tan2 = calculateTangents_tan2,
         sdir = calculateTangents_sdir,

@@ -1,6 +1,9 @@
 var createPool = require("create_pool");
 
 
+var WheelEventPrototype;
+
+
 module.exports = WheelEvent;
 
 
@@ -11,16 +14,17 @@ function WheelEvent(e) {
     this.deltaZ = e.deltaZ;
 }
 createPool(WheelEvent);
+WheelEventPrototype = WheelEvent.prototype;
 
 WheelEvent.create = function(e) {
     return WheelEvent.getPooled(e);
 };
 
-WheelEvent.prototype.destroy = function() {
+WheelEventPrototype.destroy = function() {
     WheelEvent.release(this);
 };
 
-WheelEvent.prototype.destructor = function() {
+WheelEventPrototype.destructor = function() {
     this.type = null;
     this.deltaX = null;
     this.deltaY = null;

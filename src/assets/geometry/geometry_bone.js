@@ -3,7 +3,8 @@ var vec3 = require("vec3"),
     mat4 = require("mat4");
 
 
-var UNKNOWN_BONE_COUNT = 1;
+var UNKNOWN_BONE_COUNT = 1,
+    GeometryBonePrototype;
 
 
 module.exports = GeometryBone;
@@ -19,12 +20,13 @@ function GeometryBone() {
     this.scale = vec3.create(1, 1, 1);
     this.bindPose = mat4.create();
 }
+GeometryBonePrototype = GeometryBone.prototype;
 
 GeometryBone.create = function(parentIndex, name) {
     return (new GeometryBone()).construct(parentIndex, name);
 };
 
-GeometryBone.prototype.construct = function(parentIndex, name) {
+GeometryBonePrototype.construct = function(parentIndex, name) {
 
     this.parentIndex = parentIndex != null ? parentIndex : -1;
     this.name = name != null ? name : "GeometryBone" + UNKNOWN_BONE_COUNT++;
@@ -33,7 +35,7 @@ GeometryBone.prototype.construct = function(parentIndex, name) {
     return this;
 };
 
-GeometryBone.prototype.destructor = function() {
+GeometryBonePrototype.destructor = function() {
 
     this.parentIndex = null;
     this.name = null;

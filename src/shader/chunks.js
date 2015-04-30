@@ -19,6 +19,10 @@ chunks.size = ShaderChunk.create({
     code: "uniform vec2 size;\n"
 });
 
+chunks.clipping = ShaderChunk.create({
+    code: "uniform vec4 clipping;\n"
+});
+
 chunks.position = ShaderChunk.create({
     code: "attribute vec3 position;\n",
     fragment: false
@@ -245,5 +249,21 @@ chunks.getNormal = ShaderChunk.create({
     ].join("\n"),
     template: ["useBones"],
     requires: ["getBoneNormal", "normalMatrix", "normal"],
+    fragment: false
+});
+
+chunks.getUV = ShaderChunk.create({
+    code: [
+        "vec2 getUV() {",
+        "    <% if (isSprite) { %>",
+        "    return clipping.xy + (uv * clipping.zw);",
+        "    <% } else { %>",
+        "    return uv;",
+        "    <% } %>",
+        "}",
+        ""
+    ].join("\n"),
+    template: ["isSprite"],
+    requires: ["clipping", "uv"],
     fragment: false
 });

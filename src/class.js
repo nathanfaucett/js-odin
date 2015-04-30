@@ -4,6 +4,9 @@ var isFunction = require("is_function"),
     uuid = require("uuid");
 
 
+var ClassPrototype;
+
+
 module.exports = Class;
 
 
@@ -14,6 +17,7 @@ function Class() {
     this.__id = null;
 }
 EventEmitter.extend(Class);
+ClassPrototype = Class.prototype;
 
 Class.extend = function(child, className) {
 
@@ -35,28 +39,28 @@ Class.createFromJSON = function(json) {
     return Class.__classes[json.className].create().fromJSON(json);
 };
 
-Class.className = Class.prototype.className = "Class";
+Class.className = ClassPrototype.className = "Class";
 
 Class.create = function() {
     var instance = new this();
     return instance.construct.apply(instance, arguments);
 };
 
-Class.prototype.construct = function() {
+ClassPrototype.construct = function() {
 
     this.__id = uuid();
 
     return this;
 };
 
-Class.prototype.destructor = function() {
+ClassPrototype.destructor = function() {
 
     this.__id = null;
 
     return this;
 };
 
-Class.prototype.toJSON = function(json) {
+ClassPrototype.toJSON = function(json) {
     json = json || {};
 
     json.className = this.className;
@@ -64,7 +68,6 @@ Class.prototype.toJSON = function(json) {
     return json;
 };
 
-Class.prototype.fromJSON = function( /* json */ ) {
-
+ClassPrototype.fromJSON = function( /* json */ ) {
     return this;
 };

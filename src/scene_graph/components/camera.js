@@ -8,7 +8,8 @@ var isNumber = require("is_number"),
     color = require("color");
 
 
-var ComponentPrototype = Component.prototype;
+var ComponentPrototype = Component.prototype,
+    CameraPrototype;
 
 
 module.exports = Camera;
@@ -45,8 +46,9 @@ function Camera() {
     this.__active = false;
 }
 Component.extend(Camera, "Camera", CameraManager);
+CameraPrototype = Camera.prototype;
 
-Camera.prototype.construct = function(options) {
+CameraPrototype.construct = function(options) {
 
     ComponentPrototype.construct.call(this);
 
@@ -77,7 +79,7 @@ Camera.prototype.construct = function(options) {
     return this;
 };
 
-Camera.prototype.destructor = function() {
+CameraPrototype.destructor = function() {
 
     ComponentPrototype.destructor.call(this);
 
@@ -92,7 +94,7 @@ Camera.prototype.destructor = function() {
     return this;
 };
 
-Camera.prototype.set = function(width, height) {
+CameraPrototype.set = function(width, height) {
 
     this.width = width;
     this.height = height;
@@ -106,7 +108,7 @@ Camera.prototype.set = function(width, height) {
     return this;
 };
 
-Camera.prototype.setActive = function() {
+CameraPrototype.setActive = function() {
     var manager = this.manager;
 
     if (manager) {
@@ -118,7 +120,7 @@ Camera.prototype.setActive = function() {
     return this;
 };
 
-Camera.prototype.setWidth = function(width) {
+CameraPrototype.setWidth = function(width) {
 
     this.width = width;
     this.aspect = width / this.height;
@@ -130,7 +132,7 @@ Camera.prototype.setWidth = function(width) {
     return this;
 };
 
-Camera.prototype.setHeight = function(height) {
+CameraPrototype.setHeight = function(height) {
 
     this.height = height;
     this.aspect = this.width / height;
@@ -142,7 +144,7 @@ Camera.prototype.setHeight = function(height) {
     return this;
 };
 
-Camera.prototype.setFov = function(value) {
+CameraPrototype.setFov = function(value) {
 
     this.fov = value;
     this.needsUpdate = true;
@@ -150,7 +152,7 @@ Camera.prototype.setFov = function(value) {
     return this;
 };
 
-Camera.prototype.setNear = function(value) {
+CameraPrototype.setNear = function(value) {
 
     this.near = value;
     this.needsUpdate = true;
@@ -158,7 +160,7 @@ Camera.prototype.setNear = function(value) {
     return this;
 };
 
-Camera.prototype.setFar = function(value) {
+CameraPrototype.setFar = function(value) {
 
     this.far = value;
     this.needsUpdate = true;
@@ -166,7 +168,7 @@ Camera.prototype.setFar = function(value) {
     return this;
 };
 
-Camera.prototype.setOrthographic = function(value) {
+CameraPrototype.setOrthographic = function(value) {
 
     this.orthographic = !!value;
     this.needsUpdate = true;
@@ -174,7 +176,7 @@ Camera.prototype.setOrthographic = function(value) {
     return this;
 };
 
-Camera.prototype.toggleOrthographic = function() {
+CameraPrototype.toggleOrthographic = function() {
 
     this.orthographic = !this.orthographic;
     this.needsUpdate = true;
@@ -182,7 +184,7 @@ Camera.prototype.toggleOrthographic = function() {
     return this;
 };
 
-Camera.prototype.setOrthographicSize = function(size) {
+CameraPrototype.setOrthographicSize = function(size) {
 
     this.orthographicSize = mathf.clamp(size, this.minOrthographicSize, this.maxOrthographicSize);
     this.needsUpdate = true;
@@ -193,7 +195,7 @@ Camera.prototype.setOrthographicSize = function(size) {
 var MAT4 = mat4.create(),
     VEC3 = vec3.create();
 
-Camera.prototype.toWorld = function(v, out) {
+CameraPrototype.toWorld = function(v, out) {
     out = out || vec3.create();
 
     out[0] = 2.0 * (v[0] * this.invWidth) - 1.0;
@@ -208,7 +210,7 @@ Camera.prototype.toWorld = function(v, out) {
 };
 
 
-Camera.prototype.toScreen = function(v, out) {
+CameraPrototype.toScreen = function(v, out) {
     out = out || vec2.create();
 
     vec3.copy(VEC3, v);
@@ -222,7 +224,7 @@ Camera.prototype.toScreen = function(v, out) {
     return out;
 };
 
-Camera.prototype.update = function(force) {
+CameraPrototype.update = function(force) {
     var sceneObject = this.sceneObject,
         transform = sceneObject && (sceneObject.components.Transform || sceneObject.components.Transform2D),
         orthographicSize, right, left, top, bottom;
@@ -258,7 +260,7 @@ Camera.prototype.update = function(force) {
     return this;
 };
 
-Camera.prototype.toJSON = function(json) {
+CameraPrototype.toJSON = function(json) {
 
     json = ComponentPrototype.toJSON.call(this, json);
 
@@ -283,7 +285,7 @@ Camera.prototype.toJSON = function(json) {
     return json;
 };
 
-Camera.prototype.fromJSON = function(json) {
+CameraPrototype.fromJSON = function(json) {
 
     ComponentPrototype.fromJSON.call(this, json);
 

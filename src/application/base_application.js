@@ -7,7 +7,8 @@ var isString = require("is_string"),
     Scene = require("../scene_graph/scene");
 
 
-var ClassPrototype = Class.prototype;
+var ClassPrototype = Class.prototype,
+    BaseApplicationPrototype;
 
 
 module.exports = BaseApplication;
@@ -29,15 +30,16 @@ function BaseApplication() {
 
 }
 Class.extend(BaseApplication, "BaseApplication");
+BaseApplicationPrototype = BaseApplication.prototype;
 
-BaseApplication.prototype.construct = function() {
+BaseApplicationPrototype.construct = function() {
 
     ClassPrototype.construct.call(this);
 
     return this;
 };
 
-BaseApplication.prototype.destructor = function() {
+BaseApplicationPrototype.destructor = function() {
     var scenes = this.__scenes,
         sceneHash = this.__sceneHash,
         i = scenes.length,
@@ -58,7 +60,7 @@ BaseApplication.prototype.destructor = function() {
     return this;
 };
 
-BaseApplication.prototype.init = function() {
+BaseApplicationPrototype.init = function() {
 
     this.__loop.run();
     this.emit("init");
@@ -66,7 +68,7 @@ BaseApplication.prototype.init = function() {
     return this;
 };
 
-BaseApplication.prototype.pause = function() {
+BaseApplicationPrototype.pause = function() {
 
     this.__loop.pause();
     this.emit("pause");
@@ -74,7 +76,7 @@ BaseApplication.prototype.pause = function() {
     return this;
 };
 
-BaseApplication.prototype.resume = function() {
+BaseApplicationPrototype.resume = function() {
 
     this.__loop.run();
     this.emit("resume");
@@ -82,22 +84,22 @@ BaseApplication.prototype.resume = function() {
     return this;
 };
 
-BaseApplication.prototype.isRunning = function() {
+BaseApplicationPrototype.isRunning = function() {
     return this.__loop.isRunning();
 };
 
-BaseApplication.prototype.isPaused = function() {
+BaseApplicationPrototype.isPaused = function() {
     return this.__loop.isPaused();
 };
 
-BaseApplication.prototype.loop = function() {
+BaseApplicationPrototype.loop = function() {
 
     this.emit("loop");
 
     return this;
 };
 
-BaseApplication.prototype.addScene = function() {
+BaseApplicationPrototype.addScene = function() {
     var i = -1,
         il = arguments.length - 1;
 
@@ -125,7 +127,7 @@ function BaseApplication_addScene(_this, scene) {
     }
 }
 
-BaseApplication.prototype.removeScene = function() {
+BaseApplicationPrototype.removeScene = function() {
     var i = -1,
         il = arguments.length - 1;
 

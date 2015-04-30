@@ -1,6 +1,9 @@
 var time = require("time");
 
 
+var TimePrototype;
+
+
 module.exports = Time;
 
 
@@ -108,19 +111,20 @@ function Time() {
         return _this;
     };
 }
+TimePrototype = Time.prototype;
 
 Time.create = function() {
     return new Time();
 };
 
-Time.prototype.now = function() {
+TimePrototype.now = function() {
     return time.now() * 0.001;
 };
 
-Time.prototype.stamp = function() {
+TimePrototype.stamp = function() {
     return time.stamp() * 0.001;
 };
 
-Time.prototype.stampMS = function() {
+TimePrototype.stampMS = function() {
     return time.stamp();
 };

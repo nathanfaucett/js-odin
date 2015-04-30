@@ -3,6 +3,9 @@ var mat3 = require("mat3"),
     ComponentRenderer = require("./component_renderer");
 
 
+var MeshRendererPrototype;
+
+
 module.exports = MeshRenderer;
 
 
@@ -10,11 +13,12 @@ function MeshRenderer() {
     ComponentRenderer.call(this);
 }
 ComponentRenderer.extend(MeshRenderer, "MeshRenderer", "Mesh", 1);
+MeshRendererPrototype = MeshRenderer.prototype;
 
 var modelView = mat4.create(),
     normalMatrix = mat3.create();
 
-MeshRenderer.prototype.render = function(mesh, camera) {
+MeshRendererPrototype.render = function(mesh, camera) {
     var renderer = this.renderer,
         context = renderer.context,
         gl = context.gl,

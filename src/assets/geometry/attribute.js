@@ -1,4 +1,5 @@
-var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
+var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array,
+    AttributePrototype;
 
 
 module.exports = Attribute;
@@ -11,12 +12,13 @@ function Attribute() {
     this.itemSize = null;
     this.dynamic = null;
 }
+AttributePrototype = Attribute.prototype;
 
 Attribute.create = function(geometry, name, length, itemSize, ArrayType, dynamic, items) {
     return (new Attribute()).construct(geometry, name, length, itemSize, ArrayType, dynamic, items);
 };
 
-Attribute.prototype.construct = function(geometry, name, length, itemSize, ArrayType, dynamic, items) {
+AttributePrototype.construct = function(geometry, name, length, itemSize, ArrayType, dynamic, items) {
 
     ArrayType = ArrayType || NativeFloat32Array;
 
@@ -33,7 +35,7 @@ Attribute.prototype.construct = function(geometry, name, length, itemSize, Array
     return this;
 };
 
-Attribute.prototype.destructor = function() {
+AttributePrototype.destructor = function() {
 
     this.geometry = null;
     this.name = null;
@@ -44,7 +46,7 @@ Attribute.prototype.destructor = function() {
     return this;
 };
 
-Attribute.prototype.setDynamic = function(value) {
+AttributePrototype.setDynamic = function(value) {
     if (this.dynamic === value) {
         return this;
     }
@@ -53,31 +55,31 @@ Attribute.prototype.setDynamic = function(value) {
     return this;
 };
 
-Attribute.prototype.set = function(array) {
+AttributePrototype.set = function(array) {
 
     this.array.set(array);
     return this;
 };
 
-Attribute.prototype.setX = function(index, x) {
+AttributePrototype.setX = function(index, x) {
 
     this.array[index * this.itemSize] = x;
     return this;
 };
 
-Attribute.prototype.setY = function(index, y) {
+AttributePrototype.setY = function(index, y) {
 
     this.array[index * this.itemSize + 1] = y;
     return this;
 };
 
-Attribute.prototype.setZ = function(index, z) {
+AttributePrototype.setZ = function(index, z) {
 
     this.array[index * this.itemSize + 2] = z;
     return this;
 };
 
-Attribute.prototype.setXY = function(index, x, y) {
+AttributePrototype.setXY = function(index, x, y) {
     var array = this.array;
 
     index = index * this.itemSize;
@@ -87,7 +89,7 @@ Attribute.prototype.setXY = function(index, x, y) {
     return this;
 };
 
-Attribute.prototype.setXYZ = function(index, x, y, z) {
+AttributePrototype.setXYZ = function(index, x, y, z) {
     var array = this.array;
 
     index = index * this.itemSize;
@@ -98,7 +100,7 @@ Attribute.prototype.setXYZ = function(index, x, y, z) {
     return this;
 };
 
-Attribute.prototype.setXYZW = function(index, x, y, z, w) {
+AttributePrototype.setXYZW = function(index, x, y, z, w) {
     var array = this.array;
 
     index = index * this.itemSize;

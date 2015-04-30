@@ -1,6 +1,9 @@
 var createPool = require("create_pool");
 
 
+var DeviceMotionEventPrototype;
+
+
 module.exports = DeviceMotionEvent;
 
 
@@ -9,16 +12,17 @@ function DeviceMotionEvent(e) {
     this.accelerationIncludingGravity = e.accelerationIncludingGravity;
 }
 createPool(DeviceMotionEvent);
+DeviceMotionEventPrototype = DeviceMotionEvent.prototype;
 
 DeviceMotionEvent.create = function(e) {
     return DeviceMotionEvent.getPooled(e);
 };
 
-DeviceMotionEvent.prototype.destroy = function() {
+DeviceMotionEventPrototype.destroy = function() {
     DeviceMotionEvent.release(this);
 };
 
-DeviceMotionEvent.prototype.destructor = function() {
+DeviceMotionEventPrototype.destructor = function() {
     this.type = null;
     this.accelerationIncludingGravity = null;
 };

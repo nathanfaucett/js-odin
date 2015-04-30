@@ -3,6 +3,9 @@ var Asset = require("./asset"),
     HttpError = require("http_error");
 
 
+var TextAssetPrototype;
+
+
 module.exports = TextAsset;
 
 
@@ -10,8 +13,9 @@ function TextAsset() {
     Asset.call(this);
 }
 Asset.extend(TextAsset, "TextAsset");
+TextAssetPrototype = TextAsset.prototype;
 
-TextAsset.prototype.load = function(callback) {
+TextAssetPrototype.load = function(callback) {
     var _this = this,
         src = this.src;
 

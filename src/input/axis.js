@@ -1,6 +1,9 @@
 var mathf = require("mathf");
 
 
+var AxisPrototype;
+
+
 module.exports = Axis;
 
 
@@ -26,6 +29,7 @@ function Axis() {
 
     this.value = null;
 }
+AxisPrototype = Axis.prototype;
 
 Axis.ButtonType = 1;
 Axis.MouseType = 2;
@@ -47,7 +51,7 @@ Axis.create = function(
     );
 };
 
-Axis.prototype.construct = function(
+AxisPrototype.construct = function(
     name,
     negButton, posButton,
     altNegButton, altPosButton,
@@ -78,7 +82,7 @@ Axis.prototype.construct = function(
     return this;
 };
 
-Axis.prototype.destructor = function() {
+AxisPrototype.destructor = function() {
 
     this.name = null;
 
@@ -104,7 +108,7 @@ Axis.prototype.destructor = function() {
     return this;
 };
 
-Axis.prototype.update = function(input, dt) {
+AxisPrototype.update = function(input, dt) {
     var value = this.value,
         type = this.type,
         sensitivity = this.sensitivity,

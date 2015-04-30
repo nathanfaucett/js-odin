@@ -2,22 +2,26 @@ var indexOf = require("index_of"),
     Touch = require("./touch");
 
 
+var TouchesPrototype;
+
+
 module.exports = Touches;
 
 
 function Touches() {
     this.__array = [];
 }
+TouchesPrototype = Touches.prototype;
 
 Touches.create = function() {
     return (new Touches()).construct();
 };
 
-Touches.prototype.construct = function() {
+TouchesPrototype.construct = function() {
     return this;
 };
 
-Touches.prototype.destructor = function() {
+TouchesPrototype.destructor = function() {
     this.__array.length = 0;
     return this;
 };
@@ -38,7 +42,7 @@ function findTouch(array, id) {
     return null;
 }
 
-Touches.prototype.__start = function(targetTouch) {
+TouchesPrototype.__start = function(targetTouch) {
     var array = this.__array,
         oldTouch = findTouch(array, targetTouch.identifier),
         touch;
@@ -52,7 +56,7 @@ Touches.prototype.__start = function(targetTouch) {
     }
 };
 
-Touches.prototype.__end = function(changedTouch) {
+TouchesPrototype.__end = function(changedTouch) {
     var array = this.__array,
         touch = findTouch(array, changedTouch.identifier);
 
@@ -63,7 +67,7 @@ Touches.prototype.__end = function(changedTouch) {
     return touch;
 };
 
-Touches.prototype.__move = function(changedTouch) {
+TouchesPrototype.__move = function(changedTouch) {
     var touch = findTouch(this.__array, changedTouch.identifier);
 
     if (touch !== null) {
@@ -73,11 +77,11 @@ Touches.prototype.__move = function(changedTouch) {
     return touch;
 };
 
-Touches.prototype.get = function(index) {
+TouchesPrototype.get = function(index) {
     return this.__array[index];
 };
 
-Touches.prototype.allOff = function() {
+TouchesPrototype.allOff = function() {
     var array = this.__array,
         i = array.length;
 
@@ -87,7 +91,7 @@ Touches.prototype.allOff = function() {
     array.length = 0;
 };
 
-Touches.prototype.toJSON = function(json) {
+TouchesPrototype.toJSON = function(json) {
 
     json = json || {};
 
@@ -107,7 +111,7 @@ function eachToJSON(array, out) {
     return out;
 }
 
-Touches.prototype.fromJSON = function(json) {
+TouchesPrototype.fromJSON = function(json) {
     var jsonArray = json.array,
         i = -1,
         il = jsonArray.length - 1,

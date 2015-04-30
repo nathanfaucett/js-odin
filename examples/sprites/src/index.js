@@ -25,7 +25,7 @@ eventListener.on(environment.window, "load", function() {
             "varying vec3 vNormal;",
 
             "void main(void) {",
-            "    vUv = uv;",
+            "    vUv = getUV();",
             "    vNormal = getNormal();",
             "    gl_Position = perspectiveMatrix * modelViewMatrix * getPosition();",
             "}"
@@ -64,6 +64,10 @@ eventListener.on(environment.window, "load", function() {
     var sprite = global.object = odin.SceneObject.create().addComponent(
         odin.Transform.create(),
         odin.Sprite.create({
+            x: 0,
+            y: 0,
+            w: 1,
+            h: 0.5,
             material: material
         })
     );

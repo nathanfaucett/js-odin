@@ -2,7 +2,8 @@ var createPool = require("create_pool"),
     environment = require("environment");
 
 
-var window = environment.window;
+var window = environment.window,
+    MouseEventPrototype;
 
 
 module.exports = MouseEvent;
@@ -18,16 +19,17 @@ function MouseEvent(e) {
     this.button = getButton(e);
 }
 createPool(MouseEvent);
+MouseEventPrototype = MouseEvent.prototype;
 
 MouseEvent.create = function(e) {
     return MouseEvent.getPooled(e);
 };
 
-MouseEvent.prototype.destroy = function() {
+MouseEventPrototype.destroy = function() {
     MouseEvent.release(this);
 };
 
-MouseEvent.prototype.destructor = function() {
+MouseEventPrototype.destructor = function() {
     this.type = null;
     this.x = null;
     this.y = null;

@@ -10,7 +10,9 @@ var mat3 = require("mat3"),
 var Depth = enums.Depth,
 
     NativeUint16Array = typeof(Uint16Array) !== "undefined" ? Uint16Array : Array,
-    NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
+    NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array,
+
+    SpriteRendererPrototype;
 
 
 module.exports = SpriteRenderer;
@@ -55,19 +57,20 @@ function SpriteRenderer() {
     this.__previous = null;
 }
 ComponentRenderer.extend(SpriteRenderer, "SpriteRenderer", "Sprite", 0);
+SpriteRendererPrototype = SpriteRenderer.prototype;
 
-SpriteRenderer.prototype.init = function() {
+SpriteRendererPrototype.init = function() {
     this.spriteGeometry = this.renderer.geometry(this.geometry);
 };
 
-SpriteRenderer.prototype.beforeRender = function() {
+SpriteRendererPrototype.beforeRender = function() {
     var context = this.renderer.context;
 
     this.__previous = context.__depthFunc;
     context.setDepthFunc(Depth.none);
 };
 
-SpriteRenderer.prototype.afterRender = function() {
+SpriteRendererPrototype.afterRender = function() {
     this.renderer.context.setDepthFunc(this.__previous);
 };
 
@@ -76,7 +79,7 @@ var size = vec2.create(1, 1),
     modelView = mat4.create(),
     normalMatrix = mat3.create();
 
-SpriteRenderer.prototype.render = function(sprite, camera) {
+SpriteRendererPrototype.render = function(sprite, camera) {
     var renderer = this.renderer,
         context = renderer.context,
         gl = context.gl,

@@ -5,7 +5,8 @@ var Component = require("./component"),
     MeshManager = require("../component_managers/mesh_manager");
 
 
-var ComponentPrototype = Component.prototype;
+var ComponentPrototype = Component.prototype,
+    MeshPrototype;
 
 
 module.exports = Mesh;
@@ -20,9 +21,9 @@ function Mesh() {
     this.bones = [];
 }
 Component.extend(Mesh, "Mesh", MeshManager);
+MeshPrototype = Mesh.prototype;
 
-
-Mesh.prototype.construct = function(geometry, material) {
+MeshPrototype.construct = function(geometry, material) {
 
     ComponentPrototype.construct.call(this);
 
@@ -32,7 +33,7 @@ Mesh.prototype.construct = function(geometry, material) {
     return this;
 };
 
-Mesh.prototype.destructor = function() {
+MeshPrototype.destructor = function() {
 
     ComponentPrototype.destructor.call(this);
 
@@ -43,7 +44,7 @@ Mesh.prototype.destructor = function() {
     return this;
 };
 
-Mesh.prototype.awake = function() {
+MeshPrototype.awake = function() {
     var geoBones = this.geometry.bones,
         i = -1,
         il = geoBones.length - 1,
@@ -73,14 +74,14 @@ Mesh.prototype.awake = function() {
     return this;
 };
 
-Mesh.prototype.toJSON = function(json) {
+MeshPrototype.toJSON = function(json) {
 
     json = ComponentPrototype.toJSON.call(this, json);
 
     return json;
 };
 
-Mesh.prototype.fromJSON = function(json) {
+MeshPrototype.fromJSON = function(json) {
 
     ComponentPrototype.fromJSON.call(this, json);
 

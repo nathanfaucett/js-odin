@@ -2,7 +2,8 @@ var indexOf = require("index_of"),
     Class = require("../../class");
 
 
-var ClassPrototype = Class.prototype;
+var ClassPrototype = Class.prototype,
+    ComponentManagerPrototype;
 
 
 module.exports = ComponentManager;
@@ -21,17 +22,18 @@ ComponentManager.onExtend = function(child, className, order) {
 };
 
 Class.extend(ComponentManager, "ComponentManager");
+ComponentManagerPrototype = ComponentManager.prototype;
 
-ComponentManager.order = ComponentManager.prototype.order = 0;
+ComponentManager.order = ComponentManagerPrototype.order = 0;
 
-ComponentManager.prototype.construct = function() {
+ComponentManagerPrototype.construct = function() {
 
     ClassPrototype.construct.call(this);
 
     return this;
 };
 
-ComponentManager.prototype.destructor = function() {
+ComponentManagerPrototype.destructor = function() {
 
     ClassPrototype.destructor.call(this);
 
@@ -41,29 +43,29 @@ ComponentManager.prototype.destructor = function() {
     return this;
 };
 
-ComponentManager.prototype.onAddToScene = function() {
+ComponentManagerPrototype.onAddToScene = function() {
     return this;
 };
 
-ComponentManager.prototype.onRemoveFromScene = function() {
+ComponentManagerPrototype.onRemoveFromScene = function() {
     return this;
 };
 
-ComponentManager.prototype.isEmpty = function() {
+ComponentManagerPrototype.isEmpty = function() {
 
     return this.__components.length === 0;
 };
 
-ComponentManager.prototype.sort = function() {
+ComponentManagerPrototype.sort = function() {
     this.__components.sort(this.sortFunction);
     return this;
 };
 
-ComponentManager.prototype.sortFunction = function() {
+ComponentManagerPrototype.sortFunction = function() {
     return 0;
 };
 
-ComponentManager.prototype.init = function() {
+ComponentManagerPrototype.init = function() {
     var components = this.__components,
         i = -1,
         il = components.length - 1;
@@ -75,7 +77,7 @@ ComponentManager.prototype.init = function() {
     return this;
 };
 
-ComponentManager.prototype.awake = function() {
+ComponentManagerPrototype.awake = function() {
     var components = this.__components,
         i = -1,
         il = components.length - 1;
@@ -87,7 +89,7 @@ ComponentManager.prototype.awake = function() {
     return this;
 };
 
-ComponentManager.prototype.update = function() {
+ComponentManagerPrototype.update = function() {
     var components = this.__components,
         i = -1,
         il = components.length - 1;
@@ -99,7 +101,7 @@ ComponentManager.prototype.update = function() {
     return this;
 };
 
-ComponentManager.prototype.forEach = function(callback) {
+ComponentManagerPrototype.forEach = function(callback) {
     var components = this.__components,
         i = -1,
         il = components.length - 1;
@@ -113,11 +115,11 @@ ComponentManager.prototype.forEach = function(callback) {
     return true;
 };
 
-ComponentManager.prototype.has = function(component) {
+ComponentManagerPrototype.has = function(component) {
     return indexOf(this.__components, component) !== -1;
 };
 
-ComponentManager.prototype.add = function(component) {
+ComponentManagerPrototype.add = function(component) {
     var components = this.__components,
         index = indexOf(components, component);
 
@@ -128,7 +130,7 @@ ComponentManager.prototype.add = function(component) {
     return this;
 };
 
-ComponentManager.prototype.remove = function(component) {
+ComponentManagerPrototype.remove = function(component) {
     var components = this.__components,
         index = indexOf(components, component);
 

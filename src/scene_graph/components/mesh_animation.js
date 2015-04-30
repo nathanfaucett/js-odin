@@ -5,7 +5,8 @@ var vec3 = require("vec3"),
     WrapMode = require("../../wrap_mode");
 
 
-var ComponentPrototype = Component.prototype;
+var ComponentPrototype = Component.prototype,
+    MeshAnimationPrototype;
 
 
 module.exports = MeshAnimation;
@@ -29,9 +30,9 @@ function MeshAnimation() {
     this.__order = 1;
 }
 Component.extend(MeshAnimation, "MeshAnimation");
+MeshAnimationPrototype = MeshAnimation.prototype;
 
-
-MeshAnimation.prototype.construct = function(animations, options) {
+MeshAnimationPrototype.construct = function(animations, options) {
 
     ComponentPrototype.construct.call(this);
 
@@ -48,7 +49,7 @@ MeshAnimation.prototype.construct = function(animations, options) {
     return this;
 };
 
-MeshAnimation.prototype.destructor = function() {
+MeshAnimationPrototype.destructor = function() {
 
     ComponentPrototype.destructor.call(this);
 
@@ -75,7 +76,7 @@ var update_position = vec3.create(),
     update_rotation = quat.create(),
     update_lastRotation = quat.create();
 
-MeshAnimation.prototype.update = function() {
+MeshAnimationPrototype.update = function() {
     var alpha = 0,
         position, rotation, scale,
         lastPosition, lastRotation, lastScale,
@@ -217,7 +218,7 @@ MeshAnimation.prototype.update = function() {
     return this;
 };
 
-MeshAnimation.prototype.play = function(name, mode, rate) {
+MeshAnimationPrototype.play = function(name, mode, rate) {
     if ((this.playing && this.current === name) || !this.animations.data[name]) {
         return this;
     }
@@ -237,7 +238,7 @@ MeshAnimation.prototype.play = function(name, mode, rate) {
     return this;
 };
 
-MeshAnimation.prototype.stop = function() {
+MeshAnimationPrototype.stop = function() {
     if (this.playing) {
         this.emit("stop");
     }
@@ -251,14 +252,14 @@ MeshAnimation.prototype.stop = function() {
     return this;
 };
 
-MeshAnimation.prototype.toJSON = function(json) {
+MeshAnimationPrototype.toJSON = function(json) {
 
     json = ComponentPrototype.toJSON.call(this, json);
 
     return json;
 };
 
-MeshAnimation.prototype.fromJSON = function(json) {
+MeshAnimationPrototype.fromJSON = function(json) {
 
     ComponentPrototype.fromJSON.call(this, json);
 

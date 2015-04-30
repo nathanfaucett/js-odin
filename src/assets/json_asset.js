@@ -3,6 +3,9 @@ var Asset = require("./asset"),
     HttpError = require("http_error");
 
 
+var JSONAssetPrototype;
+
+
 module.exports = JSONAsset;
 
 
@@ -10,8 +13,9 @@ function JSONAsset() {
     Asset.call(this);
 }
 Asset.extend(JSONAsset, "JSONAsset");
+JSONAssetPrototype = JSONAsset.prototype;
 
-JSONAsset.prototype.load = function(callback) {
+JSONAssetPrototype.load = function(callback) {
     var _this = this,
         src = this.src;
 
