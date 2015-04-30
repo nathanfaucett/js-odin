@@ -3,13 +3,13 @@ var indexOf = require("index_of"),
 
 
 var ClassPrototype = Class.prototype,
-    SceneObjectPrototype;
+    EntityPrototype;
 
 
-module.exports = SceneObject;
+module.exports = Entity;
 
 
-function SceneObject() {
+function Entity() {
 
     Class.call(this);
 
@@ -24,10 +24,10 @@ function SceneObject() {
     this.parent = null;
     this.children = [];
 }
-Class.extend(SceneObject, "SceneObject");
-SceneObjectPrototype = SceneObject.prototype;
+Class.extend(Entity, "Entity");
+EntityPrototype = Entity.prototype;
 
-SceneObjectPrototype.construct = function(name) {
+EntityPrototype.construct = function(name) {
 
     ClassPrototype.construct.call(this);
 
@@ -39,7 +39,7 @@ SceneObjectPrototype.construct = function(name) {
     return this;
 };
 
-SceneObjectPrototype.destructor = function() {
+EntityPrototype.destructor = function() {
     var components = this.__componentArray,
         i = components.length;
 
@@ -60,7 +60,7 @@ SceneObjectPrototype.destructor = function() {
     return this;
 };
 
-SceneObjectPrototype.destroy = function(emitEvent) {
+EntityPrototype.destroy = function(emitEvent) {
     var scene = this.scene;
 
     if (!scene) {
@@ -75,33 +75,33 @@ SceneObjectPrototype.destroy = function(emitEvent) {
     return this;
 };
 
-SceneObjectPrototype.hasComponent = function(name) {
+EntityPrototype.hasComponent = function(name) {
     return !!this.components[name];
 };
 
-SceneObjectPrototype.getComponent = function(name) {
+EntityPrototype.getComponent = function(name) {
     return this.components[name];
 };
 
-SceneObjectPrototype.addComponent = function() {
+EntityPrototype.addComponent = function() {
     var i = -1,
         il = arguments.length - 1;
 
     while (i++ < il) {
-        SceneObject_addComponent(this, arguments[i]);
+        Entity_addComponent(this, arguments[i]);
     }
 
     return this;
 };
 
-function SceneObject_addComponent(_this, component) {
+function Entity_addComponent(_this, component) {
     var className = component.className,
         componentHash = _this.components,
         components = _this.__componentArray,
         scene = _this.scene;
 
     if (!componentHash[className]) {
-        component.sceneObject = _this;
+        component.entity = _this;
 
         components[components.length] = component;
         componentHash[className] = component;
@@ -113,23 +113,23 @@ function SceneObject_addComponent(_this, component) {
         component.init();
     } else {
         throw new Error(
-            "SceneObject addComponent(...components) trying to add " +
-            "components that is already a member of SceneObject"
+            "Entity addComponent(...components) trying to add " +
+            "components that is already a member of Entity"
         );
     }
 }
 
-SceneObjectPrototype.removeComponent = function() {
+EntityPrototype.removeComponent = function() {
     var i = -1,
         il = arguments.length - 1;
 
     while (i++ < il) {
-        SceneObject_removeComponent(this, arguments[i]);
+        Entity_removeComponent(this, arguments[i]);
     }
     return this;
 };
 
-function SceneObject_removeComponent(_this, component) {
+function Entity_removeComponent(_this, component) {
     var className = component.className,
         componentHash = _this.components,
         components = _this.__componentArray,
@@ -141,98 +141,98 @@ function SceneObject_removeComponent(_this, component) {
             scene.__removeComponent(component);
         }
 
-        component.sceneObject = null;
+        component.entity = null;
 
         components.splice(index, 1);
         delete componentHash[className];
     } else {
         throw new Error(
-            "SceneObject removeComponent(...components) trying to remove " +
-            "component that is already not a member of SceneObject"
+            "Entity removeComponent(...components) trying to remove " +
+            "component that is already not a member of Entity"
         );
     }
 }
 
-SceneObjectPrototype.add = function() {
+EntityPrototype.add = function() {
     var i = -1,
         il = arguments.length - 1;
 
     while (i++ < il) {
-        SceneObject_add(this, arguments[i]);
+        Entity_add(this, arguments[i]);
     }
     return this;
 };
 
-function SceneObject_add(_this, sceneObject) {
+function Entity_add(_this, entity) {
     var children = _this.children,
-        index = indexOf(children, sceneObject),
+        index = indexOf(children, entity),
         root = _this,
         depth = 0,
         scene = _this.scene;
 
     if (index === -1) {
-        if (sceneObject.parent) {
-            sceneObject.parent.remove(sceneObject);
+        if (entity.parent) {
+            entity.parent.remove(entity);
         }
 
-        children[children.length] = sceneObject;
+        children[children.length] = entity;
 
-        sceneObject.parent = _this;
+        entity.parent = _this;
 
         while (root.parent) {
             root = root.parent;
             depth++;
         }
         _this.root = root;
-        sceneObject.root = root;
+        entity.root = root;
 
         updateDepth(_this, depth);
 
-        _this.emit("addChild", sceneObject);
+        _this.emit("addChild", entity);
 
-        if (scene && sceneObject.scene !== scene) {
-            scene.add(sceneObject);
+        if (scene && entity.scene !== scene) {
+            scene.add(entity);
         }
     } else {
         throw new Error(
-            "SceneObject add(...sceneObjects) trying to add object " +
-            "that is already a member of SceneObject"
+            "Entity add(...entities) trying to add object " +
+            "that is already a member of Entity"
         );
     }
 }
 
-SceneObjectPrototype.remove = function() {
+EntityPrototype.remove = function() {
     var i = -1,
         il = arguments.length - 1;
 
     while (i++ < il) {
-        SceneObject_remove(this, arguments[i]);
+        Entity_remove(this, arguments[i]);
     }
     return this;
 };
 
-function SceneObject_remove(_this, sceneObject) {
+function Entity_remove(_this, entity) {
     var children = _this.children,
-        index = indexOf(children, sceneObject),
+        index = indexOf(children, entity),
         scene = _this.scene;
 
     if (index !== -1) {
         children.splice(index, 1);
 
-        sceneObject.parent = null;
-        sceneObject.root = sceneObject;
+        entity.parent = null;
+        entity.root = entity;
 
-        updateDepth(sceneObject, 0);
+        updateDepth(entity, 0);
 
-        _this.emit("removeChild", sceneObject);
+        _this.emit("removeChild", entity);
 
-        if (scene && sceneObject.scene === scene) {
-            scene.remove(sceneObject);
+        if (scene && entity.scene === scene) {
+            scene.remove(entity);
         }
     } else {
         throw new Error(
-            "SceneObject remove(...sceneObjects) trying to remove " +
-            "object that is not a member of SceneObject"
+            "Entity remove(...entities) trying to remove " +
+            "object that is not a member of Entity"
         );
     }
 }
@@ -248,7 +248,7 @@ function updateDepth(child, depth) {
     }
 }
 
-SceneObjectPrototype.toJSON = function(json) {
+EntityPrototype.toJSON = function(json) {
     var components = this.__componentArray,
         children = this.children,
         i = -1,
@@ -277,7 +277,7 @@ SceneObjectPrototype.toJSON = function(json) {
     return json;
 };
 
-SceneObjectPrototype.fromJSON = function(json) {
+EntityPrototype.fromJSON = function(json) {
     var jsonComponents = json.components,
         jsonChildren = json.children,
         i = -1,

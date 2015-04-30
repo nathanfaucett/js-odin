@@ -52,7 +52,7 @@ eventListener.on(environment.window, "load", function() {
 
     assets.add(material, texture);
 
-    var camera = odin.SceneObject.create("main_camera").addComponent(
+    var camera = odin.Entity.create("main_camera").addComponent(
         odin.Transform.create()
             .setPosition([-5, -5, 5]),
         odin.Camera.create()
@@ -61,7 +61,7 @@ eventListener.on(environment.window, "load", function() {
         odin.OrbitControl.create()
     );
 
-    var sprite = global.object = odin.SceneObject.create().addComponent(
+    var sprite = global.object = odin.Entity.create().addComponent(
         odin.Transform.create(),
         odin.Sprite.create({
             x: 0,
@@ -72,7 +72,7 @@ eventListener.on(environment.window, "load", function() {
         })
     );
 
-    var sprite2 = global.object = odin.SceneObject.create().addComponent(
+    var sprite2 = global.object = odin.Entity.create().addComponent(
         odin.Transform.create(),
         odin.Sprite.create({
             z: 1,

@@ -58,13 +58,13 @@ eventListener.on(environment.window, "load", function() {
 
     assets.add(geometry, geometryBox, animation, material, texture);
 
-    var camera = odin.SceneObject.create("main_camera").addComponent(
+    var camera = odin.Entity.create("main_camera").addComponent(
         odin.Transform.create().setPosition([-5, -5, 5]),
         odin.Camera.create().setActive(),
         odin.OrbitControl.create()
     );
 
-    var object = global.object = odin.SceneObject.create().addComponent(
+    var object = global.object = odin.Entity.create().addComponent(
         odin.Transform.create(),
         odin.Mesh.create(geometry, material),
         odin.MeshAnimation.create(animation, {
@@ -72,7 +72,7 @@ eventListener.on(environment.window, "load", function() {
         })
     );
 
-    var box = global.box = odin.SceneObject.create().addComponent(
+    var box = global.box = odin.Entity.create().addComponent(
         odin.Transform.create()
             .setPosition([0, 0.5, 0])
             .setScale([0.25, 0.25, 0.25]),

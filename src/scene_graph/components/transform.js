@@ -132,8 +132,8 @@ TransformPrototype.awake = function() {
 
 TransformPrototype.update = function() {
     var matrix = this.matrix,
-        sceneObject = this.sceneObject,
-        parent = sceneObject && sceneObject.parent,
+        entity = this.entity,
+        parent = entity && entity.parent,
         parentTransform = parent && parent.components.Transform;
 
     ComponentPrototype.update.call(this);

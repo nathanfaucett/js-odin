@@ -116,8 +116,8 @@ OrbitControlPrototype.destructor = function() {
 };
 
 OrbitControlPrototype.awake = function() {
-    var sceneObject = this.sceneObject,
-        scene = sceneObject.scene,
+    var entity = this.entity,
+        scene = entity.scene,
         input = scene.input;
 
     ComponentPrototype.awake.call(this);
@@ -139,8 +139,8 @@ OrbitControlPrototype.awake = function() {
 };
 
 OrbitControlPrototype.clear = function(emitEvent) {
-    var sceneObject = this.sceneObject,
-        scene = sceneObject.scene,
+    var entity = this.entity,
+        scene = entity.scene,
         input = scene.input;
 
     ComponentPrototype.clear.call(this, emitEvent);
@@ -160,7 +160,7 @@ OrbitControlPrototype.clear = function(emitEvent) {
 };
 
 function OrbitControl_update(_this) {
-    var components = _this.sceneObject.components,
+    var components = _this.entity.components,
         camera = components.Camera,
         transform = components.Transform,
         position = transform.position,
@@ -205,8 +205,8 @@ var OrbitControl_pan_panOffset = vec3.create();
 function OrbitControl_pan(_this, delta) {
     var panOffset = OrbitControl_pan_panOffset,
         pan = _this.__pan,
-        camera = _this.sceneObject.components.Camera,
-        transform = _this.sceneObject.components.Transform,
+        camera = _this.entity.components.Camera,
+        transform = _this.entity.components.Transform,
         matrixWorld = transform.matrixWorld,
         position = transform.position,
         targetDistance;
@@ -255,7 +255,7 @@ function OrbitControl_onTouchEnd(_this) {
 
 function OrbitControl_onTouchMove(_this, e, touch) {
     var delta = touch.delta,
-        camera = _this.sceneObject.components.Camera;
+        camera = _this.entity.components.Camera;
 
     if (_this.__state === ROTATE) {
         _this.__thetaDelta += 2 * mathf.PI * delta[0] * camera.invWidth * _this.speed;
@@ -286,7 +286,7 @@ function OrbitControl_onMouseDown(_this, e, button) {
 
 function OrbitControl_onMouseMove(_this, e, mouse) {
     var delta = mouse.delta,
-        camera = _this.sceneObject.components.Camera;
+        camera = _this.entity.components.Camera;
 
     if (_this.__state === ROTATE) {
         _this.__thetaDelta += 2 * mathf.PI * delta[0] * camera.invWidth * _this.speed;

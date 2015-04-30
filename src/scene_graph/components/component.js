@@ -15,7 +15,7 @@ function Component() {
     Class.call(this);
 
     this.manager = null;
-    this.sceneObject = null;
+    this.entity = null;
 }
 
 Component.onExtend = function(child, className, manager) {
@@ -45,7 +45,7 @@ ComponentPrototype.destructor = function() {
     ClassPrototype.destructor.call(this);
 
     this.manager = null;
-    this.sceneObject = null;
+    this.entity = null;
 
     return this;
 };
@@ -77,9 +77,9 @@ ComponentPrototype.update = function() {
 };
 
 ComponentPrototype.destroy = function(emitEvent) {
-    var sceneObject = this.sceneObject;
+    var entity = this.entity;
 
-    if (!sceneObject) {
+    if (!entity) {
         return this;
     }
 
@@ -87,7 +87,7 @@ ComponentPrototype.destroy = function(emitEvent) {
         this.clear(emitEvent);
         this.emit("destroy");
     }
-    sceneObject.removeComponent(this);
+    entity.removeComponent(this);
 
     return this;
 };

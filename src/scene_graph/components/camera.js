@@ -225,8 +225,8 @@ CameraPrototype.toScreen = function(v, out) {
 };
 
 CameraPrototype.update = function(force) {
-    var sceneObject = this.sceneObject,
-        transform = sceneObject && (sceneObject.components.Transform || sceneObject.components.Transform2D),
+    var entity = this.entity,
+        transform = entity && (entity.components.Transform || entity.components.Transform2D),
         orthographicSize, right, left, top, bottom;
 
     ComponentPrototype.update.call(this);

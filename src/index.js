@@ -22,7 +22,7 @@ odin.ComponentRenderer = require("./renderer/component_renderer");
 odin.Shader = require("./shader/shader");
 
 odin.Scene = require("./scene_graph/scene");
-odin.SceneObject = require("./scene_graph/scene_object");
+odin.Entity = require("./scene_graph/entity");
 
 odin.ComponentManager = require("./scene_graph/component_managers/component_manager");
 

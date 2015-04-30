@@ -1,7 +1,7 @@
 var Component = require("./component"),
     Bone = require("./bone"),
     Transform = require("./transform"),
-    SceneObject = require("../scene_object"),
+    Entity = require("../entity"),
     MeshManager = require("../component_managers/mesh_manager");
 
 
@@ -48,10 +48,10 @@ MeshPrototype.awake = function() {
     var geoBones = this.geometry.bones,
         i = -1,
         il = geoBones.length - 1,
-        sceneObject, bones, geoBone, bone, transform, childSceneObject, parent;
+        entity, bones, geoBone, bone, transform, childEntity, parent;
 
     if (il !== -1) {
-        sceneObject = this.sceneObject;
+        entity = this.entity;
         bones = this.bones;
 
         while (i++ < il) {
@@ -62,10 +62,10 @@ MeshPrototype.awake = function() {
                 .setScale(geoBone.scale)
                 .setRotation(geoBone.rotation);
 
-            childSceneObject = SceneObject.create().addComponent(transform, bone);
-            bones[bones.length] = childSceneObject;
-            parent = bones[bone.parentIndex] || sceneObject;
-            parent.add(childSceneObject);
+            childEntity = Entity.create().addComponent(transform, bone);
+            bones[bones.length] = childEntity;
+            parent = bones[bone.parentIndex] || entity;
+            parent.add(childEntity);
         }
     }
 

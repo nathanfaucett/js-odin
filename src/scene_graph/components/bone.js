@@ -77,8 +77,8 @@ var MAT = mat4.create(),
     ROTATION = quat.create();
 
 BonePrototype.update = function() {
-    var sceneObject = this.sceneObject,
-        transform = sceneObject.components.Transform,
+    var entity = this.entity,
+        transform = entity.components.Transform,
         uniform = this.uniform,
         inheritPosition, inheritScale, inheritRotation = this.inheritRotation,
         mat, position, scale, rotation,
@@ -92,7 +92,7 @@ BonePrototype.update = function() {
         return this;
     }
 
-    parent = sceneObject.parent;
+    parent = entity.parent;
 
     if (parent && this.parentIndex !== -1) {
         mat = MAT;
