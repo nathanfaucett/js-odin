@@ -8,7 +8,7 @@ var vec3 = require("vec3"),
     eventHandlers = require("./event_handlers");
 
 
-var mouseButtons = [
+var MOUSE_BUTTONS = [
         "mouse0",
         "mouse1",
         "mouse2"
@@ -126,40 +126,34 @@ InputPrototype.touch = function(index) {
 };
 
 InputPrototype.mouseButton = function(id) {
-    var button = this.buttons.__hash[mouseButtons[id]];
-
+    var button = this.buttons.__hash[MOUSE_BUTTONS[id]];
     return button && button.value;
 };
 
 
 InputPrototype.mouseButtonDown = function(id) {
-    var button = this.buttons.__hash[mouseButtons[id]];
-
+    var button = this.buttons.__hash[MOUSE_BUTTONS[id]];
     return !!button && button.value && (button.frameDown >= this.__frame);
 };
 
 
 InputPrototype.mouseButtonUp = function(id) {
-    var button = this.buttons.__hash[mouseButtons[id]];
-
+    var button = this.buttons.__hash[MOUSE_BUTTONS[id]];
     return button != null ? (button.frameUp >= this.__frame) : true;
 };
 
 InputPrototype.key = function(name) {
     var button = this.buttons.__hash[name];
-
     return !!button && button.value;
 };
 
 InputPrototype.keyDown = function(name) {
     var button = this.buttons.__hash[name];
-
     return !!button && button.value && (button.frameDown >= this.__frame);
 };
 
 InputPrototype.keyUp = function(name) {
     var button = this.buttons.__hash[name];
-
     return button != null ? (button.frameUp >= this.__frame) : true;
 };
 

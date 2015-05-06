@@ -130,12 +130,16 @@ SpritePrototype.toJSON = function(json) {
 
     json = ComponentPrototype.toJSON.call(this, json);
 
+    json.material = this.material.name;
+
     return json;
 };
 
 SpritePrototype.fromJSON = function(json) {
 
     ComponentPrototype.fromJSON.call(this, json);
+
+    this.material = this.entity.scene.assets.get(json.material);
 
     return this;
 };

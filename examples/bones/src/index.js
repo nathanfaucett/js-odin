@@ -9,7 +9,7 @@ global.odin = odin;
 
 
 eventListener.on(environment.window, "load", function() {
-    var assets = odin.Assets.create(),
+    var assets = global.assets = odin.Assets.create(),
         canvas = odin.Canvas.create({
             disableContextMenu: false,
             aspect: 1.5,

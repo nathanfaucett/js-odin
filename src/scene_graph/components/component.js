@@ -51,13 +51,11 @@ ComponentPrototype.destructor = function() {
 };
 
 ComponentPrototype.init = function() {
-
     this.emit("init");
     return this;
 };
 
 ComponentPrototype.clear = function(emitEvent) {
-
     if (emitEvent !== false) {
         this.emit("clear");
     }
@@ -65,13 +63,11 @@ ComponentPrototype.clear = function(emitEvent) {
 };
 
 ComponentPrototype.awake = function() {
-
     this.emit("awake");
     return this;
 };
 
 ComponentPrototype.update = function() {
-
     this.emit("update");
     return this;
 };
@@ -79,15 +75,15 @@ ComponentPrototype.update = function() {
 ComponentPrototype.destroy = function(emitEvent) {
     var entity = this.entity;
 
-    if (!entity) {
+    if (entity) {
+        if (emitEvent !== false) {
+            this.clear(emitEvent);
+            this.emit("destroy");
+        }
+        entity.removeComponent(this);
+
+        return this;
+    } else {
         return this;
     }
-
-    if (emitEvent !== false) {
-        this.clear(emitEvent);
-        this.emit("destroy");
-    }
-    entity.removeComponent(this);
-
-    return this;
 };

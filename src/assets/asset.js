@@ -41,7 +41,6 @@ AssetPrototype.destructor = function() {
 };
 
 AssetPrototype.setSrc = function(src) {
-
     this.src = src;
     return this;
 };

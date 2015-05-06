@@ -163,3 +163,56 @@ AxisPrototype.update = function(input, dt) {
 
     return this;
 };
+
+AxisPrototype.fromJSON = function(json) {
+    this.name = json.name;
+
+    this.negButton = json.negButton;
+    this.posButton = json.posButton;
+
+    this.altNegButton = json.altNegButton;
+    this.altPosButton = json.altPosButton;
+
+    this.gravity = json.gravity;
+    this.sensitivity = json.sensitivity;
+
+    this.dead = json.dead;
+
+    this.type = json.type;
+    this.axis = json.axis;
+    this.index = json.index;
+
+    this.joyNum = json.joyNum;
+
+    this.value = json.value;
+
+    return this;
+};
+
+AxisPrototype.toJSON = function(json) {
+
+    json = json || {};
+
+    json.name = this.name;
+
+    json.negButton = this.negButton;
+    json.posButton = this.posButton;
+
+    json.altNegButton = this.altNegButton;
+    json.altPosButton = this.altPosButton;
+
+    json.gravity = this.gravity;
+    json.sensitivity = this.sensitivity;
+
+    json.dead = this.dead;
+
+    json.type = this.type;
+    json.axis = this.axis;
+    json.index = this.index;
+
+    json.joyNum = this.joyNum;
+
+    json.value = this.value;
+
+    return json;
+};

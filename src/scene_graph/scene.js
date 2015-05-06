@@ -1,7 +1,8 @@
 var indexOf = require("index_of"),
     Input = require("../input/index"),
     Class = require("../class"),
-    Time = require("../time");
+    Time = require("../time"),
+    Entity = require("./entity");
 
 
 var ClassPrototype = Class.prototype,
@@ -16,8 +17,11 @@ function Scene() {
     Class.call(this);
 
     this.name = null;
+
     this.time = new Time();
     this.input = new Input();
+
+    this.assets = null;
     this.application = null;
 
     this.__entities = [];
@@ -116,13 +120,12 @@ ScenePrototype.update = function() {
 
 ScenePrototype.destroy = function() {
     var entities = this.__entities,
-        i = -1,
-        il = entities.length - 1;
+        i = entities.length;
 
     this.emit("destroy");
 
-    while (i++ < il) {
-        entities.destroy();
+    while (i--) {
+        entities[i].destroy();
     }
 
     return this;
@@ -344,15 +347,19 @@ ScenePrototype.toJSON = function(json) {
 ScenePrototype.fromJSON = function(json) {
     var jsonEntitys = json.entities,
         i = -1,
-        il = jsonEntitys.length - 1;
+        il = jsonEntitys.length - 1,
+        entity;
 
     ClassPrototype.fromJSON.call(this, json);
 
-    while (i++ < il) {
-        this.add(Class.createFromJSON(jsonEntitys[i]));
-    }
-
     this.name = json.name;
+
+    while (i++ < il) {
+        entity = Entity.create();
+        entity.scene = this;
+        entity.fromJSON(jsonEntitys[i]);
+        this.add(entity);
+    }
 
     return this;
 };

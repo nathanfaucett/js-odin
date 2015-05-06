@@ -23,7 +23,8 @@ MeshRendererPrototype.render = function(mesh, camera) {
         context = renderer.context,
         gl = context.gl,
 
-        transform = mesh.entity.components.Transform,
+        components = mesh.entity.components,
+        transform = components.Transform || components.Transform2D,
 
         meshMaterial = mesh.material,
         meshGeometry = mesh.geometry,

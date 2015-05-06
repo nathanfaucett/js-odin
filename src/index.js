@@ -29,6 +29,7 @@ odin.ComponentManager = require("./scene_graph/component_managers/component_mana
 odin.Component = require("./scene_graph/components/component");
 
 odin.Transform = require("./scene_graph/components/transform");
+odin.Transform2D = require("./scene_graph/components/transform2d");
 odin.Camera = require("./scene_graph/components/camera");
 
 odin.Sprite = require("./scene_graph/components/sprite");

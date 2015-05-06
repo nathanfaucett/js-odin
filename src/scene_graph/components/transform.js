@@ -112,7 +112,7 @@ TransformPrototype.lookAt = function(target, up) {
     up = up || lookAt_dup;
 
     if (target.matrixWorld) {
-        vec3.transformMat4(vec3.set(vec, 0, 0, 0), target.matrixWorld);
+        vec3.transformMat4(vec, vec3.set(vec, 0, 0, 0), target.matrixWorld);
     } else {
         vec3.copy(vec, target);
     }
@@ -123,11 +123,13 @@ TransformPrototype.lookAt = function(target, up) {
     return this;
 };
 
-TransformPrototype.awake = function() {
+TransformPrototype.localToWorld = function(out, v) {
+    return vec3.transformMat4(out, v, this.matrixWorld);
+};
 
-    ComponentPrototype.awake.call(this);
-
-    return this;
+var worldToLocal_mat = mat4.create();
+TransformPrototype.worldToLocal = function(out, v) {
+    return vec3.transformMat4(out, v, mat4.inverse(worldToLocal_mat, this.matrixWorld));
 };
 
 TransformPrototype.update = function() {
@@ -149,13 +151,15 @@ TransformPrototype.update = function() {
     return this;
 };
 
-TransformPrototype.calculateModelView = function(viewMatrix, modelView) {
+TransformPrototype.getMatrixWorld = function() {
+    return this.matrixWorld;
+};
 
+TransformPrototype.calculateModelView = function(viewMatrix, modelView) {
     return mat4.mul(modelView, viewMatrix, this.matrixWorld);
 };
 
 TransformPrototype.calculateNormalMatrix = function(modelView, normalMatrix) {
-
     return mat3.transpose(normalMatrix, mat3.inverseMat4(normalMatrix, modelView));
 };
 

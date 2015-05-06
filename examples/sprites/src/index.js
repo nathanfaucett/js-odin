@@ -62,7 +62,7 @@ eventListener.on(environment.window, "load", function() {
     );
 
     var sprite = global.object = odin.Entity.create().addComponent(
-        odin.Transform.create(),
+        odin.Transform2D.create(),
         odin.Sprite.create({
             x: 0,
             y: 0,
@@ -73,7 +73,7 @@ eventListener.on(environment.window, "load", function() {
     );
 
     var sprite2 = global.object = odin.Entity.create().addComponent(
-        odin.Transform.create(),
+        odin.Transform2D.create(),
         odin.Sprite.create({
             z: 1,
             width: 0.5,
@@ -82,8 +82,19 @@ eventListener.on(environment.window, "load", function() {
         })
     );
 
+    var transform = sprite2.components.Transform2D;
+    transform.on("update", function() {
+        var horizontal = scene.input.axis("horizontal"),
+            vertical = scene.input.axis("vertical");
+
+        transform.position[0] += horizontal * scene.time.delta;
+        transform.position[1] += vertical * scene.time.delta;
+    });
+
     var scene = global.scene = odin.Scene.create("scene").add(camera, sprite2, sprite),
         cameraComponent = camera.getComponent("Camera");
+
+    scene.assets = assets;
 
     canvas.on("resize", function(w, h) {
         cameraComponent.set(w, h);

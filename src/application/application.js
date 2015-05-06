@@ -12,7 +12,6 @@ module.exports = Application;
 
 
 function Application() {
-
     BaseApplication.call(this);
 }
 BaseApplication.extend(Application, "Application");

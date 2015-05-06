@@ -1,6 +1,9 @@
-module.exports = {
-    Once: 1,
-    Loop: 2,
-    PingPong: 3,
-    Clamp: 4
-};
+var keyMirror = require("key_mirror");
+
+
+module.exports = keyMirror([
+    "Once",
+    "Loop",
+    "PingPong",
+    "Clamp"
+]);

@@ -84,7 +84,8 @@ SpriteRendererPrototype.render = function(sprite, camera) {
         context = renderer.context,
         gl = context.gl,
 
-        transform = sprite.entity.components.Transform,
+        components = sprite.entity.components,
+        transform = components.Transform || components.Transform2D,
 
         spriteMaterial = sprite.material,
         spriteGeometry = this.geometry,

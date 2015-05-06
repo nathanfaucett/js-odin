@@ -19,6 +19,7 @@ function Mesh() {
     this.geometry = null;
     this.material = null;
     this.bones = [];
+    this.bone = {};
 }
 Component.extend(Mesh, "Mesh", MeshManager);
 MeshPrototype = Mesh.prototype;
@@ -40,6 +41,7 @@ MeshPrototype.destructor = function() {
     this.geometry = null;
     this.material = null;
     this.bones.length = 0;
+    this.bone = {};
 
     return this;
 };
@@ -48,11 +50,12 @@ MeshPrototype.awake = function() {
     var geoBones = this.geometry.bones,
         i = -1,
         il = geoBones.length - 1,
-        entity, bones, geoBone, bone, transform, childEntity, parent;
+        entity, bones, boneHash, geoBone, bone, transform, childEntity, parent;
 
     if (il !== -1) {
         entity = this.entity;
         bones = this.bones;
+        boneHash = this.bone;
 
         while (i++ < il) {
             geoBone = geoBones[i];
@@ -66,6 +69,7 @@ MeshPrototype.awake = function() {
             bones[bones.length] = childEntity;
             parent = bones[bone.parentIndex] || entity;
             parent.add(childEntity);
+            boneHash[bone.name] = childEntity;
         }
     }
 
@@ -78,12 +82,19 @@ MeshPrototype.toJSON = function(json) {
 
     json = ComponentPrototype.toJSON.call(this, json);
 
+    json.geometry = this.geometry.name;
+    json.material = this.material.name;
+
     return json;
 };
 
 MeshPrototype.fromJSON = function(json) {
+    var assets = this.entity.scene.assets;
 
     ComponentPrototype.fromJSON.call(this, json);
+
+    this.geometry = assets.get(json.geometry);
+    this.material = assets.get(json.material);
 
     return this;
 };

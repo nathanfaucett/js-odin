@@ -218,8 +218,8 @@ CameraPrototype.toScreen = function(v, out) {
     mat4.mul(MAT4, this.projection, this.view);
     vec3.transformMat4(out, VEC3, MAT4);
 
-    out[0] = ((VEC3[0] + 1) * 0.5) * this.width;
-    out[1] = ((1 - VEC3[1]) * 0.5) * this.height;
+    out[0] = ((VEC3[0] + 1.0) * 0.5) * this.width;
+    out[1] = ((1.0 - VEC3[1]) * 0.5) * this.height;
 
     return out;
 };
@@ -231,30 +231,28 @@ CameraPrototype.update = function(force) {
 
     ComponentPrototype.update.call(this);
 
-    if (!force && !this.__active) {
-        return this;
-    }
+    if (force || this.__active) {
+        if (this.needsUpdate) {
+            if (!this.orthographic) {
+                mat4.perspective(this.projection, mathf.degsToRads(this.fov), this.aspect, this.near, this.far);
+            } else {
+                this.orthographicSize = mathf.clamp(this.orthographicSize, this.minOrthographicSize, this.maxOrthographicSize);
 
-    if (this.needsUpdate) {
-        if (!this.orthographic) {
-            mat4.perspective(this.projection, mathf.degsToRads(this.fov), this.aspect, this.near, this.far);
-        } else {
-            this.orthographicSize = mathf.clamp(this.orthographicSize, this.minOrthographicSize, this.maxOrthographicSize);
+                orthographicSize = this.orthographicSize;
+                right = orthographicSize * this.aspect;
+                left = -right;
+                top = orthographicSize;
+                bottom = -top;
 
-            orthographicSize = this.orthographicSize;
-            right = orthographicSize * this.aspect;
-            left = -right;
-            top = orthographicSize;
-            bottom = -top;
+                mat4.orthographic(this.projection, left, right, top, bottom, this.near, this.far);
+            }
 
-            mat4.orthographic(this.projection, left, right, top, bottom, this.near, this.far);
+            this.needsUpdate = false;
         }
 
-        this.needsUpdate = false;
-    }
-
-    if (transform) {
-        mat4.inverse(this.view, transform.matrixWorld);
+        if (transform) {
+            mat4.inverse(this.view, transform.getMatrixWorld());
+        }
     }
 
     return this;

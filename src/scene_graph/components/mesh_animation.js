@@ -256,12 +256,16 @@ MeshAnimationPrototype.toJSON = function(json) {
 
     json = ComponentPrototype.toJSON.call(this, json);
 
+    json.animations = this.animations.name;
+
     return json;
 };
 
 MeshAnimationPrototype.fromJSON = function(json) {
 
     ComponentPrototype.fromJSON.call(this, json);
+
+    this.animations = this.entity.scene.assets.get(json.animations);
 
     return this;
 };

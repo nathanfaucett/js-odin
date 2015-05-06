@@ -1,4 +1,5 @@
-var isFunction = require("is_function"),
+var has = require("has"),
+    isFunction = require("is_function"),
     inherits = require("inherits"),
     EventEmitter = require("event_emitter"),
     uuid = require("uuid");
@@ -20,6 +21,9 @@ EventEmitter.extend(Class);
 ClassPrototype = Class.prototype;
 
 Class.extend = function(child, className) {
+    if (has(Class.__classes, className)) {
+        throw new Error("extend(Child, className) class named " + className + " already defined");
+    }
 
     Class.__classes[className] = child;
 
@@ -35,8 +39,12 @@ Class.extend = function(child, className) {
 
 Class.__classes = {};
 
+Class.getClass = function(className) {
+    return Class.__classes[className];
+};
+
 Class.createFromJSON = function(json) {
-    return Class.__classes[json.className].create().fromJSON(json);
+    return Class.getClass(json.className).create().fromJSON(json);
 };
 
 Class.className = ClassPrototype.className = "Class";

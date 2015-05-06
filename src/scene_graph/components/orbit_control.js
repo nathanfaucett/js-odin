@@ -304,7 +304,6 @@ function OrbitControl_onMouseWheel(_this, e, wheel) {
             _this.__scale *= mathf.pow(0.95, _this.zoomSpeed);
             OrbitControl_update(_this);
         } else {
-            update = true;
             _this.__scale /= mathf.pow(0.95, _this.zoomSpeed);
             OrbitControl_update(_this);
         }

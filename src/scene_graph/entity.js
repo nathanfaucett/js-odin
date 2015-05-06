@@ -278,25 +278,34 @@ EntityPrototype.toJSON = function(json) {
 };
 
 EntityPrototype.fromJSON = function(json) {
-    var jsonComponents = json.components,
+    var scene = this.scene,
+        jsonComponents = json.components,
         jsonChildren = json.children,
         i = -1,
-        il = jsonComponents.length - 1;
+        il = jsonComponents.length - 1,
+        component, entity;
 
     ClassPrototype.fromJSON.call(this, json);
 
+    this.name = json.name;
+
     while (i++ < il) {
-        this.addComponent(Class.createFromJSON(jsonComponents[i]));
+        json = jsonComponents[i];
+        component = Class.getClass(json.className).create();
+        component.entity = this;
+        component.fromJSON(json);
+        this.addComponent(component);
     }
 
     i = -1;
     il = jsonChildren.length - 1;
 
     while (i++ < il) {
-        this.add(Class.createFromJSON(jsonChildren[i]));
+        entity = Entity.create();
+        entity.scene = scene;
+        entity.fromJSON(jsonChildren[i]);
+        this.add(entity);
     }
-
-    this.name = json.name;
 
     return this;
 };
