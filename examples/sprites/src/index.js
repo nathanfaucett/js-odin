@@ -8,7 +8,24 @@ var odin = require("../../../src/index");
 global.odin = odin;
 
 
-eventListener.on(environment.window, "load", function() {
+function PlayerControl() {
+    odin.Component.call(this);
+}
+odin.Component.extend(PlayerControl, "PlayerControl");
+
+PlayerControl.prototype.update = function update() {
+    var entity = this.entity,
+        scene = entity.scene,
+        input = scene.input,
+        dt = scene.time.delta,
+        transform = entity.components.Transform2D;
+
+    transform.position[0] += input.axis("horizontal") * dt;
+    transform.position[1] += input.axis("vertical") * dt;
+};
+
+
+eventListener.on(environment.window, "load", function load() {
     var assets = odin.Assets.create(),
         canvas = odin.Canvas.create({
             disableContextMenu: false,
@@ -74,6 +91,7 @@ eventListener.on(environment.window, "load", function() {
 
     var sprite2 = global.object = odin.Entity.create().addComponent(
         odin.Transform2D.create(),
+        PlayerControl.create(),
         odin.Sprite.create({
             z: 1,
             width: 0.5,
@@ -81,15 +99,6 @@ eventListener.on(environment.window, "load", function() {
             material: material
         })
     );
-
-    var transform = sprite2.components.Transform2D;
-    transform.on("update", function() {
-        var horizontal = scene.input.axis("horizontal"),
-            vertical = scene.input.axis("vertical");
-
-        transform.position[0] += horizontal * scene.time.delta;
-        transform.position[1] += vertical * scene.time.delta;
-    });
 
     var scene = global.scene = odin.Scene.create("scene").add(camera, sprite2, sprite),
         cameraComponent = camera.getComponent("Camera");

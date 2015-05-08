@@ -1,40 +1,40 @@
 var odin = exports;
 
 
-odin.Class = require("./class");
+odin.Class = require("./Class");
 odin.createLoop = require("create_loop");
 
-odin.BaseApplication = require("./application/base_application");
-odin.Application = require("./application/application");
+odin.BaseApplication = require("./Application/BaseApplication");
+odin.Application = require("./Application");
 
-odin.Asset = require("./assets/asset");
-odin.Assets = require("./assets/assets");
-odin.ImageAsset = require("./assets/image_asset");
-odin.JSONAsset = require("./assets/json_asset");
-odin.Texture = require("./assets/texture");
-odin.Material = require("./assets/material");
-odin.Geometry = require("./assets/geometry/index");
+odin.Assets = require("./Assets");
+odin.Asset = require("./Assets/Asset");
+odin.ImageAsset = require("./Assets/ImageAsset");
+odin.JSONAsset = require("./Assets/JSONAsset");
+odin.Texture = require("./Assets/Texture");
+odin.Material = require("./Assets/Material");
+odin.Geometry = require("./Assets/Geometry");
 
-odin.Canvas = require("./canvas");
-odin.Renderer = require("./renderer/index");
-odin.ComponentRenderer = require("./renderer/component_renderer");
+odin.Canvas = require("./Canvas");
+odin.Renderer = require("./Renderer");
+odin.ComponentRenderer = require("./Renderer/ComponentRenderer");
 
-odin.Shader = require("./shader/shader");
+odin.Shader = require("./Shader");
 
-odin.Scene = require("./scene_graph/scene");
-odin.Entity = require("./scene_graph/entity");
+odin.Scene = require("./scene_graph/Scene");
+odin.Entity = require("./scene_graph/Entity");
 
-odin.ComponentManager = require("./scene_graph/component_managers/component_manager");
+odin.ComponentManager = require("./scene_graph/component_managers/ComponentManager");
 
-odin.Component = require("./scene_graph/components/component");
+odin.Component = require("./scene_graph/components/Component");
 
-odin.Transform = require("./scene_graph/components/transform");
-odin.Transform2D = require("./scene_graph/components/transform2d");
-odin.Camera = require("./scene_graph/components/camera");
+odin.Transform = require("./scene_graph/components/Transform");
+odin.Transform2D = require("./scene_graph/components/Transform2D");
+odin.Camera = require("./scene_graph/components/Camera");
 
-odin.Sprite = require("./scene_graph/components/sprite");
+odin.Sprite = require("./scene_graph/components/Sprite");
 
-odin.Mesh = require("./scene_graph/components/mesh");
-odin.MeshAnimation = require("./scene_graph/components/mesh_animation");
+odin.Mesh = require("./scene_graph/components/Mesh");
+odin.MeshAnimation = require("./scene_graph/components/MeshAnimation");
 
-odin.OrbitControl = require("./scene_graph/components/orbit_control");
+odin.OrbitControl = require("./scene_graph/components/OrbitControl");
