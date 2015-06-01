@@ -159,6 +159,11 @@ OrbitControlPrototype.clear = function(emitEvent) {
     return this;
 };
 
+OrbitControlPrototype.setTarget = function(target) {
+    vec3.copy(this.target, target);
+    return this;
+};
+
 function OrbitControl_update(_this) {
     var components = _this.entity.components,
         camera = components.Camera,

@@ -19,7 +19,7 @@ function Transform() {
 
     this.position = vec3.create();
     this.rotation = quat.create();
-    this.scale = vec3.create(1, 1, 1);
+    this.scale = vec3.create(1.0, 1.0, 1.0);
 
     this.matrix = mat4.create();
     this.matrixWorld = mat4.create();
@@ -38,9 +38,9 @@ TransformPrototype.destructor = function() {
 
     ComponentPrototype.destructor.call(this);
 
-    vec3.set(this.position, 0, 0, 0);
-    quat.set(this.rotation, 0, 0, 0, 1);
-    vec3.set(this.scale, 1, 1, 1);
+    vec3.set(this.position, 0.0, 0.0, 0.0);
+    quat.set(this.rotation, 0.0, 0.0, 0.0, 1.0);
+    vec3.set(this.scale, 1.0, 1.0, 1.0);
 
     mat4.identity(this.matrix);
     mat4.identity(this.matrixWorld);
@@ -104,7 +104,7 @@ TransformPrototype.rotate = function(rotation, relativeTo) {
 
 var lookAt_mat = mat4.create(),
     lookAt_vec = vec3.create(),
-    lookAt_dup = vec3.create(0, 0, 1);
+    lookAt_dup = vec3.create(0.0, 0.0, 1.0);
 TransformPrototype.lookAt = function(target, up) {
     var mat = lookAt_mat,
         vec = lookAt_vec;
@@ -112,7 +112,7 @@ TransformPrototype.lookAt = function(target, up) {
     up = up || lookAt_dup;
 
     if (target.matrixWorld) {
-        vec3.transformMat4(vec, vec3.set(vec, 0, 0, 0), target.matrixWorld);
+        vec3.transformMat4(vec, vec3.set(vec, 0.0, 0.0, 0.0), target.matrixWorld);
     } else {
         vec3.copy(vec, target);
     }

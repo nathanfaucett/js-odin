@@ -159,7 +159,7 @@ RendererPrototype.material = function(material) {
     return materials[material.__id] || (materials[material.__id] = RendererMaterial.create(this, this.context, material));
 };
 
-var bindUniforms_mat = mat4.create();
+var bindBoneUniforms_mat = mat4.create();
 
 RendererPrototype.bindBoneUniforms = function(bones, glUniforms) {
     var boneMatrix = glUniforms.__hash.boneMatrix,
@@ -168,7 +168,7 @@ RendererPrototype.bindBoneUniforms = function(bones, glUniforms) {
     if (boneMatrix) {
         boneMatrixValue = boneMatrix.value;
 
-        mat = bindUniforms_mat;
+        mat = bindBoneUniforms_mat;
 
         i = -1;
         il = bones.length - 1;

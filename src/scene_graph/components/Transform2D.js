@@ -18,8 +18,8 @@ function Transform2D() {
     Component.call(this);
 
     this.position = vec2.create();
-    this.rotation = 0;
-    this.scale = vec2.create(1, 1);
+    this.rotation = 0.0;
+    this.scale = vec2.create(1.0, 1.0);
 
     this.matrix = mat32.create();
     this.matrixWorld = mat32.create();
@@ -38,9 +38,9 @@ Transform2DPrototype.destructor = function() {
 
     ComponentPrototype.destructor.call(this);
 
-    vec2.set(this.position, 0, 0);
-    this.rotation = 0;
-    vec2.set(this.scale, 1, 1);
+    vec2.set(this.position, 0.0, 0.0);
+    this.rotation = 0.0;
+    vec2.set(this.scale, 1.0, 1.0);
 
     mat32.identity(this.matrix);
     mat32.identity(this.matrixWorld);
@@ -98,7 +98,7 @@ Transform2DPrototype.lookAt = function(target) {
         vec = lookAt_vec;
 
     if (target.matrixWorld) {
-        vec2.transformMat4(vec, vec2.set(vec, 0, 0), target.matrixWorld);
+        vec2.transformMat4(vec, vec2.set(vec, 0.0, 0.0), target.matrixWorld);
     } else {
         vec2.copy(vec, target);
     }

@@ -73,7 +73,6 @@ ScenePrototype.destructor = function() {
 ScenePrototype.init = function(element) {
 
     this.input.attach(element);
-    this.initPlugins();
     this.initManagers();
     this.__init = true;
     this.emit("init");
@@ -271,23 +270,21 @@ ScenePrototype.__removeComponent = function(component) {
         managers = this.__managers,
         manager = managerHash[className];
 
-    if (!manager) {
-        return this;
-    }
+    if (manager) {
+        this.emit("remove" + className, component);
 
-    this.emit("remove" + className, component);
+        manager.remove(component);
+        component.manager = null;
 
-    manager.remove(component);
-    component.manager = null;
+        if (manager.isEmpty()) {
+            this.emit("removeManager", manager);
 
-    if (manager.isEmpty()) {
-        this.emit("removeManager", manager);
+            manager.onRemoveFromScene();
 
-        manager.onRemoveFromScene();
-
-        manager.scene = null;
-        managers.splice(indexOf(managers, manager), 1);
-        delete managerHash[className];
+            manager.scene = null;
+            managers.splice(indexOf(managers, manager), 1);
+            delete managerHash[className];
+        }
     }
 
     return this;
@@ -382,6 +379,7 @@ function ScenePrototype_addPlugin(_this, plugin) {
         plugin.scene = _this;
         plugins[plugins.length] = plugin;
         pluginHash[className] = plugin;
+        plugin.init();
         _this.emit("addPlugin", plugin);
     } else {
         throw new Error("Scene addPlugin(...plugins) trying to add plugin " + className + " that is already a member of Scene");
@@ -433,13 +431,6 @@ clearPlugins_callback.set = function set(emitEvents) {
 };
 ScenePrototype.clearPlugins = function clearPlugins(emitEvents) {
     return this.eachPlugin(clearPlugins_callback.set(emitEvents));
-};
-
-function initPlugins_callback(plugin) {
-    plugin.init();
-}
-ScenePrototype.initPlugins = function initPlugins() {
-    return this.eachPlugin(initPlugins_callback);
 };
 
 function awakePlugins_callback(plugin) {

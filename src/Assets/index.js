@@ -119,25 +119,33 @@ AssetsPrototype.load = function(callback) {
     var _this = this,
         notLoaded = this.__notLoaded,
         length = notLoaded.length,
-        i = -1,
-        il = length - 1,
+        i, il, called, done;
+
+    if (length === 0) {
+        callback();
+    } else {
+        i = -1;
+        il = length - 1;
         called = false;
 
-    function done(err) {
-        if (called) {
-            return;
-        }
-        if (err || --length === 0) {
-            called = true;
-            callback && callback(err);
-            _this.emit("load");
-        }
-    }
+        done = function done(err) {
+            if (called) {
+                return;
+            }
+            if (err || --length === 0) {
+                called = true;
+                if (callback) {
+                    callback(err);
+                }
+                _this.emit("load");
+            }
+        };
 
-    while (i++ < il) {
-        notLoaded[i].load(done);
+        while (i++ < il) {
+            notLoaded[i].load(done);
+        }
+        notLoaded.length = 0;
     }
-    notLoaded.length = 0;
 
     return this;
 };
