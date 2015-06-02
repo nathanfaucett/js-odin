@@ -1,11 +1,11 @@
-var keyMirror = require("key_mirror");
+var enums = require("enums");
 
 
-var wrapMode = keyMirror([
-    "Once",
-    "Loop",
-    "PingPong",
-    "Clamp"
+var wrapMode = enums([
+    "ONCE",
+    "LOOP",
+    "PING_PONG",
+    "CLAMP"
 ]);
 
 

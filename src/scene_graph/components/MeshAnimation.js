@@ -19,7 +19,7 @@ function MeshAnimation() {
     this.animations = null;
 
     this.current = "idle";
-    this.mode = wrapMode.Loop;
+    this.mode = wrapMode.LOOP;
 
     this.rate = 1 / 24;
     this.playing = false;
@@ -41,7 +41,7 @@ MeshAnimationPrototype.construct = function(animations, options) {
     this.animations = animations;
 
     this.current = options.current != null ? options.current : "idle";
-    this.mode = options.mode != null ? options.mode : wrapMode.Loop;
+    this.mode = options.mode != null ? options.mode : wrapMode.LOOP;
 
     this.rate = options.rate != null ? options.rate : 1 / 24;
     this.playing = false;
@@ -56,7 +56,7 @@ MeshAnimationPrototype.destructor = function() {
     this.animations = null;
 
     this.current = "idle";
-    this.mode = wrapMode.Loop;
+    this.mode = wrapMode.LOOP;
 
     this.rate = 1 / 24;
     this.playing = false;
@@ -111,9 +111,9 @@ MeshAnimationPrototype.update = function() {
             length = current.length;
             frame += (order * (count | 0));
 
-            if (mode === wrapMode.Loop) {
+            if (mode === wrapMode.LOOP) {
                 frame = frame % length;
-            } else if (mode === wrapMode.Once) {
+            } else if (mode === wrapMode.ONCE) {
                 if (order > 0) {
                     if (frame >= length) {
                         frame = length - 1;
@@ -125,7 +125,7 @@ MeshAnimationPrototype.update = function() {
                         this.stop();
                     }
                 }
-            } else if (mode === wrapMode.PingPong) {
+            } else if (mode === wrapMode.PING_PONG) {
                 if (order > 0) {
                     if (frame >= length) {
                         this.__order = -1;
@@ -137,7 +137,7 @@ MeshAnimationPrototype.update = function() {
                         frame = 0;
                     }
                 }
-            } else if (mode === wrapMode.Clamp) {
+            } else if (mode === wrapMode.CLAMP) {
                 if (order > 0) {
                     if (frame >= length) {
                         frame = length - 1;
