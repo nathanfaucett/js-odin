@@ -34,6 +34,7 @@ function Scene() {
     this.plugins = {};
 
     this.__init = false;
+    this.__awake = false;
 }
 Class.extend(Scene, "Scene");
 ScenePrototype = Scene.prototype;
@@ -47,17 +48,19 @@ ScenePrototype.construct = function(name) {
     this.input.construct();
 
     this.__init = false;
+    this.__awake = false;
 
     return this;
 };
 
 ScenePrototype.destructor = function() {
     var entities = this.__entities,
-        i = entities.length;
+        i = -1,
+        il = entities.length - 1;
 
     ClassPrototype.destructor.call(this);
 
-    while (i--) {
+    while (i++ < il) {
         entities[i].destroy(false).destructor();
     }
 
@@ -66,15 +69,16 @@ ScenePrototype.destructor = function() {
     this.application = null;
 
     this.__init = false;
+    this.__awake = false;
 
     return this;
 };
 
 ScenePrototype.init = function(element) {
 
-    this.input.attach(element);
-    this.initManagers();
     this.__init = true;
+    this.input.attach(element);
+    this.sortManagers();
     this.emit("init");
 
     return this;
@@ -82,6 +86,7 @@ ScenePrototype.init = function(element) {
 
 ScenePrototype.awake = function() {
 
+    this.__awake = true;
     this.awakePlugins();
     this.awakeManagers();
     this.emit("awake");
@@ -101,17 +106,27 @@ ScenePrototype.update = function() {
     return this;
 };
 
-ScenePrototype.destroy = function() {
+ScenePrototype.clear = function(emitEvent) {
+    if (emitEvent !== false) {
+        this.emit("clear");
+    }
+    return this;
+};
+
+ScenePrototype.destroy = function(emitEvent) {
     var entities = this.__entities,
-        i = entities.length;
+        i = -1,
+        il = entities.length - 1;
 
-    this.emit("destroy");
+    if (emitEvent !== false) {
+        this.emit("destroy");
+    }
 
-    this.destroyPlugins();
-
-    while (i--) {
+    while (i++ < il) {
         entities[i].destroy();
     }
+
+    this.destroyPlugins();
 
     return this;
 };
@@ -137,17 +152,17 @@ ScenePrototype.find = function(name) {
     return undefined;
 };
 
-ScenePrototype.add = function() {
+ScenePrototype.addEntity = function() {
     var i = -1,
         il = arguments.length - 1;
 
     while (i++ < il) {
-        Scene_add(this, arguments[i]);
+        Scene_addEntity(this, arguments[i]);
     }
     return this;
 };
 
-function Scene_add(_this, entity) {
+function Scene_addEntity(_this, entity) {
     var entities = _this.__entities,
         entityHash = _this.__entityHash,
         id = entity.__id;
@@ -160,9 +175,9 @@ function Scene_add(_this, entity) {
         Scene_addObjectComponents(_this, entity.__componentArray);
         Scene_addObjectChildren(_this, entity.children);
 
-        _this.emit("addChild", entity);
+        _this.emit("addEntity", entity);
     } else {
-        throw new Error("Scene add(...entities) trying to add object that is already a member of Scene");
+        throw new Error("Scene addEntity(...entities) trying to add object that is already a member of Scene");
     }
 }
 
@@ -180,7 +195,7 @@ function Scene_addObjectChildren(_this, children) {
         il = children.length - 1;
 
     while (i++ < il) {
-        Scene_add(_this, children[i]);
+        Scene_addEntity(_this, children[i]);
     }
 }
 
@@ -198,17 +213,20 @@ ScenePrototype.__addComponent = function(component) {
         managerHash[className] = manager;
 
         sortManagers(this);
+        manager.init();
 
         this.emit("addManager", manager);
-        manager.onAddToScene();
     }
 
-    manager.add(component);
+    manager.addComponent(component);
     component.manager = manager;
 
     this.emit("add" + className, component);
 
     if (this.__init) {
+        component.init();
+    }
+    if (this.__awake) {
         manager.sort();
         component.awake();
     }
@@ -216,23 +234,23 @@ ScenePrototype.__addComponent = function(component) {
     return this;
 };
 
-ScenePrototype.remove = function() {
+ScenePrototype.removeEntity = function() {
     var i = -1,
         il = arguments.length - 1;
 
     while (i++ < il) {
-        Scene_remove(this, arguments[i]);
+        Scene_removeEntity(this, arguments[i]);
     }
     return this;
 };
 
-function Scene_remove(_this, entity) {
+function Scene_removeEntity(_this, entity) {
     var entities = _this.__entities,
         entityHash = _this.__entityHash,
         id = entity.__id;
 
     if (entityHash[id]) {
-        _this.emit("removeChild", entity);
+        _this.emit("removeEntity", entity);
 
         entity.scene = null;
 
@@ -242,7 +260,7 @@ function Scene_remove(_this, entity) {
         Scene_removeObjectComponents(_this, entity.__componentArray);
         Scene_removeObjectChildren(_this, entity.children);
     } else {
-        throw new Error("Scene remove(...entities) trying to remove object that is not a member of Scene");
+        throw new Error("Scene removeEntity(...entities) trying to remove object that is not a member of Scene");
     }
 }
 
@@ -260,7 +278,7 @@ function Scene_removeObjectChildren(_this, children) {
         il = children.length - 1;
 
     while (i++ < il) {
-        Scene_remove(_this, children[i]);
+        Scene_removeEntity(_this, children[i]);
     }
 }
 
@@ -273,18 +291,21 @@ ScenePrototype.__removeComponent = function(component) {
     if (manager) {
         this.emit("remove" + className, component);
 
-        manager.remove(component);
+        manager.removeComponent(component);
         component.manager = null;
 
         if (manager.isEmpty()) {
+            manager.clear();
             this.emit("removeManager", manager);
-
-            manager.onRemoveFromScene();
 
             manager.scene = null;
             managers.splice(indexOf(managers, manager), 1);
             delete managerHash[className];
         }
+    }
+
+    if (this.__awake) {
+        component.clear();
     }
 
     return this;
@@ -318,11 +339,17 @@ ScenePrototype.clearManagers = function clearManagers(emitEvents) {
 };
 
 function initManagers_callback(manager) {
-    manager.sort();
     manager.init();
 }
 ScenePrototype.initManagers = function initManagers() {
     return this.eachManager(initManagers_callback);
+};
+
+function sortManagers_callback(manager) {
+    manager.sort();
+}
+ScenePrototype.sortManagers = function sortManagers() {
+    return this.eachManager(sortManagers_callback);
 };
 
 function awakeManagers_callback(manager) {

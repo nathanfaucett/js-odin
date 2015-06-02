@@ -41,11 +41,12 @@ EntityPrototype.construct = function(name) {
 
 EntityPrototype.destructor = function() {
     var components = this.__componentArray,
-        i = components.length;
+        i = -1,
+        il = components.length - 1;
 
     ClassPrototype.destructor.call(this);
 
-    while (i--) {
+    while (i++ < il) {
         components[i].destroy(false).destructor();
     }
 
@@ -63,14 +64,12 @@ EntityPrototype.destructor = function() {
 EntityPrototype.destroy = function(emitEvent) {
     var scene = this.scene;
 
-    if (!scene) {
-        return this;
+    if (scene) {
+        if (emitEvent !== false) {
+            this.emit("destroy");
+        }
+        scene.remove(this);
     }
-
-    if (emitEvent !== false) {
-        this.emit("destroy");
-    }
-    scene.remove(this);
 
     return this;
 };
@@ -153,17 +152,17 @@ function Entity_removeComponent(_this, component) {
     }
 }
 
-EntityPrototype.add = function() {
+EntityPrototype.addChild = function() {
     var i = -1,
         il = arguments.length - 1;
 
     while (i++ < il) {
-        Entity_add(this, arguments[i]);
+        Entity_addChild(this, arguments[i]);
     }
     return this;
 };
 
-function Entity_add(_this, entity) {
+function Entity_addChild(_this, entity) {
     var children = _this.children,
         index = indexOf(children, entity),
         root = _this,
@@ -172,7 +171,7 @@ function Entity_add(_this, entity) {
 
     if (index === -1) {
         if (entity.parent) {
-            entity.parent.remove(entity);
+            entity.parent.removeChild(entity);
         }
 
         children[children.length] = entity;
@@ -191,7 +190,7 @@ function Entity_add(_this, entity) {
         _this.emit("addChild", entity);
 
         if (scene && entity.scene !== scene) {
-            scene.add(entity);
+            scene.addEntity(entity);
         }
     } else {
         throw new Error(
@@ -201,17 +200,17 @@ function Entity_add(_this, entity) {
     }
 }
 
-EntityPrototype.remove = function() {
+EntityPrototype.removeChild = function() {
     var i = -1,
         il = arguments.length - 1;
 
     while (i++ < il) {
-        Entity_remove(this, arguments[i]);
+        Entity_removeChild(this, arguments[i]);
     }
     return this;
 };
 
-function Entity_remove(_this, entity) {
+function Entity_removeChild(_this, entity) {
     var children = _this.children,
         index = indexOf(children, entity),
         scene = _this.scene;
@@ -231,7 +230,7 @@ function Entity_remove(_this, entity) {
         }
     } else {
         throw new Error(
-            "Entity remove(...entities) trying to remove " +
+            "Entity removeChild(...entities) trying to remove " +
             "object that is not a member of Entity"
         );
     }
@@ -239,11 +238,12 @@ function Entity_remove(_this, entity) {
 
 function updateDepth(child, depth) {
     var children = child.children,
-        i = children.length;
+        i = -1,
+        il = children.length - 1;
 
     child.depth = depth;
 
-    while (i--) {
+    while (i++ < il) {
         updateDepth(children[i], depth + 1);
     }
 }

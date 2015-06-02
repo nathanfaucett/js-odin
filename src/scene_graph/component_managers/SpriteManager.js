@@ -169,7 +169,7 @@ SpriteManagerPrototype.has = function(component) {
     return false;
 };
 
-SpriteManagerPrototype.add = function(component) {
+SpriteManagerPrototype.addComponent = function(component) {
     var layers = this.__layers,
         componentLayer = component.layer,
         layer = layers[componentLayer] || (layers[componentLayer] = []),
@@ -182,7 +182,7 @@ SpriteManagerPrototype.add = function(component) {
     return this;
 };
 
-SpriteManagerPrototype.remove = function(component) {
+SpriteManagerPrototype.removeComponent = function(component) {
     var layers = this.__layers,
         componentLayer = component.layer,
         layer = layers[componentLayer],

@@ -82,7 +82,7 @@ MeshAnimationPrototype.update = function() {
         lastPosition, lastRotation, lastScale,
         currentPosition, currentRotation, currentScale,
         boneCurrent, boneTransform, parentIndex, boneFrame, lastBoneFrame,
-        current, count, length, order, frame, lastFrame, mode, frameState, lastFrameState, entity, bones, i;
+        current, count, length, order, frame, lastFrame, mode, frameState, lastFrameState, entity, bones, i, il;
 
     entity = this.entity;
     current = this.animations.data[this.current];
@@ -164,9 +164,10 @@ MeshAnimationPrototype.update = function() {
     lastScale = update_lastScale;
 
     bones = entity.components.Mesh.bones;
-    i = bones.length;
+    i = -1;
+    il = bones.length - 1;
 
-    while (i--) {
+    while (i++ < il) {
         boneCurrent = bones[i];
 
         boneTransform = boneCurrent.components.Transform;

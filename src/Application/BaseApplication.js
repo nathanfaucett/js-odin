@@ -42,12 +42,13 @@ BaseApplicationPrototype.construct = function() {
 BaseApplicationPrototype.destructor = function() {
     var scenes = this.__scenes,
         sceneHash = this.__sceneHash,
-        i = scenes.length,
+        i = -1,
+        il = scenes.length - 1,
         scene;
 
     ClassPrototype.destructor.call(this);
 
-    while (i--) {
+    while (i++ < il) {
         scene = scenes[i];
         scene.destructor();
         delete sceneHash[scene.name];

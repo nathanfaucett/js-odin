@@ -30,12 +30,13 @@ AssetsPrototype.construct = function() {
 AssetsPrototype.destructor = function() {
     var array = this.__array,
         hash = this.__hash,
-        i = array.length,
+        i = -1,
+        il = array.length - 1,
         asset;
 
     ClassPrototype.destructor.call(this);
 
-    while (i--) {
+    while (i++ < il) {
         asset = array[i];
         asset.destructor();
 
@@ -56,18 +57,18 @@ AssetsPrototype.get = function(name) {
     return this.__hash[name];
 };
 
-AssetsPrototype.add = function() {
+AssetsPrototype.addAsset = function() {
     var i = -1,
         il = arguments.length - 1;
 
     while (i++ < il) {
-        Assets_add(this, arguments[i]);
+        Assets_addAsset(this, arguments[i]);
     }
 
     return this;
 };
 
-function Assets_add(_this, asset) {
+function Assets_addAsset(_this, asset) {
     var name = asset.name,
         hash = _this.__hash,
         notLoaded = _this.__notLoaded,
@@ -81,22 +82,22 @@ function Assets_add(_this, asset) {
             notLoaded[notLoaded.length] = asset;
         }
     } else {
-        throw new Error("Assets add(...assets) Assets already has member named " + name);
+        throw new Error("Assets addAsset(...assets) Assets already has member named " + name);
     }
 }
 
-AssetsPrototype.remove = function() {
+AssetsPrototype.removeAsset = function() {
     var i = -1,
         il = arguments.length - 1;
 
     while (i++ < il) {
-        Assets_remove(this, arguments[i]);
+        Assets_removeAsset(this, arguments[i]);
     }
 
     return this;
 };
 
-function Assets_remove(_this, asset) {
+function Assets_removeAsset(_this, asset) {
     var name = asset.name,
         hash = _this.__hash,
         notLoaded = _this.__notLoaded,
@@ -111,7 +112,7 @@ function Assets_remove(_this, asset) {
             notLoaded.splice(index, 1);
         }
     } else {
-        throw new Error("Assets remove(...assets) Assets do not have a member named " + name);
+        throw new Error("Assets removeAsset(...assets) Assets do not have a member named " + name);
     }
 }
 

@@ -83,9 +83,10 @@ TouchesPrototype.get = function(index) {
 
 TouchesPrototype.allOff = function() {
     var array = this.__array,
-        i = array.length;
+        i = -1,
+        il = array.length - 1;
 
-    while (i--) {
+    while (i++ < il) {
         array[i].destroy();
     }
     array.length = 0;

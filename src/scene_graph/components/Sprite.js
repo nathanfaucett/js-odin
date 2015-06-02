@@ -39,24 +39,24 @@ SpritePrototype.construct = function(options) {
 
     ComponentPrototype.construct.call(this);
 
-    options = options || {};
+    if (options) {
+        this.visible = options.visible != null ? !!options.visible : true;
 
-    this.visible = options.visible != null ? !!options.visible : true;
+        this.layer = isNumber(options.layer) ? (options.layer < 0 ? 0 : options.layer) : 0;
+        this.z = isNumber(options.z) ? options.z : 0;
 
-    this.layer = isNumber(options.layer) ? (options.layer < 0 ? 0 : options.layer) : 0;
-    this.z = isNumber(options.z) ? options.z : 0;
+        this.alpha = options.alpha != null ? options.alpha : 1;
 
-    this.alpha = options.alpha != null ? options.alpha : 1;
+        this.material = options.material != null ? options.material : null;
 
-    this.material = options.material != null ? options.material : null;
+        this.width = isNumber(options.width) ? options.width : 1;
+        this.height = isNumber(options.height) ? options.height : 1;
 
-    this.width = isNumber(options.width) ? options.width : 1;
-    this.height = isNumber(options.height) ? options.height : 1;
-
-    this.x = isNumber(options.x) ? options.x : 0;
-    this.y = isNumber(options.y) ? options.y : 0;
-    this.w = isNumber(options.w) ? options.w : 1;
-    this.h = isNumber(options.h) ? options.h : 1;
+        this.x = isNumber(options.x) ? options.x : 0;
+        this.y = isNumber(options.y) ? options.y : 0;
+        this.w = isNumber(options.w) ? options.w : 1;
+        this.h = isNumber(options.h) ? options.h : 1;
+    }
 
     return this;
 };
@@ -92,9 +92,9 @@ SpritePrototype.setLayer = function(layer) {
         layer = isNumber(layer) ? (layer < 0 ? 0 : layer) : this.layer;
 
         if (layer !== this.layer) {
-            manager.remove(this);
+            manager.removeComponent(this);
             this.layer = layer;
-            manager.add(this);
+            manager.addComponent(this);
             manager.setLayerAsDirty(layer);
         }
     } else {

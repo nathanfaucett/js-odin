@@ -68,7 +68,7 @@ MeshPrototype.awake = function() {
             childEntity = Entity.create().addComponent(transform, bone);
             bones[bones.length] = childEntity;
             parent = bones[bone.parentIndex] || entity;
-            parent.add(childEntity);
+            parent.addChild(childEntity);
             boneHash[bone.name] = childEntity;
         }
     }

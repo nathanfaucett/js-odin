@@ -101,6 +101,13 @@ ComponentManagerPrototype.update = function() {
     return this;
 };
 
+ComponentManagerPrototype.clear = function(emitEvent) {
+    if (emitEvent !== false) {
+        this.emit("clear");
+    }
+    return this;
+};
+
 ComponentManagerPrototype.forEach = function(callback) {
     var components = this.__components,
         i = -1,
@@ -119,7 +126,7 @@ ComponentManagerPrototype.has = function(component) {
     return indexOf(this.__components, component) !== -1;
 };
 
-ComponentManagerPrototype.add = function(component) {
+ComponentManagerPrototype.addComponent = function(component) {
     var components = this.__components,
         index = indexOf(components, component);
 
@@ -130,7 +137,7 @@ ComponentManagerPrototype.add = function(component) {
     return this;
 };
 
-ComponentManagerPrototype.remove = function(component) {
+ComponentManagerPrototype.removeComponent = function(component) {
     var components = this.__components,
         index = indexOf(components, component);
 

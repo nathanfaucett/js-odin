@@ -56,7 +56,7 @@ eventListener.on(environment.window, "load", function() {
         }
     });
 
-    assets.add(geometry, geometryBox, animation, material, texture);
+    assets.addAsset(geometry, geometryBox, animation, material, texture);
 
     var camera = odin.Entity.create("main_camera").addComponent(
         odin.Transform.create().setPosition([-5, -5, 5]),
@@ -82,10 +82,10 @@ eventListener.on(environment.window, "load", function() {
     var objectMesh = object.components.Mesh;
     objectMesh.on("awake", function() {
         var child = objectMesh.bones[3];
-        child.add(box);
+        child.addChild(box);
     });
 
-    var scene = global.scene = odin.Scene.create("scene").add(camera, object, box),
+    var scene = global.scene = odin.Scene.create("scene").addEntity(camera, object, box),
         cameraComponent = camera.getComponent("Camera");
 
     canvas.on("resize", function(w, h) {

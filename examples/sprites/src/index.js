@@ -67,7 +67,7 @@ eventListener.on(environment.window, "load", function load() {
         }
     });
 
-    assets.add(material, texture);
+    assets.addAsset(material, texture);
 
     var camera = odin.Entity.create("main_camera").addComponent(
         odin.Transform.create()
@@ -100,7 +100,7 @@ eventListener.on(environment.window, "load", function load() {
         })
     );
 
-    var scene = global.scene = odin.Scene.create("scene").add(camera, sprite2, sprite),
+    var scene = global.scene = odin.Scene.create("scene").addEntity(camera, sprite2, sprite),
         cameraComponent = camera.getComponent("Camera");
 
     scene.assets = assets;

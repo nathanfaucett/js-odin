@@ -16,13 +16,6 @@ function Plugin() {
 Class.extend(Plugin, "Plugin");
 PluginPrototype = Plugin.prototype;
 
-PluginPrototype.clear = function clear(emitEvent) {
-    if (emitEvent !== false) {
-        this.emit("clear");
-    }
-    return this;
-};
-
 PluginPrototype.init = function init() {
     this.emit("init");
     return this;
@@ -30,6 +23,13 @@ PluginPrototype.init = function init() {
 
 PluginPrototype.awake = function awake() {
     this.emit("awake");
+    return this;
+};
+
+PluginPrototype.clear = function clear(emitEvent) {
+    if (emitEvent !== false) {
+        this.emit("clear");
+    }
     return this;
 };
 
@@ -46,8 +46,7 @@ PluginPrototype.destroy = function(emitEvent) {
             this.emit("destroy");
         }
         scene.removePlugin(this);
-        return this;
-    } else {
-        return this;
     }
+
+    return this;
 };

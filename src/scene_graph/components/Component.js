@@ -55,15 +55,15 @@ ComponentPrototype.init = function() {
     return this;
 };
 
+ComponentPrototype.awake = function() {
+    this.emit("awake");
+    return this;
+};
+
 ComponentPrototype.clear = function(emitEvent) {
     if (emitEvent !== false) {
         this.emit("clear");
     }
-    return this;
-};
-
-ComponentPrototype.awake = function() {
-    this.emit("awake");
     return this;
 };
 
@@ -76,7 +76,6 @@ ComponentPrototype.destroy = function(emitEvent) {
 
     if (entity) {
         if (emitEvent !== false) {
-            this.clear(emitEvent);
             this.emit("destroy");
         }
         entity.removeComponent(this);

@@ -90,10 +90,11 @@ AxesPrototype.construct = function() {
 AxesPrototype.destructor = function() {
     var array = this.__array,
         hash = this.__hash,
-        i = array.length,
+        i = -1,
+        il = array.length - 1,
         axis;
 
-    while (i--) {
+    while (i++ < il) {
         axis = array[i];
         axis.destructor();
         array.splice(i, 1);

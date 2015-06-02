@@ -29,10 +29,11 @@ ButtonsPrototype.construct = function() {
 ButtonsPrototype.destructor = function() {
     var array = this.__array,
         hash = this.__hash,
-        i = array.length,
+        i = -1,
+        il = array.length - 1,
         button;
 
-    while (i--) {
+    while (i++ < il) {
         button = array[i];
         button.destructor();
         array.splice(i, 1);

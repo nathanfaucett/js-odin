@@ -232,8 +232,9 @@ GeometryPrototype.calculateNormals = function() {
         normal = attributesHash.normal.array;
     } else {
         normal = normal.array;
-        i = length;
-        while (i--) {
+        i = -1;
+        il = length - 1;
+        while (i++ < il) {
             normal[i] = 0;
         }
     }
@@ -374,14 +375,16 @@ GeometryPrototype.calculateTangents = function() {
         tangent = attributeHash.tangent.array;
     } else {
         tangent = tangent.array;
-        i = length;
-        while (i--) {
+        i = -1;
+        il = length - 1;
+        while (i++ < il) {
             tangent[i] = 0;
         }
     }
 
-    i = length;
-    while (i--) {
+    i = -1;
+    il = length - 1;
+    while (i++ < il) {
         vec3.set(tan1[i] || (tan1[i] = vec3.create()), 0, 0, 0);
         vec3.set(tan2[i] || (tan2[i] = vec3.create()), 0, 0, 0);
     }
