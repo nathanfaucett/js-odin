@@ -14,7 +14,7 @@ function CameraManager() {
 
     this.__active = null;
 }
-ComponentManager.extend(CameraManager, "CameraManager");
+ComponentManager.extend(CameraManager, "odin.CameraManager");
 CameraManagerPrototype = CameraManager.prototype;
 
 CameraManagerPrototype.construct = function() {

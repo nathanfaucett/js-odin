@@ -43,7 +43,7 @@ ComponentRenderer.onExtend = function(child, className, componentName, order) {
     child.order = child.prototype.order = order || 0;
 };
 
-Class.extend(ComponentRenderer, "ComponentRenderer");
+Class.extend(ComponentRenderer, "odin.ComponentRenderer");
 ComponentRendererPrototype = ComponentRenderer.prototype;
 
 ComponentRenderer.order = ComponentRendererPrototype.order = 0;

@@ -13,7 +13,7 @@ function Plugin() {
 
     this.scene = null;
 }
-Class.extend(Plugin, "Plugin");
+Class.extend(Plugin, "odin.Plugin");
 PluginPrototype = Plugin.prototype;
 
 PluginPrototype.init = function init() {

@@ -26,7 +26,6 @@
   "dependencies": {
     "aabb3": "git://github.com/nathanfaucett/aabb3",
     "blur_node": "git://github.com/nathanfaucett/blur_node",
-    "camelize": "git://github.com/nathanfaucett/camelize",
     "color": "git://github.com/nathanfaucett/color",
     "create_loop": "git://github.com/nathanfaucett/create_loop",
     "create_pool": "git://github.com/nathanfaucett/create_pool",

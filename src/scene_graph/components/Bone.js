@@ -28,7 +28,7 @@ function Bone() {
     this.inheritRotation = true;
     this.inheritScale = true;
 }
-Component.extend(Bone, "Bone", BoneManager);
+Component.extend(Bone, "odin.Bone", BoneManager);
 BonePrototype = Bone.prototype;
 
 BonePrototype.construct = function(options) {
@@ -78,7 +78,7 @@ var MAT = mat4.create(),
 
 BonePrototype.update = function() {
     var entity = this.entity,
-        transform = entity.components.Transform,
+        transform = entity.components["odin.Transform"],
         uniform = this.uniform,
         inheritPosition, inheritScale, inheritRotation = this.inheritRotation,
         mat, position, scale, rotation,
@@ -94,7 +94,7 @@ BonePrototype.update = function() {
 
     if (parent && this.parentIndex !== -1) {
         mat = MAT;
-        mat4.copy(mat, parent.components.Bone.uniform);
+        mat4.copy(mat, parent.components["odin.Bone"].uniform);
 
         inheritPosition = this.inheritPosition;
         inheritScale = this.inheritScale;

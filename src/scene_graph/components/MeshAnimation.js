@@ -29,7 +29,7 @@ function MeshAnimation() {
     this.__lastFrame = 0;
     this.__order = 1;
 }
-Component.extend(MeshAnimation, "MeshAnimation");
+Component.extend(MeshAnimation, "odin.MeshAnimation");
 MeshAnimationPrototype = MeshAnimation.prototype;
 
 MeshAnimationPrototype.construct = function(animations, options) {
@@ -163,14 +163,14 @@ MeshAnimationPrototype.update = function() {
     lastRotation = update_lastRotation;
     lastScale = update_lastScale;
 
-    bones = entity.components.Mesh.bones;
+    bones = entity.components["odin.Mesh"].bones;
     i = -1;
     il = bones.length - 1;
 
     while (i++ < il) {
         boneCurrent = bones[i];
 
-        boneTransform = boneCurrent.components.Transform;
+        boneTransform = boneCurrent.components["odin.Transform"];
         parentIndex = boneCurrent.parentIndex;
 
         position = boneTransform.position;

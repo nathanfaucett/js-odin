@@ -33,7 +33,7 @@ function Geometry() {
 
     this.boneWeightCount = 3;
 }
-JSONAsset.extend(Geometry, "Geometry");
+JSONAsset.extend(Geometry, "odin.Geometry");
 GeometryPrototype = Geometry.prototype;
 
 GeometryPrototype.construct = function(name, src, options) {

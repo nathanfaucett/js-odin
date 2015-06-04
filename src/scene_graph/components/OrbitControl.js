@@ -63,7 +63,7 @@ function OrbitControl() {
         OrbitControl_onMouseWheel(_this, e, wheel);
     };
 }
-Component.extend(OrbitControl, "OrbitControl");
+Component.extend(OrbitControl, "odin.OrbitControl");
 OrbitControlPrototype = OrbitControl.prototype;
 
 OrbitControlPrototype.construct = function(options) {
@@ -166,8 +166,8 @@ OrbitControlPrototype.setTarget = function(target) {
 
 function OrbitControl_update(_this) {
     var components = _this.entity.components,
-        camera = components.Camera,
-        transform = components.Transform,
+        camera = components["odin.Camera"],
+        transform = components["odin.Transform"],
         position = transform.position,
         target = _this.target,
         offset = _this.__offset,
@@ -210,8 +210,8 @@ var OrbitControl_pan_panOffset = vec3.create();
 function OrbitControl_pan(_this, delta) {
     var panOffset = OrbitControl_pan_panOffset,
         pan = _this.__pan,
-        camera = _this.entity.components.Camera,
-        transform = _this.entity.components.Transform,
+        camera = _this.entity.components["odin.Camera"],
+        transform = _this.entity.components["odin.Transform"],
         matrixWorld = transform.matrixWorld,
         position = transform.position,
         targetDistance;
@@ -260,7 +260,7 @@ function OrbitControl_onTouchEnd(_this) {
 
 function OrbitControl_onTouchMove(_this, e, touch) {
     var delta = touch.delta,
-        camera = _this.entity.components.Camera;
+        camera = _this.entity.components["odin.Camera"];
 
     if (_this.__state === ROTATE) {
         _this.__thetaDelta += 2 * mathf.PI * delta[0] * camera.invWidth * _this.speed;
@@ -291,7 +291,7 @@ function OrbitControl_onMouseDown(_this, e, button) {
 
 function OrbitControl_onMouseMove(_this, e, mouse) {
     var delta = mouse.delta,
-        camera = _this.entity.components.Camera;
+        camera = _this.entity.components["odin.Camera"];
 
     if (_this.__state === ROTATE) {
         _this.__thetaDelta += 2 * mathf.PI * delta[0] * camera.invWidth * _this.speed;

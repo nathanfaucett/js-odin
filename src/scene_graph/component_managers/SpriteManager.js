@@ -13,7 +13,7 @@ function SpriteManager() {
     this.__layers = [];
     this.__dirtyLayers = [];
 }
-ComponentManager.extend(SpriteManager, "SpriteManager");
+ComponentManager.extend(SpriteManager, "odin.SpriteManager");
 SpriteManagerPrototype = SpriteManager.prototype;
 
 SpriteManagerPrototype.construct = function() {

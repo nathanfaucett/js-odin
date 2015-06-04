@@ -16,7 +16,7 @@ function Material() {
     this.shader = null;
     this.uniforms = null;
 }
-JSONAsset.extend(Material, "Material");
+JSONAsset.extend(Material, "odin.Material");
 MaterialPrototype = Material.prototype;
 
 MaterialPrototype.construct = function(name, src, options) {

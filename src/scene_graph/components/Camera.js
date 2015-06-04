@@ -45,7 +45,7 @@ function Camera() {
     this.needsUpdate = true;
     this.__active = false;
 }
-Component.extend(Camera, "Camera", CameraManager);
+Component.extend(Camera, "odin.Camera", CameraManager);
 CameraPrototype = Camera.prototype;
 
 CameraPrototype.construct = function(options) {
@@ -226,7 +226,7 @@ CameraPrototype.toScreen = function(v, out) {
 
 CameraPrototype.update = function(force) {
     var entity = this.entity,
-        transform = entity && (entity.components.Transform || entity.components.Transform2D),
+        transform = entity && (entity.components["odin.Transform"] || entity.components["odin.Transform2D"]),
         orthographicSize, right, left, top, bottom;
 
     if (force || this.__active) {

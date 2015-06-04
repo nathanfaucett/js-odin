@@ -32,7 +32,7 @@ function Sprite() {
     this.w = 1;
     this.h = 1;
 }
-Component.extend(Sprite, "Sprite", SpriteManager);
+Component.extend(Sprite, "odin.Sprite", SpriteManager);
 SpritePrototype = Sprite.prototype;
 
 SpritePrototype.construct = function(options) {

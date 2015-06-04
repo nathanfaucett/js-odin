@@ -24,7 +24,7 @@ function Entity() {
     this.parent = null;
     this.children = [];
 }
-Class.extend(Entity, "Entity");
+Class.extend(Entity, "odin.Entity");
 EntityPrototype = Entity.prototype;
 
 EntityPrototype.construct = function(name) {

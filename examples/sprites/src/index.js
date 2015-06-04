@@ -18,7 +18,7 @@ PlayerControl.prototype.update = function update() {
         scene = entity.scene,
         input = scene.input,
         dt = scene.time.delta,
-        transform = entity.components.Transform2D;
+        transform = entity.getComponent("odin.Transform2D");
 
     transform.position[0] += input.axis("horizontal") * dt;
     transform.position[1] += input.axis("vertical") * dt;
@@ -101,7 +101,7 @@ eventListener.on(environment.window, "load", function load() {
     );
 
     var scene = global.scene = odin.Scene.create("scene").addEntity(camera, sprite2, sprite),
-        cameraComponent = camera.getComponent("Camera");
+        cameraComponent = camera.getComponent("odin.Camera");
 
     scene.assets = assets;
 

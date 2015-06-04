@@ -32,7 +32,7 @@ function Shader() {
     this.fragment = null;
     this.templateVariables = [];
 }
-Class.extend(Shader, "Shader");
+Class.extend(Shader, "odin.Shader");
 ShaderPrototype = Shader.prototype;
 
 ShaderPrototype.construct = function(vertex, fragment) {

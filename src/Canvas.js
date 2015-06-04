@@ -66,7 +66,7 @@ function Canvas() {
 
     this.__handler = null;
 }
-Class.extend(Canvas);
+Class.extend(Canvas, "odin.Canvas");
 CanvasPrototype = Canvas.prototype;
 
 CanvasPrototype.construct = function(options) {

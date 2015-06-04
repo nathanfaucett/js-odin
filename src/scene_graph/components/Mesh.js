@@ -21,7 +21,7 @@ function Mesh() {
     this.bones = [];
     this.bone = {};
 }
-Component.extend(Mesh, "Mesh", MeshManager);
+Component.extend(Mesh, "odin.Mesh", MeshManager);
 MeshPrototype = Mesh.prototype;
 
 MeshPrototype.construct = function(geometry, material) {

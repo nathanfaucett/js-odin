@@ -10,7 +10,7 @@ module.exports = TransformManager;
 function TransformManager() {
     ComponentManager.call(this);
 }
-ComponentManager.extend(TransformManager, "TransformManager", 9999);
+ComponentManager.extend(TransformManager, "odin.TransformManager", 9999);
 TransformManagerPrototype = TransformManager.prototype;
 
 TransformManagerPrototype.sortFunction = function(a, b) {

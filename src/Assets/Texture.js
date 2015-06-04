@@ -41,7 +41,7 @@ function Texture() {
     this.wrap = null;
     this.type = null;
 }
-ImageAsset.extend(Texture, "Texture");
+ImageAsset.extend(Texture, "odin.Texture");
 TexturePrototype = Texture.prototype;
 
 TexturePrototype.construct = function(name, src, options) {

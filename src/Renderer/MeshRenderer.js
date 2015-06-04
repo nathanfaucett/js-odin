@@ -12,7 +12,7 @@ module.exports = MeshRenderer;
 function MeshRenderer() {
     ComponentRenderer.call(this);
 }
-ComponentRenderer.extend(MeshRenderer, "MeshRenderer", "Mesh", 1);
+ComponentRenderer.extend(MeshRenderer, "odin.MeshRenderer", "odin.Mesh", 1);
 MeshRendererPrototype = MeshRenderer.prototype;
 
 var modelView = mat4.create(),
@@ -24,7 +24,7 @@ MeshRendererPrototype.render = function(mesh, camera) {
         gl = context.gl,
 
         components = mesh.entity.components,
-        transform = components.Transform || components.Transform2D,
+        transform = components["odin.Transform"] || components["odin.Transform2D"],
 
         meshMaterial = mesh.material,
         meshGeometry = mesh.geometry,

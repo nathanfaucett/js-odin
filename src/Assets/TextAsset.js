@@ -12,7 +12,7 @@ module.exports = TextAsset;
 function TextAsset() {
     Asset.call(this);
 }
-Asset.extend(TextAsset, "TextAsset");
+Asset.extend(TextAsset, "odin.TextAsset");
 TextAssetPrototype = TextAsset.prototype;
 
 TextAssetPrototype.load = function(callback) {

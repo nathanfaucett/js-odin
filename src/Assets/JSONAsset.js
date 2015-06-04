@@ -12,7 +12,7 @@ module.exports = JSONAsset;
 function JSONAsset() {
     Asset.call(this);
 }
-Asset.extend(JSONAsset, "JSONAsset");
+Asset.extend(JSONAsset, "odin.JSONAsset");
 JSONAssetPrototype = JSONAsset.prototype;
 
 JSONAssetPrototype.load = function(callback) {

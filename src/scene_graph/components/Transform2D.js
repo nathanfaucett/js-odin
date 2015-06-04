@@ -24,7 +24,7 @@ function Transform2D() {
     this.matrix = mat32.create();
     this.matrixWorld = mat32.create();
 }
-Component.extend(Transform2D, "Transform2D", Transform2DManager);
+Component.extend(Transform2D, "odin.Transform2D", Transform2DManager);
 Transform2DPrototype = Transform2D.prototype;
 
 Transform2DPrototype.construct = function() {
@@ -122,7 +122,7 @@ Transform2DPrototype.update = function() {
     var matrix = this.matrix,
         entity = this.entity,
         parent = entity && entity.parent,
-        parentTransform2D = parent && parent.components.Transform2D;
+        parentTransform2D = parent && parent.components["odin.Transform2D"];
 
     mat32.compose(matrix, this.position, this.scale, this.rotation);
 

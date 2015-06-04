@@ -17,7 +17,7 @@ function ImageAsset() {
 
     this.__listenedTo = null;
 }
-Asset.extend(ImageAsset, "ImageAsset");
+Asset.extend(ImageAsset, "odin.ImageAsset");
 ImageAssetPrototype = ImageAsset.prototype;
 
 ImageAssetPrototype.construct = function(name, src) {

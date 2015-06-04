@@ -21,7 +21,7 @@ ComponentManager.onExtend = function(child, className, order) {
     child.order = child.prototype.order = order != null ? order : 0;
 };
 
-Class.extend(ComponentManager, "ComponentManager");
+Class.extend(ComponentManager, "odin.ComponentManager");
 ComponentManagerPrototype = ComponentManager.prototype;
 
 ComponentManager.order = ComponentManagerPrototype.order = 0;

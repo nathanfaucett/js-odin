@@ -58,7 +58,7 @@ function SpriteRenderer() {
 
     this.__previous = null;
 }
-ComponentRenderer.extend(SpriteRenderer, "SpriteRenderer", "Sprite", 0);
+ComponentRenderer.extend(SpriteRenderer, "odin.SpriteRenderer", "odin.Sprite", 0);
 SpriteRendererPrototype = SpriteRenderer.prototype;
 
 SpriteRendererPrototype.init = function() {
@@ -87,7 +87,7 @@ SpriteRendererPrototype.render = function(sprite, camera) {
         gl = context.gl,
 
         components = sprite.entity.components,
-        transform = components.Transform || components.Transform2D,
+        transform = components["odin.Transform"] || components["odin.Transform2D"],
 
         spriteMaterial = sprite.material,
         spriteGeometry = this.geometry,

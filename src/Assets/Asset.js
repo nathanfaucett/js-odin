@@ -16,7 +16,7 @@ function Asset() {
     this.src = null;
     this.data = null;
 }
-Class.extend(Asset, "Asset");
+Class.extend(Asset, "odin.Asset");
 AssetPrototype = Asset.prototype;
 
 AssetPrototype.construct = function(name, src) {

@@ -41,7 +41,7 @@ function Renderer() {
         _this.__onContextDestroy();
     };
 }
-Class.extend(Renderer, "Renderer");
+Class.extend(Renderer, "odin.Renderer");
 RendererPrototype = Renderer.prototype;
 
 RendererPrototype.construct = function() {
@@ -175,7 +175,7 @@ RendererPrototype.bindBoneUniforms = function(bones, glUniforms) {
         index = 0;
 
         while (i++ < il) {
-            bone = bones[i].components.Bone;
+            bone = bones[i].components["odin.Bone"];
             mat4.mul(mat, bone.uniform, bone.bindPose);
 
             boneMatrixValue[index] = mat[0];

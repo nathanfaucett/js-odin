@@ -10,7 +10,7 @@ module.exports = MeshManager;
 function MeshManager() {
     ComponentManager.call(this);
 }
-ComponentManager.extend(MeshManager, "MeshManager");
+ComponentManager.extend(MeshManager, "odin.MeshManager");
 MeshManagerPrototype = MeshManager.prototype;
 
 MeshManagerPrototype.sortFunction = function(a, b) {

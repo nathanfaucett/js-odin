@@ -1,5 +1,4 @@
-var camelize = require("camelize"),
-    Class = require("../../Class"),
+var Class = require("../../Class"),
     ComponentManager = require("../component_managers/ComponentManager");
 
 
@@ -21,16 +20,14 @@ function Component() {
 Component.onExtend = function(child, className, manager) {
     manager = manager || ComponentManager;
 
-    child.memberName = child.prototype.memberName = camelize(child.className, true);
     child.Manager = child.prototype.Manager = manager;
     manager.prototype.componentName = child.className;
 };
 
-Class.extend(Component, "Component");
+Class.extend(Component, "odin.Component");
 ComponentPrototype = Component.prototype;
 
-Component.className = ComponentPrototype.className = "Component";
-Component.memberName = ComponentPrototype.memberName = camelize(Component.className, true);
+Component.className = ComponentPrototype.className = "odin.Component";
 Component.Manager = ComponentPrototype.Manager = ComponentManager;
 
 ComponentPrototype.construct = function() {

@@ -14,7 +14,7 @@ module.exports = Application;
 function Application() {
     BaseApplication.call(this);
 }
-BaseApplication.extend(Application, "Application");
+BaseApplication.extend(Application, "odin.Application");
 ApplicationPrototype = Application.prototype;
 
 ApplicationPrototype.construct = function() {

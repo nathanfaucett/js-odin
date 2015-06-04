@@ -17,7 +17,7 @@ function Assets() {
     this.__array = [];
     this.__hash = {};
 }
-Class.extend(Assets, "Assets");
+Class.extend(Assets, "odin.Assets");
 AssetsPrototype = Assets.prototype;
 
 AssetsPrototype.construct = function() {

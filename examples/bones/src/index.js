@@ -79,14 +79,14 @@ eventListener.on(environment.window, "load", function() {
         odin.Mesh.create(geometryBox, material)
     );
 
-    var objectMesh = object.components.Mesh;
+    var objectMesh = object.getComponent("odin.Mesh");
     objectMesh.on("awake", function() {
         var child = objectMesh.bones[3];
         child.addChild(box);
     });
 
     var scene = global.scene = odin.Scene.create("scene").addEntity(camera, object, box),
-        cameraComponent = camera.getComponent("Camera");
+        cameraComponent = camera.getComponent("odin.Camera");
 
     canvas.on("resize", function(w, h) {
         cameraComponent.set(w, h);

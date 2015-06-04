@@ -29,7 +29,7 @@ function BaseApplication() {
     }, null);
 
 }
-Class.extend(BaseApplication, "BaseApplication");
+Class.extend(BaseApplication, "odin.BaseApplication");
 BaseApplicationPrototype = BaseApplication.prototype;
 
 BaseApplicationPrototype.construct = function() {

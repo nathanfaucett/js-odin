@@ -24,7 +24,7 @@ function Transform() {
     this.matrix = mat4.create();
     this.matrixWorld = mat4.create();
 }
-Component.extend(Transform, "Transform", TransformManager);
+Component.extend(Transform, "odin.Transform", TransformManager);
 TransformPrototype = Transform.prototype;
 
 TransformPrototype.construct = function() {
@@ -136,7 +136,7 @@ TransformPrototype.update = function() {
     var matrix = this.matrix,
         entity = this.entity,
         parent = entity && entity.parent,
-        parentTransform = parent && parent.components.Transform;
+        parentTransform = parent && parent.components["odin.Transform"];
 
     mat4.compose(matrix, this.position, this.scale, this.rotation);
 

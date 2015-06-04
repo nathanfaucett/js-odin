@@ -36,7 +36,7 @@ function Scene() {
     this.__init = false;
     this.__awake = false;
 }
-Class.extend(Scene, "Scene");
+Class.extend(Scene, "odin.Scene");
 ScenePrototype = Scene.prototype;
 
 ScenePrototype.construct = function(name) {
@@ -221,7 +221,7 @@ ScenePrototype.__addComponent = function(component) {
     manager.addComponent(component);
     component.manager = manager;
 
-    this.emit("add" + className, component);
+    this.emit("add-" + className, component);
 
     if (this.__init) {
         component.init();
@@ -289,7 +289,7 @@ ScenePrototype.__removeComponent = function(component) {
         manager = managerHash[className];
 
     if (manager) {
-        this.emit("remove" + className, component);
+        this.emit("remove-" + className, component);
 
         manager.removeComponent(component);
         component.manager = null;
