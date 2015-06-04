@@ -41,3 +41,5 @@ odin.Mesh = require("./scene_graph/components/Mesh");
 odin.MeshAnimation = require("./scene_graph/components/MeshAnimation");
 
 odin.OrbitControl = require("./scene_graph/components/OrbitControl");
+
+odin.ParticleSystem = require("./scene_graph/components/ParticleSystem");

@@ -147,7 +147,7 @@ function Canvas_setFixed(_this) {
     style.marginTop = "0px";
 
     if (!_this.__handler) {
-        _this.__handler = function() {
+        _this.__handler = function handler() {
             Canvas_update(_this);
         };
     }

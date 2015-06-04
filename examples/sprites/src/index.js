@@ -28,9 +28,7 @@ PlayerControl.prototype.update = function update() {
 eventListener.on(environment.window, "load", function load() {
     var assets = odin.Assets.create(),
         canvas = odin.Canvas.create({
-            disableContextMenu: false,
-            aspect: 1.5,
-            keepAspect: true
+            disableContextMenu: false
         }),
         renderer = odin.Renderer.create();
 
