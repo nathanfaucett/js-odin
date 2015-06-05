@@ -104,7 +104,7 @@ function RendererMaterial_compile(_this, data) {
         program = programData.program;
     } else {
         shader = _this.material.shader;
-        options = RendererMaterial_getOptions(data);
+        options = getOptions(data);
 
         vertex = shader.vertex(options);
         fragment = shader.fragment(options);
@@ -138,13 +138,23 @@ function RendererMaterial_compile(_this, data) {
     return program;
 }
 
-function RendererMaterial_getOptions(data) {
-    var options = {};
+function getOptions(data) {
+    var options = {},
+        material;
 
     options.boneCount = data.bones ? data.bones.length : 0;
     options.boneWeightCount = data.boneWeightCount || 0;
     options.useBones = options.boneCount !== 0;
     options.isSprite = data.x != null && data.y != null && data.width != null && data.height != null;
+
+    if (data.material) {
+        material = data.material;
+
+        options.receiveShadow = material.receiveShadow;
+        options.castShadow = material.castShadow;
+        options.side = material.side;
+        options.wireframe = material.wireframe;
+    }
 
     return options;
 }

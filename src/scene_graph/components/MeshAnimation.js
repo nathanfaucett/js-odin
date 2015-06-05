@@ -2,7 +2,7 @@ var vec3 = require("vec3"),
     quat = require("quat"),
     mathf = require("mathf"),
     Component = require("./Component"),
-    wrapMode = require("../../wrapMode");
+    wrapMode = require("../../enums/wrapMode");
 
 
 var ComponentPrototype = Component.prototype,

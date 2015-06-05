@@ -60,6 +60,10 @@ eventListener.on(environment.window, "load", function load() {
 
     var material = odin.Material.create("mat_box", null, {
         shader: shader,
+        side: odin.enums.side.BOTH,
+        blending: odin.enums.blending.MULTIPLY,
+        wireframe: false,
+        wireframeLineWidth: 1,
         uniforms: {
             texture: texture
         }

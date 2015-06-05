@@ -11,7 +11,6 @@ module.exports = ParticleSystem;
 
 function ParticleSystem() {
 
-
     Component.call(this);
 
     this.playing = null;
@@ -45,31 +44,6 @@ ParticleSystemPrototype.destructor = function() {
 
     while (i++ < il) {
         this.removeEmitter(emitters[i]);
-    }
-
-    return this;
-};
-
-ParticleSystemPrototype.update = function() {
-    var dt, emitters, playing, i, il, emitter;
-
-    if (this.playing) {
-        dt = this.entity.scene.time.delta;
-        emitters = this.emitters;
-        playing = false;
-        i = -1,
-            il = emitters.length - 1;
-
-        while (i++ < il) {
-            emitter = emitters[i];
-            emitter.update(dt);
-
-            if (!playing && emitter.playing) {
-                playing = true;
-            }
-        }
-
-        this.playing = playing;
     }
 
     return this;
@@ -129,16 +103,49 @@ function ParticleSystem_removeEmitter(_this, emitter) {
     return this;
 }
 
-ParticleSystemPrototype.play = function() {
-    var emitters = this.emitters,
-        i = -1,
-        il = emitters.length - 1;
+ParticleSystemPrototype.update = function() {
+    var dt, emitters, playing, i, il, emitter;
 
-    while (i++ < il) {
-        emitters[i].play();
+    if (this.playing) {
+        dt = this.entity.scene.time.delta;
+        emitters = this.emitters;
+        playing = false;
+        i = -1,
+            il = emitters.length - 1;
+
+        while (i++ < il) {
+            emitter = emitters[i];
+            emitter.update(dt);
+
+            if (!playing && emitter.playing) {
+                playing = true;
+            }
+        }
+
+        if (!playing) {
+            this.playing = playing;
+            this.emit("end");
+        }
     }
 
-    this.playing = true;
+    return this;
+};
+
+ParticleSystemPrototype.play = function() {
+    var emitters, i, il;
+
+    if (!this.playing) {
+        emitters = this.emitters;
+        i = -1;
+        il = emitters.length - 1;
+
+        while (i++ < il) {
+            emitters[i].play();
+        }
+
+        this.playing = true;
+        this.emit("play");
+    }
 
     return this;
 };

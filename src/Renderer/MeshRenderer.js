@@ -38,6 +38,8 @@ MeshRendererPrototype.render = function(mesh, camera) {
     transform.calculateNormalMatrix(modelView, normalMatrix);
 
     context.setProgram(program);
+
+    renderer.bindMaterial(meshMaterial);
     renderer.bindUniforms(camera.projection, modelView, normalMatrix, meshMaterial.uniforms, program.uniforms);
     renderer.bindBoneUniforms(mesh.bones, program.uniforms);
     renderer.bindAttributes(geometry.buffers.__hash, geometry.getVertexBuffer(), program.attributes);

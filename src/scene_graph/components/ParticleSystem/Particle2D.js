@@ -1,5 +1,6 @@
 var vec2 = require("vec2"),
-    color = require("color");
+    color = require("color"),
+    createPool = require("create_pool");
 
 
 var Particle2DPrototype;
@@ -27,6 +28,7 @@ function Particle2D() {
     this.angularVelocity = 0;
     this.angularAcceleration = 0;
 }
+createPool(Particle2D);
 Particle2DPrototype = Particle2D.prototype;
 
 Particle2DPrototype.update = function(dt) {

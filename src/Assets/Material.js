@@ -1,5 +1,6 @@
 var JSONAsset = require("./JSONAsset"),
-    Shader = require("../Shader");
+    Shader = require("../Shader"),
+    enums = require("../enums");
 
 
 var JSONAssetPrototype = JSONAsset.prototype,
@@ -14,6 +15,16 @@ function Material() {
     JSONAsset.call(this);
 
     this.shader = null;
+
+    this.side = null;
+    this.blending = null;
+
+    this.wireframe = null;
+    this.wireframeLineWidth = null;
+
+    this.receiveShadow = null;
+    this.castShadow = null;
+
     this.uniforms = null;
 }
 JSONAsset.extend(Material, "odin.Material");
@@ -35,12 +46,30 @@ MaterialPrototype.construct = function(name, src, options) {
 
     this.uniforms = options.uniforms || {};
 
+    this.side = options.side != null ? options.side : enums.side.FRONT;
+    this.blending = options.blending != null ? options.blending : enums.blending.DEFAULT;
+
+    this.wireframe = options.wireframe != null ? !!options.wireframe : false;
+    this.wireframeLineWidth = options.wireframeLineWidth != null ? options.wireframeLineWidth : 1;
+
+    this.receiveShadow = options.receiveShadow != null ? !!options.receiveShadow : true;
+    this.castShadow = options.castShadow != null ? !!options.castShadow : true;
+
     return this;
 };
 
 MaterialPrototype.destructor = function() {
 
     JSONAssetPrototype.destructor.call(this);
+
+    this.side = null;
+    this.blending = null;
+
+    this.wireframe = null;
+    this.wireframeLineWidth = null;
+
+    this.receiveShadow = null;
+    this.castShadow = null;
 
     this.uniforms = null;
 

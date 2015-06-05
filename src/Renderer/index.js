@@ -1,8 +1,9 @@
 var indexOf = require("index_of"),
-    Class = require("../Class"),
     WebGLContext = require("webgl_context"),
-
     mat4 = require("mat4"),
+
+    Class = require("../Class"),
+    side = require("../enums/side"),
 
     MeshRenderer = require("./MeshRenderer"),
     SpriteRenderer = require("./SpriteRenderer"),
@@ -11,7 +12,8 @@ var indexOf = require("index_of"),
     RendererMaterial = require("./RendererMaterial");
 
 
-var ClassPrototype = Class.prototype,
+var enums = WebGLContext.enums,
+    ClassPrototype = Class.prototype,
     RendererPrototype;
 
 
@@ -159,8 +161,33 @@ RendererPrototype.material = function(material) {
     return materials[material.__id] || (materials[material.__id] = RendererMaterial.create(this, this.context, material));
 };
 
-var bindBoneUniforms_mat = mat4.create();
+RendererPrototype.bindMaterial = function(material) {
+    this.setSide(material.side);
+    this.context.setBlending(material.blending);
+    if (material.wireframe) {
+        this.context.setLineWidth(material.wireframeLineWidth);
+    }
+};
 
+RendererPrototype.setSide = function(value) {
+    switch (value) {
+        case side.FRONT:
+            this.context.setCullFace(enums.cullFace.BACK);
+            break;
+        case side.BACK:
+            this.context.setCullFace(enums.cullFace.FRONT);
+            break;
+        case side.NONE:
+            this.context.setCullFace(enums.cullFace.FRONT_AND_BACK);
+            break;
+        default:
+            this.context.setCullFace(enums.cullFace.NONE);
+            break;
+    }
+    return this;
+};
+
+var bindBoneUniforms_mat = mat4.create();
 RendererPrototype.bindBoneUniforms = function(bones, glUniforms) {
     var boneMatrix = glUniforms.__hash.boneMatrix,
         boneMatrixValue, mat, i, il, index, bone;

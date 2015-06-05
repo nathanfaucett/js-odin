@@ -11,17 +11,20 @@
     "odin",
     "odin.js"
   ],
+  "scripts": {
+    "bones": "comn -f examples/bones/src/index.js -o examples/bones/index.js",
+    "particles": "comn -f examples/particles/src/index.js -o examples/particles/index.js",
+    "sprites": "comn -f examples/sprites/src/index.js -o examples/sprites/index.js",
+    "examples": "npm run bones && npm run particles && npm run sprites"
+  },
   "author": "Nathan Faucett",
   "license": "BSD-2-Clause",
   "readmeFilename": "README.md",
   "devDependencies": {
     "comn": "git://github.com/nathanfaucett/comn",
-    "file_utils": "git://github.com/nathanfaucett/file_utils",
-    "gulp": "^3.8.11",
-    "gulp-jsbeautifier": "0.0.4",
-    "gulp-jshint": "^1.9.2",
-    "gulp-livereload": "^3.7.0",
-    "gulp-uglify": "^1.2.0"
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-jsbeautifier": "^0.2.7"
   },
   "dependencies": {
     "aabb3": "git://github.com/nathanfaucett/aabb3",
@@ -29,9 +32,11 @@
     "color": "git://github.com/nathanfaucett/color",
     "create_loop": "git://github.com/nathanfaucett/create_loop",
     "create_pool": "git://github.com/nathanfaucett/create_pool",
+    "enums": "git://github.com/nathanfaucett/enums",
     "environment": "git://github.com/nathanfaucett/environment",
     "event_emitter": "git://github.com/nathanfaucett/event_emitter",
     "event_listener": "git://github.com/nathanfaucett/event_listener",
+    "extend": "git://github.com/nathanfaucett/extend.git",
     "fast_hash": "git://github.com/nathanfaucett/fast_hash",
     "focus_node": "git://github.com/nathanfaucett/focus_node",
     "get_active_element": "git://github.com/nathanfaucett/get_active_element",
@@ -43,7 +48,6 @@
     "is_function": "git://github.com/nathanfaucett/is_function",
     "is_number": "git://github.com/nathanfaucett/is_number",
     "is_string": "git://github.com/nathanfaucett/is_string",
-    "enums": "git://github.com/nathanfaucett/enums",
     "keys": "git://github.com/nathanfaucett/keys",
     "map": "git://github.com/nathanfaucett/map",
     "mat3": "git://github.com/nathanfaucett/mat3",

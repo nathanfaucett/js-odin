@@ -4,7 +4,7 @@ var odin = exports;
 odin.Class = require("./Class");
 odin.createLoop = require("create_loop");
 
-odin.wrapMode = require("./wrapMode");
+odin.enums = require("./enums");
 
 odin.BaseApplication = require("./Application/BaseApplication");
 odin.Application = require("./Application");

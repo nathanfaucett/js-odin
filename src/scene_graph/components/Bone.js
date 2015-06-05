@@ -80,7 +80,7 @@ BonePrototype.update = function() {
     var entity = this.entity,
         transform = entity.components["odin.Transform"],
         uniform = this.uniform,
-        inheritPosition, inheritScale, inheritRotation = this.inheritRotation,
+        inheritPosition, inheritScale, inheritRotation,
         mat, position, scale, rotation,
         parent;
 

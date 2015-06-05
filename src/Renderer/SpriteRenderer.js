@@ -7,7 +7,7 @@ var mat3 = require("mat3"),
     ComponentRenderer = require("./ComponentRenderer");
 
 
-var Depth = WebGLContext.enums.Depth,
+var depth = WebGLContext.enums.depth,
 
     NativeUint16Array = typeof(Uint16Array) !== "undefined" ? Uint16Array : Array,
     NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array,
@@ -69,7 +69,7 @@ SpriteRendererPrototype.beforeRender = function() {
     var context = this.renderer.context;
 
     this.__previous = context.__depthFunc;
-    context.setDepthFunc(Depth.none);
+    context.setDepthFunc(depth.None);
 };
 
 SpriteRendererPrototype.afterRender = function() {
@@ -113,6 +113,7 @@ SpriteRendererPrototype.render = function(sprite, camera) {
         glUniformHash.clipping.set(clipping);
     }
 
+    renderer.bindMaterial(spriteMaterial);
     renderer.bindUniforms(camera.projection, modelView, normalMatrix, spriteMaterial.uniforms, glUniforms);
     renderer.bindAttributes(geometry.buffers.__hash, geometry.getVertexBuffer(), program.attributes);
 

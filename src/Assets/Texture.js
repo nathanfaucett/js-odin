@@ -6,10 +6,10 @@ var vec2 = require("vec2"),
 var ImageAssetPrototype = ImageAsset.prototype,
 
     enums = WebGLContext.enums,
-    FilterMode = enums.FilterMode,
-    TextureFormat = enums.TextureFormat,
-    TextureWrap = enums.TextureWrap,
-    TextureType = enums.TextureType,
+    filterMode = enums.filterMode,
+    textureFormat = enums.textureFormat,
+    textureWrap = enums.textureWrap,
+    textureType = enums.textureType,
 
     TexturePrototype;
 
@@ -56,10 +56,10 @@ TexturePrototype.construct = function(name, src, options) {
 
     this.anisotropy = options.anisotropy != null ? options.anisotropy : 1;
 
-    this.filter = options.filter != null ? options.filter : FilterMode.Linear;
-    this.format = options.format != null ? options.format : TextureFormat.RGBA;
-    this.wrap = options.wrap != null ? options.wrap : TextureWrap.Repeat;
-    this.type = options.type != null ? options.type : TextureType.UnsignedByte;
+    this.filter = options.filter != null ? options.filter : filterMode.Linear;
+    this.format = options.format != null ? options.format : textureFormat.RGBA;
+    this.wrap = options.wrap != null ? options.wrap : textureWrap.Repeat;
+    this.type = options.type != null ? options.type : textureType.UnsignedByte;
 
     return this;
 };
