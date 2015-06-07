@@ -82,18 +82,19 @@ eventListener.on(environment.window, "load", function onLoad() {
         odin.OrbitControl.create()
     );
 
-    var sprite = global.object = odin.Entity.create().addComponent(
+    var ps = global.ps = odin.Entity.create().addComponent(
         odin.Transform2D.create(),
-        odin.Sprite.create({
-            x: 0,
-            y: 0,
-            w: 1,
-            h: 0.5,
-            material: material
+        odin.ParticleSystem.create({
+            playing: true,
+            emitter: odin.ParticleSystem.Emitter.create({
+                useDurationRange: true,
+                duration: 1.0,
+                recalcDurationRangeEachLoop: true
+            })
         })
     );
 
-    var scene = global.scene = odin.Scene.create("scene").addEntity(camera, sprite),
+    var scene = global.scene = odin.Scene.create("scene").addEntity(camera, ps),
         cameraComponent = camera.getComponent("odin.Camera");
 
     scene.assets = assets;
@@ -870,43 +871,43 @@ odin.createLoop = require(26);
 
 odin.enums = require(30);
 
-odin.BaseApplication = require(91);
-odin.Application = require(118);
+odin.BaseApplication = require(96);
+odin.Application = require(123);
 
-odin.Assets = require(92);
-odin.Asset = require(119);
-odin.ImageAsset = require(120);
-odin.JSONAsset = require(123);
-odin.Texture = require(139);
-odin.Material = require(140);
-odin.Geometry = require(146);
+odin.Assets = require(97);
+odin.Asset = require(124);
+odin.ImageAsset = require(125);
+odin.JSONAsset = require(128);
+odin.Texture = require(144);
+odin.Material = require(145);
+odin.Geometry = require(151);
 
-odin.Canvas = require(151);
-odin.Renderer = require(152);
-odin.ComponentRenderer = require(154);
+odin.Canvas = require(156);
+odin.Renderer = require(157);
+odin.ComponentRenderer = require(159);
 
-odin.Shader = require(141);
+odin.Shader = require(146);
 
-odin.Scene = require(93);
-odin.Plugin = require(158);
-odin.Entity = require(117);
+odin.Scene = require(98);
+odin.Plugin = require(163);
+odin.Entity = require(122);
 
-odin.ComponentManager = require(159);
+odin.ComponentManager = require(164);
 
-odin.Component = require(160);
+odin.Component = require(165);
 
-odin.Transform = require(161);
-odin.Transform2D = require(163);
-odin.Camera = require(166);
+odin.Transform = require(166);
+odin.Transform2D = require(168);
+odin.Camera = require(171);
 
-odin.Sprite = require(168);
+odin.Sprite = require(173);
 
-odin.Mesh = require(170);
-odin.MeshAnimation = require(174);
+odin.Mesh = require(175);
+odin.MeshAnimation = require(179);
 
-odin.OrbitControl = require(175);
+odin.OrbitControl = require(180);
 
-odin.ParticleSystem = require(176);
+odin.ParticleSystem = require(181);
 
 
 },
@@ -957,8 +958,14 @@ Class.getClass = function(className) {
     return Class.__classes[className];
 };
 
+Class.newClass = function(className) {
+    var constructor = Class.getClass(className);
+    return new constructor();
+};
+
 Class.createFromJSON = function(json) {
-    return Class.getClass(json.className).create().fromJSON(json);
+    var constructor = Class.getClass(json.className);
+    return (new constructor()).fromJSON(json);
 };
 
 Class.className = ClassPrototype.className = "Class";
@@ -979,6 +986,11 @@ ClassPrototype.destructor = function() {
 
     this.__id = null;
 
+    return this;
+};
+
+ClassPrototype.generateNewId = function() {
+    this.__id = uuid();
     return this;
 };
 
@@ -1998,8 +2010,13 @@ var extend = require(13),
 var enums = extend(exports, WebGLContext.enums);
 
 
-enums.side = require(89);
-enums.wrapMode = require(90);
+enums.emitterRenderMode = require(89);
+enums.interpolation = require(90);
+enums.normalMode = require(91);
+enums.screenAlignment = require(92);
+enums.side = require(93);
+enums.sortMode = require(94);
+enums.wrapMode = require(95);
 
 
 },
@@ -8283,6 +8300,75 @@ function(require, exports, module, global) {
 var enums = require(42);
 
 
+var emitterRenderMode = enums([
+    "NONE",
+    "NORMAL",
+    "POINT",
+    "CROSS"
+]);
+
+
+module.exports = emitterRenderMode;
+
+
+},
+function(require, exports, module, global) {
+
+var enums = require(42);
+
+
+var interpolation = enums([
+    "NONE",
+    "LINEAR",
+    "LINEAR_BLEND",
+    "RANDOM",
+    "RANDOM_BLEND"
+]);
+
+
+module.exports = interpolation;
+
+
+},
+function(require, exports, module, global) {
+
+var enums = require(42);
+
+
+var normalMode = enums([
+    "CAMERA_FACING",
+    "SPHERICAL",
+    "CYLINDIRCAL"
+]);
+
+
+module.exports = normalMode;
+
+
+},
+function(require, exports, module, global) {
+
+var enums = require(42);
+
+
+var screenAlignment = enums([
+    "FACING_CAMERA_POSITION",
+    "SQUARE",
+    "RECTANGLE",
+    "VELOCITY",
+    "TYPE_SPECIFIC"
+]);
+
+
+module.exports = screenAlignment;
+
+
+},
+function(require, exports, module, global) {
+
+var enums = require(42);
+
+
 var side = enums([
     "NONE",
     "FRONT",
@@ -8292,6 +8378,24 @@ var side = enums([
 
 
 module.exports = side;
+
+
+},
+function(require, exports, module, global) {
+
+var enums = require(42);
+
+
+var sortMode = enums([
+    "NONE",
+    "VIEW_PROJ_DEPTH",
+    "DISTANCE_TO_VIEW",
+    "AGE_OLDEST_FIRST",
+    "AGE_NEWEST_FIRST"
+]);
+
+
+module.exports = sortMode;
 
 
 },
@@ -8318,9 +8422,9 @@ var isString = require(18),
     isNumber = require(34),
     indexOf = require(57),
     Class = require(9),
-    Assets = require(92),
+    Assets = require(97),
     createLoop = require(26),
-    Scene = require(93);
+    Scene = require(98);
 
 
 var ClassPrototype = Class.prototype,
@@ -8640,10 +8744,10 @@ AssetsPrototype.load = function(callback) {
 function(require, exports, module, global) {
 
 var indexOf = require(57),
-    Input = require(94),
+    Input = require(99),
     Class = require(9),
-    Time = require(116),
-    Entity = require(117);
+    Time = require(121),
+    Entity = require(122);
 
 
 var ClassPrototype = Class.prototype,
@@ -9179,17 +9283,19 @@ ScenePrototype.fromJSON = function(json) {
     this.name = json.name;
 
     while (i++ < il) {
-        entity = Entity.create();
+        entity = new Entity();
+        entity.generateNewId();
         entity.scene = this;
         entity.fromJSON(jsonEntities[i]);
-        this.add(entity);
+        this.addEntity(entity);
     }
 
     i = -1;
     il = jsonPlugins.length - 1;
     while (i++ < il) {
         jsonPlugin = jsonPlugins[i];
-        plugin = Class.getClass(jsonPlugin.className).create();
+        plugin = Class.newClass(jsonPlugin.className);
+        plugin.generateNewId();
         plugin.scene = this;
         plugin.fromJSON(jsonPlugin);
         this.addPlugin(plugin);
@@ -9204,12 +9310,12 @@ function(require, exports, module, global) {
 
 var vec3 = require(36),
     EventEmitter = require(23),
-    Handler = require(95),
-    Mouse = require(108),
-    Buttons = require(109),
-    Touches = require(111),
-    Axes = require(113),
-    eventHandlers = require(115);
+    Handler = require(100),
+    Mouse = require(113),
+    Buttons = require(114),
+    Touches = require(116),
+    Axes = require(118),
+    eventHandlers = require(120);
 
 
 var MOUSE_BUTTONS = [
@@ -9396,11 +9502,11 @@ InputPrototype.update = function(time, frame) {
 function(require, exports, module, global) {
 
 var EventEmitter = require(23),
-    focusNode = require(96),
-    blurNode = require(97),
-    getActiveElement = require(98),
+    focusNode = require(101),
+    blurNode = require(102),
+    getActiveElement = require(103),
     eventListener = require(2),
-    events = require(100);
+    events = require(105);
 
 
 var HandlerPrototype;
@@ -9568,7 +9674,7 @@ function blurNode(node) {
 },
 function(require, exports, module, global) {
 
-var isDocument = require(99),
+var isDocument = require(104),
     environment = require(1);
 
 
@@ -9606,11 +9712,11 @@ function isDocument(obj) {
 },
 function(require, exports, module, global) {
 
-var MouseEvent = require(101),
-    WheelEvent = require(103),
-    KeyEvent = require(104),
-    TouchEvent = require(106),
-    DeviceMotionEvent = require(107);
+var MouseEvent = require(106),
+    WheelEvent = require(108),
+    KeyEvent = require(109),
+    TouchEvent = require(111),
+    DeviceMotionEvent = require(112);
 
 
 module.exports = {
@@ -9636,7 +9742,7 @@ module.exports = {
 },
 function(require, exports, module, global) {
 
-var createPool = require(102),
+var createPool = require(107),
     environment = require(1);
 
 
@@ -9883,7 +9989,7 @@ function createReleaser(Constructor) {
 },
 function(require, exports, module, global) {
 
-var createPool = require(102);
+var createPool = require(107);
 
 
 var WheelEventPrototype;
@@ -9934,8 +10040,8 @@ function getDeltaY(e) {
 },
 function(require, exports, module, global) {
 
-var createPool = require(102),
-    keyCodes = require(105);
+var createPool = require(107),
+    keyCodes = require(110);
 
 
 var KeyEventPrototype;
@@ -10091,7 +10197,7 @@ module.exports = {
 },
 function(require, exports, module, global) {
 
-var createPool = require(102);
+var createPool = require(107);
 
 
 var TouchEventPrototype,
@@ -10241,7 +10347,7 @@ function getForce(nativeTouch) {
 },
 function(require, exports, module, global) {
 
-var createPool = require(102);
+var createPool = require(107);
 
 
 var DeviceMotionEventPrototype;
@@ -10354,7 +10460,7 @@ MousePrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var Button = require(110);
+var Button = require(115);
 
 
 var ButtonsPrototype;
@@ -10591,7 +10697,7 @@ ButtonPrototype.fromJSON = function(json) {
 function(require, exports, module, global) {
 
 var indexOf = require(57),
-    Touch = require(112);
+    Touch = require(117);
 
 
 var TouchesPrototype;
@@ -10730,7 +10836,7 @@ TouchesPrototype.fromJSON = function(json) {
 function(require, exports, module, global) {
 
 var vec2 = require(64),
-    createPool = require(102);
+    createPool = require(107);
 
 
 var TouchPrototype;
@@ -10852,7 +10958,7 @@ TouchPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var Axis = require(114);
+var Axis = require(119);
 
 
 var AxesPrototype;
@@ -11828,7 +11934,7 @@ EntityPrototype.fromJSON = function(json) {
 
     while (i++ < il) {
         json = jsonComponents[i];
-        component = Class.getClass(json.className).create();
+        component = Class.newClass(json.className);
         component.entity = this;
         component.fromJSON(json);
         this.addComponent(component);
@@ -11838,10 +11944,11 @@ EntityPrototype.fromJSON = function(json) {
     il = jsonChildren.length - 1;
 
     while (i++ < il) {
-        entity = Entity.create();
+        entity = new Entity();
+        entity.generateNewId();
         entity.scene = scene;
         entity.fromJSON(jsonChildren[i]);
-        this.add(entity);
+        this.addChild(entity);
     }
 
     return this;
@@ -11854,7 +11961,7 @@ function(require, exports, module, global) {
 var isString = require(18),
     isNumber = require(34),
     Class = require(9),
-    BaseApplication = require(91);
+    BaseApplication = require(96);
 
 
 var BaseApplicationPrototype = BaseApplication.prototype,
@@ -12002,8 +12109,8 @@ function(require, exports, module, global) {
 
 var environment = require(1),
     eventListener = require(2),
-    HttpError = require(121),
-    Asset = require(119);
+    HttpError = require(126),
+    Asset = require(124);
 
 
 var AssetPrototype = Asset.prototype,
@@ -12082,7 +12189,7 @@ function(require, exports, module, global) {
 
 var forEach = require(43),
     create = require(12),
-    STATUS_CODES = require(122);
+    STATUS_CODES = require(127);
 
 
 var STATUS_NAMES = {},
@@ -12230,9 +12337,9 @@ module.exports = {
 },
 function(require, exports, module, global) {
 
-var request = require(124),
-    HttpError = require(121),
-    Asset = require(119);
+var request = require(129),
+    HttpError = require(126),
+    Asset = require(124);
 
 
 var JSONAssetPrototype;
@@ -12276,17 +12383,17 @@ JSONAssetPrototype.load = function(callback) {
 },
 function(require, exports, module, global) {
 
-module.exports = require(125)(require(128));
+module.exports = require(130)(require(133));
 
 
 },
 function(require, exports, module, global) {
 
 module.exports = function createRequest(request) {
-    var methods = require(126),
+    var methods = require(131),
         forEach = require(43),
         EventEmitter = require(23),
-        defaults = require(127);
+        defaults = require(132);
 
 
     forEach(methods, function(method) {
@@ -12406,17 +12513,17 @@ module.exports = defaults;
 },
 function(require, exports, module, global) {
 
-var PromisePolyfill = require(129),
-    XMLHttpRequestPolyfill = require(132),
+var PromisePolyfill = require(134),
+    XMLHttpRequestPolyfill = require(137),
     isFunction = require(5),
     isString = require(18),
     forEach = require(43),
-    trim = require(133),
+    trim = require(138),
     extend = require(13),
-    Response = require(134),
-    defaults = require(127),
-    camelcaseHeader = require(135),
-    parseContentType = require(138);
+    Response = require(139),
+    defaults = require(132),
+    camelcaseHeader = require(140),
+    parseContentType = require(143);
 
 
 var supportsFormData = typeof(FormData) !== "undefined";
@@ -12607,7 +12714,7 @@ var process = require(3);
 var isArray = require(54),
     isObject = require(4),
     isFunction = require(5),
-    createStore = require(130),
+    createStore = require(135),
     fastSlice = require(24);
 
 
@@ -12884,7 +12991,7 @@ function(require, exports, module, global) {
 
 var has = require(10),
     defineProperty = require(21),
-    isPrimitive = require(131);
+    isPrimitive = require(136);
 
 
 var emptyObject = {};
@@ -13124,8 +13231,8 @@ function Response() {
 },
 function(require, exports, module, global) {
 
-var map = require(136),
-    capitalizeString = require(137);
+var map = require(141),
+    capitalizeString = require(142);
 
 
 module.exports = function camelcaseHeader(str) {
@@ -13216,7 +13323,7 @@ function(require, exports, module, global) {
 
 var vec2 = require(64),
     WebGLContext = require(31),
-    ImageAsset = require(120);
+    ImageAsset = require(125);
 
 
 var ImageAssetPrototype = ImageAsset.prototype,
@@ -13400,8 +13507,8 @@ TexturePrototype.setType = function(value) {
 },
 function(require, exports, module, global) {
 
-var JSONAsset = require(123),
-    Shader = require(141),
+var JSONAsset = require(128),
+    Shader = require(146),
     enums = require(30);
 
 
@@ -13487,12 +13594,12 @@ MaterialPrototype.parse = function() {
 },
 function(require, exports, module, global) {
 
-var map = require(136),
+var map = require(141),
     keys = require(14),
-    template = require(142),
-    pushUnique = require(143),
+    template = require(147),
+    pushUnique = require(148),
     Class = require(9),
-    chunks = require(144);
+    chunks = require(149);
 
 
 var ClassPrototype = Class.prototype,
@@ -13732,7 +13839,7 @@ function basePushUnique(array, value) {
 },
 function(require, exports, module, global) {
 
-var ShaderChunk = require(145);
+var ShaderChunk = require(150);
 
 
 var chunks = exports;
@@ -14060,14 +14167,14 @@ ShaderChunkPrototype.destructor = function() {
 function(require, exports, module, global) {
 
 var vec3 = require(36),
-    quat = require(147),
+    quat = require(152),
     mat4 = require(76),
     mathf = require(32),
-    aabb3 = require(148),
+    aabb3 = require(153),
     FastHash = require(56),
-    Attribute = require(149),
-    JSONAsset = require(123),
-    GeometryBone = require(150);
+    Attribute = require(154),
+    JSONAsset = require(128),
+    GeometryBone = require(155);
 
 
 var JSONAssetPrototype = JSONAsset.prototype,
@@ -15335,7 +15442,7 @@ AttributePrototype.setXYZW = function(index, x, y, z, w) {
 function(require, exports, module, global) {
 
 var vec3 = require(36),
-    quat = require(147),
+    quat = require(152),
     mat4 = require(76);
 
 
@@ -15612,13 +15719,13 @@ var indexOf = require(57),
     mat4 = require(76),
 
     Class = require(9),
-    side = require(89),
+    side = require(93),
 
-    MeshRenderer = require(153),
-    SpriteRenderer = require(155),
+    MeshRenderer = require(158),
+    SpriteRenderer = require(160),
 
-    RendererGeometry = require(156),
-    RendererMaterial = require(157);
+    RendererGeometry = require(161),
+    RendererMaterial = require(162);
 
 
 var enums = WebGLContext.enums,
@@ -15917,7 +16024,7 @@ function(require, exports, module, global) {
 
 var mat3 = require(74),
     mat4 = require(76),
-    ComponentRenderer = require(154);
+    ComponentRenderer = require(159);
 
 
 var MeshRendererPrototype;
@@ -16071,8 +16178,8 @@ var mat3 = require(74),
     vec2 = require(64),
     vec4 = require(67),
     WebGLContext = require(31),
-    Geometry = require(146),
-    ComponentRenderer = require(154);
+    Geometry = require(151),
+    ComponentRenderer = require(159);
 
 
 var depth = WebGLContext.enums.depth,
@@ -16807,7 +16914,7 @@ ComponentManagerPrototype.removeComponent = function(component) {
 function(require, exports, module, global) {
 
 var Class = require(9),
-    ComponentManager = require(159);
+    ComponentManager = require(164);
 
 
 var ClassPrototype = Class.prototype,
@@ -16896,11 +17003,11 @@ ComponentPrototype.destroy = function(emitEvent) {
 function(require, exports, module, global) {
 
 var vec3 = require(36),
-    quat = require(147),
+    quat = require(152),
     mat3 = require(74),
     mat4 = require(76),
-    Component = require(160),
-    TransformManager = require(162);
+    Component = require(165),
+    TransformManager = require(167);
 
 
 var ComponentPrototype = Component.prototype,
@@ -17084,7 +17191,7 @@ TransformPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(159);
+var ComponentManager = require(164);
 
 
 var TransformManagerPrototype;
@@ -17109,10 +17216,10 @@ function(require, exports, module, global) {
 
 var vec2 = require(64),
     mat3 = require(74),
-    mat32 = require(164),
+    mat32 = require(169),
     mat4 = require(76),
-    Component = require(160),
-    Transform2DManager = require(165);
+    Component = require(165),
+    Transform2DManager = require(170);
 
 
 var ComponentPrototype = Component.prototype,
@@ -17671,7 +17778,7 @@ mat32.notEqual = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(159);
+var ComponentManager = require(164);
 
 
 var Transform2DManagerPrototype;
@@ -17695,8 +17802,8 @@ Transform2DManagerPrototype.sortFunction = function(a, b) {
 function(require, exports, module, global) {
 
 var isNumber = require(34),
-    Component = require(160),
-    CameraManager = require(167),
+    Component = require(165),
+    CameraManager = require(172),
     mathf = require(32),
     vec2 = require(64),
     vec3 = require(36),
@@ -18008,7 +18115,7 @@ CameraPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(159);
+var ComponentManager = require(164);
 
 
 var ComponentManagerPrototype = ComponentManager.prototype,
@@ -18091,8 +18198,8 @@ CameraManagerPrototype.remove = function(component) {
 function(require, exports, module, global) {
 
 var isNumber = require(34),
-    Component = require(160),
-    SpriteManager = require(169);
+    Component = require(165),
+    SpriteManager = require(174);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18241,7 +18348,7 @@ SpritePrototype.fromJSON = function(json) {
 function(require, exports, module, global) {
 
 var indexOf = require(57),
-    ComponentManager = require(159);
+    ComponentManager = require(164);
 
 
 var SpriteManagerPrototype;
@@ -18441,11 +18548,11 @@ SpriteManagerPrototype.removeComponent = function(component) {
 },
 function(require, exports, module, global) {
 
-var Component = require(160),
-    Bone = require(171),
-    Transform = require(161),
-    Entity = require(117),
-    MeshManager = require(173);
+var Component = require(165),
+    Bone = require(176),
+    Transform = require(166),
+    Entity = require(122),
+    MeshManager = require(178);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18547,10 +18654,10 @@ MeshPrototype.fromJSON = function(json) {
 function(require, exports, module, global) {
 
 var vec3 = require(36),
-    quat = require(147),
+    quat = require(152),
     mat4 = require(76),
-    Component = require(160),
-    BoneManager = require(172);
+    Component = require(165),
+    BoneManager = require(177);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18693,7 +18800,7 @@ BonePrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(159);
+var ComponentManager = require(164);
 
 
 var BoneManagerPrototype;
@@ -18716,7 +18823,7 @@ BoneManagerPrototype.sortFunction = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(159);
+var ComponentManager = require(164);
 
 
 var MeshManagerPrototype;
@@ -18740,10 +18847,10 @@ MeshManagerPrototype.sortFunction = function(a, b) {
 function(require, exports, module, global) {
 
 var vec3 = require(36),
-    quat = require(147),
+    quat = require(152),
     mathf = require(32),
-    Component = require(160),
-    wrapMode = require(90);
+    Component = require(165),
+    wrapMode = require(95);
 
 
 var ComponentPrototype = Component.prototype,
@@ -19017,7 +19124,7 @@ function(require, exports, module, global) {
 var environment = require(1),
     mathf = require(32),
     vec3 = require(36),
-    Component = require(160);
+    Component = require(165);
 
 
 var ComponentPrototype = Component.prototype,
@@ -19336,7 +19443,8 @@ function OrbitControl_onMouseWheel(_this, e, wheel) {
 function(require, exports, module, global) {
 
 var indexOf = require(57),
-    Component = require(160);
+    particleState = require(182),
+    Component = require(165);
 
 
 var ComponentPrototype = Component.prototype,
@@ -19350,7 +19458,7 @@ function ParticleSystem() {
 
     Component.call(this);
 
-    this.playing = null;
+    this.__playing = false;
 
     this.emitters = [];
     this.__emitterHash = {};
@@ -19358,14 +19466,31 @@ function ParticleSystem() {
 Component.extend(ParticleSystem, "odin.ParticleSystem");
 ParticleSystemPrototype = ParticleSystem.prototype;
 
-ParticleSystem.Emitter = require(177);
-ParticleSystem.Emitter2D = require(178);
+ParticleSystem.Emitter = require(183);
 
 ParticleSystemPrototype.construct = function(options) {
+    var emitters, i, il;
 
     ComponentPrototype.construct.call(this);
 
-    this.playing = options.playing ? !!options.playing : false;
+    options = options || {};
+
+    if (options.emitters) {
+        emitters = options.emitters;
+        i = -1;
+        il = emitters.length - 1;
+
+        while (i++ < il) {
+            this.addEmitter(emitters[i]);
+        }
+    }
+    if (options.emitter) {
+        this.addEmitter(options.emitter);
+    }
+
+    if (options.playing) {
+        this.play();
+    }
 
     return this;
 };
@@ -19376,8 +19501,6 @@ ParticleSystemPrototype.destructor = function() {
         il = emitters.length - 1;
 
     ComponentPrototype.destructor.call(this);
-
-    this.playing = null;
 
     while (i++ < il) {
         this.removeEmitter(emitters[i]);
@@ -19398,18 +19521,16 @@ ParticleSystemPrototype.addEmitter = function() {
 };
 
 function ParticleSystem_addEmitter(_this, emitter) {
-    var emitters = this.emitters,
+    var emitters = _this.emitters,
         index = indexOf(emitters, emitter);
 
     if (index === -1) {
         emitters[emitters.length] = emitter;
-        this.__emitterHash[emitter.__id] = emitter;
-        emitter.particleSystem = this;
+        _this.__emitterHash[emitter.__id] = emitter;
+        emitter.particleSystem = _this;
     } else {
         throw new Error("ParticleSystem addEmitter(emitter): emitter already in particle system");
     }
-
-    return this;
 }
 
 ParticleSystemPrototype.removeEmitter = function() {
@@ -19424,79 +19545,93 @@ ParticleSystemPrototype.removeEmitter = function() {
 };
 
 function ParticleSystem_removeEmitter(_this, emitter) {
-    var emitters = this.emitters,
+    var emitters = _this.emitters,
         index = indexOf(emitters, emitter);
 
     if (index !== -1) {
-        emitter.clear();
         emitter.particleSystem = null;
-
         emitters.splice(index, 1);
-        delete this.__emitterHash[emitter.__id];
+        delete _this.__emitterHash[emitter.__id];
     } else {
         throw new Error("ParticleSystem removeEmitter(emitter): emitter not in particle system");
     }
-
-    return this;
 }
 
 ParticleSystemPrototype.update = function() {
-    var dt, emitters, playing, i, il, emitter;
+    if (this.__playing) {
 
-    if (this.playing) {
-        dt = this.entity.scene.time.delta;
-        emitters = this.emitters;
-        playing = false;
-        i = -1,
-            il = emitters.length - 1;
+        this.eachEmitter(ParticleSystem_update.set(this.entity.scene.time, true));
 
-        while (i++ < il) {
-            emitter = emitters[i];
-            emitter.update(dt);
-
-            if (!playing && emitter.playing) {
-                playing = true;
-            }
-        }
-
-        if (!playing) {
-            this.playing = playing;
+        if (ParticleSystem_update.playing === false) {
+            this.__playing = false;
             this.emit("end");
         }
     }
+};
 
+function ParticleSystem_update(emitter) {
+    emitter.update(ParticleSystem_update.time);
+    if (emitter.__state === particleState.NONE) {
+        ParticleSystem_update.playing = false;
+    }
+}
+ParticleSystem_update.set = function(time, playing) {
+    this.time = time;
+    this.playing = playing;
     return this;
 };
 
 ParticleSystemPrototype.play = function() {
-    var emitters, i, il;
-
-    if (!this.playing) {
-        emitters = this.emitters;
-        i = -1;
-        il = emitters.length - 1;
-
-        while (i++ < il) {
-            emitters[i].play();
-        }
-
-        this.playing = true;
+    if (!this.__playing) {
+        this.__playing = true;
+        this.eachEmitter(ParticleSystem_play);
         this.emit("play");
     }
+};
 
-    return this;
+function ParticleSystem_play(emitter) {
+    emitter.play();
+}
+
+ParticleSystemPrototype.eachEmitter = function(fn) {
+    var emitters = this.emitters,
+        i = -1,
+        il = emitters.length - 1;
+
+    while (i++ < il) {
+        if (fn(emitters[i], i) === false) {
+            break;
+        }
+    }
 };
 
 ParticleSystemPrototype.toJSON = function(json) {
+    var emitters = this.emitters,
+        jsonEmitters = json.emitters || (json.emitters = []),
+        i = -1,
+        il = emitters.length - 1;
 
     json = ComponentPrototype.toJSON.call(this, json);
+
+    json = this.playing;
+
+    while (i++ < il) {
+        jsonEmitters[i] = emitters[i].toJSON(jsonEmitters[i]);
+    }
 
     return json;
 };
 
 ParticleSystemPrototype.fromJSON = function(json) {
+    var jsonEmitters = json.emitters,
+        i = -1,
+        il = jsonEmitters.length - 1;
 
     ComponentPrototype.fromJSON.call(this, json);
+
+    while (i++ < il) {
+        this.addEmitter(jsonEmitters[i]);
+    }
 
     return this;
 };
@@ -19505,10 +19640,42 @@ ParticleSystemPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var Class = require(9);
+var enums = require(42);
 
 
-var ClassPrototype = Class.prototype,
+var particleState = enums([
+    "NONE",
+    "START",
+    "RUNNING",
+    "END"
+]);
+
+
+module.exports = particleState;
+
+
+},
+function(require, exports, module, global) {
+
+var indexOf = require(57),
+    isNumber = require(34),
+    mathf = require(32),
+    vec2 = require(64),
+    vec3 = require(36),
+    quat = require(152),
+    particleState = require(182),
+    normalMode = require(91),
+    emitterRenderMode = require(89),
+    interpolation = require(90),
+    screenAlignment = require(92),
+    sortMode = require(94),
+    createSeededRandom = require(184),
+    randFloat = require(185),
+    Class = require(9);
+
+
+var MAX_SAFE_INTEGER = mathf.pow(2, 53) - 1,
+    ClassPrototype = Class.prototype,
     EmitterPrototype;
 
 
@@ -19516,92 +19683,81 @@ module.exports = Emitter;
 
 
 function Emitter() {
-    Class.call(this);
-}
-Class.extend(Emitter, "odin.ParticleSystem.Emitter");
-EmitterPrototype = Emitter.prototype;
-
-EmitterPrototype.construct = function() {
-
-    ClassPrototype.construct.call(this);
-
-    return this;
-};
-
-EmitterPrototype.destructor = function() {
-
-    ClassPrototype.destructor.call(this);
-
-    return this;
-};
-
-EmitterPrototype.update = function() {
-    return this;
-};
-
-EmitterPrototype.toJSON = function(json) {
-
-    json = ClassPrototype.toJSON.call(this, json);
-
-    return json;
-};
-
-EmitterPrototype.fromJSON = function(json) {
-
-    ClassPrototype.fromJSON.call(this, json);
-
-    return this;
-};
-
-
-},
-function(require, exports, module, global) {
-
-var mathf = require(32),
-    isNumber = require(34),
-    Class = require(9),
-    randInt = require(179),
-    randFloat = require(180),
-    createSeededRandom = require(181),
-    Particle2D = require(182);
-
-
-var MAX_SAFE_INTEGER = mathf.pow(2, 53) - 1,
-    ClassPrototype = Class.prototype,
-    Emitter2DPrototype;
-
-
-module.exports = Emitter2D;
-
-
-function Emitter2D() {
     var _this = this;
 
     Class.call(this);
 
+    this.__state = particleState.NONE;
+    this.__currentTime = 0.0;
+    this.__random = createSeededRandom();
+
     this.seed = null;
-    this.__random = null;
 
-    this.minEmission = null;
-    this.maxEmission = null;
-
-    this.playing = false;
+    this.renderMode = null;
 
     this.particleSystem = null;
-
-    this.startTime = null;
-    this.currentTime = null;
-
     this.particles = [];
 
+    this.material = null;
+
+    this.screenAlignment = null;
+    this.useLocalSpace = null;
+
+    this.killOnDeactivate = false;
+    this.killOnCompleted = false;
+
+    this.sortMode = null;
+
+    this.__duration = 0.0;
+    this.duration = 0.0;
+    this.minDuration = 0.0;
+    this.useDurationRange = false;
+    this.recalcDurationRangeEachLoop = false;
+
+    this.__delay = 0.0;
+    this.__currentDelayTime = 0.0;
+    this.delay = 0.0;
+    this.minDelay = 0.0;
+    this.useDelayRange = false;
+    this.delayFirstLoopOnly = false;
+
+    this.__currentLoop = 0;
+    this.loopCount = 0;
+
+    this.subUV = false;
+
+    this.interpolation = null;
+
+    this.subImagesX = 1;
+    this.subImagesY = 1;
+
+    this.scaleUV = vec2.create(1, 1);
+
+    this.randomImageChanges = 1;
+
+    this.useMaxDrawCount = false;
+    this.maxDrawCount = 0;
+
+    this.normalMode = null;
+
+    this.rate = 60;
+    this.rateScale = 1;
+
+    this.burst = false;
+    this.burstScale = 1;
+
+    this.modules = {};
+    this.__moduleArray = [];
+
     this.random = function random() {
-        return _this.__random(this.currentTime);
+        return _this.__random(_this.__currentTime);
     };
 }
-Class.extend(Emitter2D, "odin.ParticleSystem.Emitter2D");
-Emitter2DPrototype = Emitter2D.prototype;
+Class.extend(Emitter, "odin.ParticleSystem.Emitter");
+EmitterPrototype = Emitter.prototype;
 
-Emitter2DPrototype.construct = function(options) {
+EmitterPrototype.construct = function(options) {
+    var modules, i, il;
 
     ClassPrototype.construct.call(this);
 
@@ -19611,102 +19767,330 @@ Emitter2DPrototype.construct = function(options) {
         options.seed > MAX_SAFE_INTEGER ? MAX_SAFE_INTEGER : options.seed
     ) : (mathf.random() * MAX_SAFE_INTEGER));
 
-    this.__random = createSeededRandom(this.seed);
+    this.__random.seed(this.seed);
 
-    this.minEmission = options.minEmission != null ? options.minEmission : 1;
-    this.maxEmission = options.maxEmission != null ? options.maxEmission : 2;
+    this.renderMode = options.renderMode || emitterRenderMode.NORMAL;
 
-    this.playing = false;
+    this.material = options.material || null;
 
-    this.startTime = 0.0;
-    this.currentTime = 0.0;
+    this.screenAlignment = options.screenAlignment || screenAlignment.FACING_CAMERA_POSITION;
+    this.useLocalSpace = options.useLocalSpace ? !!options.useLocalSpace : false;
+
+    this.killOnDeactivate = options.killOnDeactivate ? !!options.killOnDeactivate : false;
+    this.killOnCompleted = options.killOnCompleted ? !!options.killOnCompleted : false;
+
+    this.sortMode = options.sortMode || sortMode.VIEW_PROJ_DEPTH;
+
+    this.duration = options.duration ? options.duration : 0.0;
+    this.minDuration = options.minDuration ? options.minDuration : 0.0;
+    this.useDurationRange = options.useDurationRange ? !!options.useDurationRange : false;
+    this.recalcDurationRangeEachLoop = options.recalcDurationRangeEachLoop ? !!options.recalcDurationRangeEachLoop : false;
+
+    this.delay = options.delay ? options.delay : 0.0;
+    this.minDelay = options.minDelay ? options.minDelay : 0.0;
+    this.useDelayRange = options.useDelayRange ? !!options.useDelayRange : false;
+    this.delayFirstLoopOnly = options.delayFirstLoopOnly ? !!options.delayFirstLoopOnly : false;
+
+    this.__currentLoop = 0;
+    this.loopCount = options.loopCount ? options.loopCount : 0;
+
+    this.subUV = options.subUV ? !!options.subUV : false;
+
+    this.interpolation = options.interpolation || interpolation.NONE;
+
+    this.subImagesX = options.subImagesX ? options.subImagesX : 1;
+    this.subImagesY = options.subImagesY ? options.subImagesY : 1;
+
+    if (options.scaleUV) {
+        vec2.copy(this.scaleUV, options.scaleUV);
+    }
+
+    this.randomImageChanges = options.randomImageChanges ? options.randomImageChanges : 1;
+
+    this.useMaxDrawCount = options.useMaxDrawCount ? !!options.useMaxDrawCount : false;
+    this.maxDrawCount = options.maxDrawCount ? options.maxDrawCount : 0;
+
+    this.normalMode = options.normalMode || normalMode.CAMERA_FACING;
+
+    this.rate = options.rate ? options.rate : 24;
+    this.rateScale = options.rateScale ? options.rateScale : 1;
+
+    this.burst = options.burst ? !!options.burst : false;
+    this.burstScale = options.burstScale ? options.burstScale : 1;
+
+    if (options.modules) {
+        modules = options.modules;
+        i = -1;
+        il = modules.length - 1;
+
+        while (i++ < il) {
+            this.addModule(modules[i]);
+        }
+    }
+    if (options.module) {
+        this.addModule(options.module);
+    }
 
     return this;
 };
 
-Emitter2DPrototype.destructor = function() {
+EmitterPrototype.destructor = function() {
+    var moduleArray = this.__moduleArray,
+        i = -1,
+        il = moduleArray.length - 1;
 
     ClassPrototype.destructor.call(this);
 
+    this.__state = particleState.NONE;
+
     this.seed = null;
-    this.__random = null;
 
-    this.minEmission = null;
-    this.maxEmission = null;
+    this.renderMode = null;
 
-    this.playing = false;
-
-    this.startTime = 0.0;
-    this.currentTime = 0.0;
-
+    this.particleSystem = null;
     this.particles.length = 0;
 
-    return this;
-};
+    this.material = null;
 
-Emitter2DPrototype.update = function() {
+    this.screenAlignment = null;
+    this.useLocalSpace = null;
 
-    this.currentTime = this.particleSystem.entity.scene.time.time - this.startTime;
+    this.killOnDeactivate = false;
+    this.killOnCompleted = false;
 
-    return this;
-};
+    this.sortMode = null;
 
-Emitter2DPrototype.spawn = function() {
-    var count = randInt(this.random, this.minEmission, this.maxEmission);
+    this.duration = 0.0;
+    this.minDuration = 0.0;
+    this.useDurationRange = false;
+    this.recalcDurationRangeEachLoop = false;
 
-    console.log(count);
+    this.delay = 0.0;
+    this.minDelay = 0.0;
+    this.useDelayRange = false;
+    this.delayFirstLoopOnly = false;
 
-    return this;
-};
+    this.__currentLoop = 0;
+    this.loopCount = 0;
 
-Emitter2DPrototype.play = function() {
-    if (!this.playing) {
-        this.startTime = this.particleSystem.entity.scene.time.time;
-        this.playing = true;
+    this.subUV = false;
+
+    this.interpolation = null;
+
+    this.subImagesX = 1;
+    this.subImagesY = 1;
+
+    vec2.set(this.scaleUV, 1, 1);
+
+    this.randomImageChanges = 1;
+
+    this.useMaxDrawCount = false;
+    this.maxDrawCount = 0;
+
+    this.normalMode = null;
+
+    this.rate = 60;
+    this.rateScale = 1;
+
+    this.burst = false;
+    this.burstScale = 1;
+
+    while (i++ < il) {
+        this.removeModule(moduleArray[i]);
     }
+
     return this;
 };
 
-Emitter2DPrototype.toJSON = function(json) {
+EmitterPrototype.addModule = function() {
+    var i = -1,
+        il = arguments.length - 1;
+
+    while (i++ < il) {
+        Emitter_addModule(this, arguments[i]);
+    }
+
+    return this;
+};
+
+function Emitter_addModule(_this, module) {
+    var moduleArray = _this.__moduleArray,
+        moduleHash = _this.modules,
+        className = module.className;
+
+    if (!moduleHash[className]) {
+        moduleArray[moduleArray.length] = module;
+        moduleHash[className] = module;
+        module.emitter = _this;
+    } else {
+        throw new Error("Emitter addModule(module): module " + className + " already in emitter");
+    }
+}
+
+EmitterPrototype.removeModule = function() {
+    var i = -1,
+        il = arguments.length - 1;
+
+    while (i++ < il) {
+        Emitter_removeModule(this, arguments[i]);
+    }
+
+    return this;
+};
+
+function Emitter_removeModule(_this, module) {
+    var moduleArray = _this.__moduleArray,
+        moduleHash = _this.modules,
+        className = module.className;
+
+    if (moduleHash[className]) {
+        moduleArray.splice(indexOf(moduleArray, module), 1);
+        delete moduleHash[className];
+        module.emitter = _this;
+    } else {
+        throw new Error("Emitter removeModule(module): module " + className + " not in emitter");
+    }
+}
+
+EmitterPrototype.update = function(time) {
+    var state = this.__state;
+
+    if (state !== particleState.NONE) {
+
+        this.eachModule(EmitterPrototype_updateModule.set(time));
+
+        switch (state) {
+            case particleState.START:
+                Emitter_start(this, time);
+                break;
+
+            case particleState.RUNNING:
+                Emitter_running(this, time);
+                break;
+
+            case particleState.END:
+                Emitter_end(this, time);
+                break;
+        }
+    }
+};
+
+function EmitterPrototype_updateModule(module) {
+    if (module.update) {
+        module.update(EmitterPrototype_updateModule.time);
+    }
+}
+EmitterPrototype_updateModule.set = function(time) {
+    this.time = time;
+    return this;
+};
+
+function Emitter_start(_this, time) {
+    if (_this.useDelayRange && _this.__currentDelayTime < _this.__delay) {
+        _this.__currentDelayTime += time.fixedDelta;
+    } else {
+        _this.emit("play");
+        _this.__state = particleState.RUNNING;
+    }
+}
+
+function Emitter_running(_this, time) {
+    var currentTime;
+
+    _this.__currentTime += time.fixedDelta;
+    currentTime = _this.__currentTime;
+
+    if (_this.__duration > 0.0) {
+        if (currentTime >= _this.__duration) {
+            _this.__state = particleState.END;
+        }
+    }
+}
+
+function Emitter_end(_this, time) {
+
+    _this.emit("end");
+    _this.__currentTime = 0.0;
+
+    if (_this.duration > 0.0 && _this.useDurationRange && _this.recalcDurationRangeEachLoop) {
+        _this.__duration = randFloat(_this.random, _this.minDuration, _this.duration);
+    }
+
+    if (_this.useDelayRange && !_this.delayFirstLoopOnly) {
+        _this.__currentDelayTime = 0.0;
+        _this.__delay = randFloat(_this.random, _this.minDelay, _this.delay);
+    }
+
+    if (_this.loopCount > 0) {
+        if (_this.__currentLoop > _this.loopCount) {
+            _this.__state = particleState.NONE;
+        } else {
+            _this.__currentLoop += 1;
+        }
+    } else {
+        _this.__state = particleState.START;
+    }
+}
+
+EmitterPrototype.eachModule = function(fn) {
+    var moduleArray = this.__moduleArray,
+        i = -1,
+        il = moduleArray.length - 1;
+
+    while (i++ < il) {
+        if (fn(moduleArray[i], i) === false) {
+            break;
+        }
+    }
+};
+
+EmitterPrototype.play = function() {
+    if (this.__state === particleState.NONE) {
+
+        this.__random.seed(this.seed);
+
+        this.__curentTime = 0.0;
+        this.__state = particleState.START;
+
+        if (this.useDurationRange) {
+            this.__duration = randFloat(this.random, this.minDuration, this.duration);
+        }
+
+        if (this.useDelayRange) {
+            this.__currentDelayTime = 0.0;
+            this.__delay = randFloat(this.random, this.minDelay, this.delay);
+        }
+    }
+};
+
+EmitterPrototype.toJSON = function(json) {
+    var modules = this.modules,
+        jsonModules = json.modules || (json.modules = []),
+        i = -1,
+        il = modules.length - 1;
 
     json = ClassPrototype.toJSON.call(this, json);
 
-    json.seed = this.seed;
+    while (i++ < il) {
+        jsonModules[i] = modules[i].toJSON(jsonModules[i]);
+    }
 
     return json;
 };
 
-Emitter2DPrototype.fromJSON = function(json) {
+EmitterPrototype.fromJSON = function(json) {
+    var jsonModules = json.modules,
+        i = -1,
+        il = jsonModules.length - 1;
 
     ClassPrototype.fromJSON.call(this, json);
 
-    this.seed = json.seed;
-    this.__random = createSeededRandom(this.seed);
+    while (i++ < il) {
+        this.addModule(Class.createFromJSON(jsonModules[i]));
+    }
 
     return this;
 };
-
-
-},
-function(require, exports, module, global) {
-
-module.exports = randInt;
-
-
-function randInt(random, min, max) {
-    return (min + (random() * (max - min))) >>> 0;
-}
-
-
-},
-function(require, exports, module, global) {
-
-module.exports = randFloat;
-
-
-function randFloat(random, min, max) {
-    return min + (random() * (max - min));
-}
 
 
 },
@@ -19720,65 +20104,31 @@ var MULTIPLIER = 1664525,
 module.exports = createSeededRandom;
 
 
-function createSeededRandom(seed) {
-    return function random(s) {
-        return ((MULTIPLIER * (seed + (s * 1000)) + OFFSET) % MODULO) / MODULO;
+function createSeededRandom() {
+    var seed = 0;
+
+    function random(s) {
+        seed = (MULTIPLIER * (seed + (s * 1000)) + OFFSET) % MODULO;
+        return seed / MODULO;
+    }
+
+    random.seed = function(value) {
+        seed = value;
     };
+
+    return random;
 }
 
 
 },
 function(require, exports, module, global) {
 
-var vec2 = require(64),
-    color = require(35),
-    createPool = require(102);
+module.exports = randFloat;
 
 
-var Particle2DPrototype;
-
-
-module.exports = Particle2D;
-
-
-function Particle2D() {
-    this.z = 1;
-    this.alpha = 1;
-
-    this.lifeTime = 0;
-    this.life = 1;
-
-    this.size = 1;
-
-    this.color = color.create();
-
-    this.position = vec2.create();
-    this.velocity = vec2.create();
-    this.acceleration = vec2.create();
-
-    this.angle = 0;
-    this.angularVelocity = 0;
-    this.angularAcceleration = 0;
+function randFloat(random, min, max) {
+    return min + (random() * (max - min));
 }
-createPool(Particle2D);
-Particle2DPrototype = Particle2D.prototype;
-
-Particle2DPrototype.update = function(dt) {
-    var pos = this.position,
-        vel = this.velocity,
-        acc = this.acceleration;
-
-    vel[0] += acc[0] * dt;
-    vel[1] += acc[1] * dt;
-
-    pos[0] += vel[0] * dt;
-    pos[1] += vel[1] * dt;
-
-    this.angularVelocity += this.angularAcceleration * dt;
-    this.angle += this.angularVelocity * dt;
-
-    this.lifeTime += dt;
-};
 
 
 }], void 0, (new Function("return this;"))()));

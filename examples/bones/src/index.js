@@ -88,6 +88,8 @@ eventListener.on(environment.window, "load", function() {
     var scene = global.scene = odin.Scene.create("scene").addEntity(camera, object, box),
         cameraComponent = camera.getComponent("odin.Camera");
 
+    scene.assets = assets;
+
     canvas.on("resize", function(w, h) {
         cameraComponent.set(w, h);
     });

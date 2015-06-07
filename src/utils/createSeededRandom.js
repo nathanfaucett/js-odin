@@ -6,8 +6,17 @@ var MULTIPLIER = 1664525,
 module.exports = createSeededRandom;
 
 
-function createSeededRandom(seed) {
-    return function random(s) {
-        return ((MULTIPLIER * (seed + (s * 1000)) + OFFSET) % MODULO) / MODULO;
+function createSeededRandom() {
+    var seed = 0;
+
+    function random(s) {
+        seed = (MULTIPLIER * (seed + (s * 1000)) + OFFSET) % MODULO;
+        return seed / MODULO;
+    }
+
+    random.seed = function(value) {
+        seed = value;
     };
+
+    return random;
 }

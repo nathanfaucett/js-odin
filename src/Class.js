@@ -43,8 +43,14 @@ Class.getClass = function(className) {
     return Class.__classes[className];
 };
 
+Class.newClass = function(className) {
+    var constructor = Class.getClass(className);
+    return new constructor();
+};
+
 Class.createFromJSON = function(json) {
-    return Class.getClass(json.className).create().fromJSON(json);
+    var constructor = Class.getClass(json.className);
+    return (new constructor()).fromJSON(json);
 };
 
 Class.className = ClassPrototype.className = "Class";
@@ -65,6 +71,11 @@ ClassPrototype.destructor = function() {
 
     this.__id = null;
 
+    return this;
+};
+
+ClassPrototype.generateNewId = function() {
+    this.__id = uuid();
     return this;
 };
 

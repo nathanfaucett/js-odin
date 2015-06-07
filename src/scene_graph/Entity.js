@@ -291,7 +291,7 @@ EntityPrototype.fromJSON = function(json) {
 
     while (i++ < il) {
         json = jsonComponents[i];
-        component = Class.getClass(json.className).create();
+        component = Class.newClass(json.className);
         component.entity = this;
         component.fromJSON(json);
         this.addComponent(component);
@@ -301,10 +301,11 @@ EntityPrototype.fromJSON = function(json) {
     il = jsonChildren.length - 1;
 
     while (i++ < il) {
-        entity = Entity.create();
+        entity = new Entity();
+        entity.generateNewId();
         entity.scene = scene;
         entity.fromJSON(jsonChildren[i]);
-        this.add(entity);
+        this.addChild(entity);
     }
 
     return this;

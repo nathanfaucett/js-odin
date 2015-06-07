@@ -41,18 +41,19 @@ eventListener.on(environment.window, "load", function onLoad() {
         odin.OrbitControl.create()
     );
 
-    var sprite = global.object = odin.Entity.create().addComponent(
+    var ps = global.ps = odin.Entity.create().addComponent(
         odin.Transform2D.create(),
-        odin.Sprite.create({
-            x: 0,
-            y: 0,
-            w: 1,
-            h: 0.5,
-            material: material
+        odin.ParticleSystem.create({
+            playing: true,
+            emitter: odin.ParticleSystem.Emitter.create({
+                useDurationRange: true,
+                duration: 1.0,
+                recalcDurationRangeEachLoop: true
+            })
         })
     );
 
-    var scene = global.scene = odin.Scene.create("scene").addEntity(camera, sprite),
+    var scene = global.scene = odin.Scene.create("scene").addEntity(camera, ps),
         cameraComponent = camera.getComponent("odin.Camera");
 
     scene.assets = assets;

@@ -10,15 +10,15 @@ module.exports = Particle;
 
 
 function Particle() {
-    this.z = 1;
-    this.alpha = 1;
+    this.drag = 0.01;
 
-    this.lifeTime = 0;
-    this.life = 1;
+    this.currentLife = 0;
+    this.lifeTime = 1;
 
     this.size = 1;
 
     this.color = color.create();
+    this.alpha = 1;
 
     this.position = vec3.create();
     this.velocity = vec3.create();
@@ -47,5 +47,5 @@ ParticlePrototype.update = function(dt) {
     this.angularVelocity += this.angularAcceleration * dt;
     this.angle += this.angularVelocity * dt;
 
-    this.lifeTime += dt;
+    this.currentLife += dt;
 };

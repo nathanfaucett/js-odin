@@ -1,4 +1,5 @@
 var indexOf = require("index_of"),
+    particleState = require("./particleState"),
     Component = require("../Component");
 
 
@@ -13,7 +14,7 @@ function ParticleSystem() {
 
     Component.call(this);
 
-    this.playing = null;
+    this.__playing = false;
 
     this.emitters = [];
     this.__emitterHash = {};
@@ -22,13 +23,30 @@ Component.extend(ParticleSystem, "odin.ParticleSystem");
 ParticleSystemPrototype = ParticleSystem.prototype;
 
 ParticleSystem.Emitter = require("./Emitter");
-ParticleSystem.Emitter2D = require("./Emitter2D");
 
 ParticleSystemPrototype.construct = function(options) {
+    var emitters, i, il;
 
     ComponentPrototype.construct.call(this);
 
-    this.playing = options.playing ? !!options.playing : false;
+    options = options || {};
+
+    if (options.emitters) {
+        emitters = options.emitters;
+        i = -1;
+        il = emitters.length - 1;
+
+        while (i++ < il) {
+            this.addEmitter(emitters[i]);
+        }
+    }
+    if (options.emitter) {
+        this.addEmitter(options.emitter);
+    }
+
+    if (options.playing) {
+        this.play();
+    }
 
     return this;
 };
@@ -39,8 +57,6 @@ ParticleSystemPrototype.destructor = function() {
         il = emitters.length - 1;
 
     ComponentPrototype.destructor.call(this);
-
-    this.playing = null;
 
     while (i++ < il) {
         this.removeEmitter(emitters[i]);
@@ -61,18 +77,16 @@ ParticleSystemPrototype.addEmitter = function() {
 };
 
 function ParticleSystem_addEmitter(_this, emitter) {
-    var emitters = this.emitters,
+    var emitters = _this.emitters,
         index = indexOf(emitters, emitter);
 
     if (index === -1) {
         emitters[emitters.length] = emitter;
-        this.__emitterHash[emitter.__id] = emitter;
-        emitter.particleSystem = this;
+        _this.__emitterHash[emitter.__id] = emitter;
+        emitter.particleSystem = _this;
     } else {
         throw new Error("ParticleSystem addEmitter(emitter): emitter already in particle system");
     }
-
-    return this;
 }
 
 ParticleSystemPrototype.removeEmitter = function() {
@@ -87,79 +101,93 @@ ParticleSystemPrototype.removeEmitter = function() {
 };
 
 function ParticleSystem_removeEmitter(_this, emitter) {
-    var emitters = this.emitters,
+    var emitters = _this.emitters,
         index = indexOf(emitters, emitter);
 
     if (index !== -1) {
-        emitter.clear();
         emitter.particleSystem = null;
-
         emitters.splice(index, 1);
-        delete this.__emitterHash[emitter.__id];
+        delete _this.__emitterHash[emitter.__id];
     } else {
         throw new Error("ParticleSystem removeEmitter(emitter): emitter not in particle system");
     }
-
-    return this;
 }
 
 ParticleSystemPrototype.update = function() {
-    var dt, emitters, playing, i, il, emitter;
+    if (this.__playing) {
 
-    if (this.playing) {
-        dt = this.entity.scene.time.delta;
-        emitters = this.emitters;
-        playing = false;
-        i = -1,
-            il = emitters.length - 1;
+        this.eachEmitter(ParticleSystem_update.set(this.entity.scene.time, true));
 
-        while (i++ < il) {
-            emitter = emitters[i];
-            emitter.update(dt);
-
-            if (!playing && emitter.playing) {
-                playing = true;
-            }
-        }
-
-        if (!playing) {
-            this.playing = playing;
+        if (ParticleSystem_update.playing === false) {
+            this.__playing = false;
             this.emit("end");
         }
     }
+};
 
+function ParticleSystem_update(emitter) {
+    emitter.update(ParticleSystem_update.time);
+    if (emitter.__state === particleState.NONE) {
+        ParticleSystem_update.playing = false;
+    }
+}
+ParticleSystem_update.set = function(time, playing) {
+    this.time = time;
+    this.playing = playing;
     return this;
 };
 
 ParticleSystemPrototype.play = function() {
-    var emitters, i, il;
-
-    if (!this.playing) {
-        emitters = this.emitters;
-        i = -1;
-        il = emitters.length - 1;
-
-        while (i++ < il) {
-            emitters[i].play();
-        }
-
-        this.playing = true;
+    if (!this.__playing) {
+        this.__playing = true;
+        this.eachEmitter(ParticleSystem_play);
         this.emit("play");
     }
+};
 
-    return this;
+function ParticleSystem_play(emitter) {
+    emitter.play();
+}
+
+ParticleSystemPrototype.eachEmitter = function(fn) {
+    var emitters = this.emitters,
+        i = -1,
+        il = emitters.length - 1;
+
+    while (i++ < il) {
+        if (fn(emitters[i], i) === false) {
+            break;
+        }
+    }
 };
 
 ParticleSystemPrototype.toJSON = function(json) {
+    var emitters = this.emitters,
+        jsonEmitters = json.emitters || (json.emitters = []),
+        i = -1,
+        il = emitters.length - 1;
 
     json = ComponentPrototype.toJSON.call(this, json);
+
+    json = this.playing;
+
+    while (i++ < il) {
+        jsonEmitters[i] = emitters[i].toJSON(jsonEmitters[i]);
+    }
 
     return json;
 };
 
 ParticleSystemPrototype.fromJSON = function(json) {
+    var jsonEmitters = json.emitters,
+        i = -1,
+        il = jsonEmitters.length - 1;
 
     ComponentPrototype.fromJSON.call(this, json);
+
+    while (i++ < il) {
+        this.addEmitter(jsonEmitters[i]);
+    }
 
     return this;
 };

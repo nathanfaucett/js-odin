@@ -10,15 +10,15 @@ module.exports = Particle2D;
 
 
 function Particle2D() {
-    this.z = 1;
-    this.alpha = 1;
+    this.drag = 0.01;
 
-    this.lifeTime = 0;
-    this.life = 1;
+    this.currentLife = 0;
+    this.lifeTime = 1;
 
     this.size = 1;
 
     this.color = color.create();
+    this.alpha = 1;
 
     this.position = vec2.create();
     this.velocity = vec2.create();
@@ -45,5 +45,5 @@ Particle2DPrototype.update = function(dt) {
     this.angularVelocity += this.angularAcceleration * dt;
     this.angle += this.angularVelocity * dt;
 
-    this.lifeTime += dt;
+    this.currentLife += dt;
 };

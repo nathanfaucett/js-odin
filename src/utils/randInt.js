@@ -1,6 +1,9 @@
+var mathf = require("mathf");
+
+
 module.exports = randInt;
 
 
 function randInt(random, min, max) {
-    return (min + (random() * (max - min))) >>> 0;
+    return mathf.round(min + (random() * (max - min)));
 }

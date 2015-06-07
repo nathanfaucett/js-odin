@@ -538,17 +538,19 @@ ScenePrototype.fromJSON = function(json) {
     this.name = json.name;
 
     while (i++ < il) {
-        entity = Entity.create();
+        entity = new Entity();
+        entity.generateNewId();
         entity.scene = this;
         entity.fromJSON(jsonEntities[i]);
-        this.add(entity);
+        this.addEntity(entity);
     }
 
     i = -1;
     il = jsonPlugins.length - 1;
     while (i++ < il) {
         jsonPlugin = jsonPlugins[i];
-        plugin = Class.getClass(jsonPlugin.className).create();
+        plugin = Class.newClass(jsonPlugin.className);
+        plugin.generateNewId();
         plugin.scene = this;
         plugin.fromJSON(jsonPlugin);
         this.addPlugin(plugin);
