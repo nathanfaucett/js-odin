@@ -14,7 +14,7 @@ var ClassPrototype = Class.prototype,
 
 
 if (environment.browser) {
-    addMeta = function(id, name, content) {
+    addMeta = function addMeta(id, name, content) {
         var meta = document.createElement("meta"),
             head = document.head;
 

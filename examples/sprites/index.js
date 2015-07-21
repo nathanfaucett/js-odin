@@ -43,7 +43,7 @@ var environment = require(1),
     eventListener = require(2);
 
 
-var odin = require(8);
+var odin = require(9);
 
 
 global.odin = odin;
@@ -205,9 +205,9 @@ function(require, exports, module, global) {
 
 var process = require(3);
 var isObject = require(4),
-    isFunction = require(5),
+    isFunction = require(6),
     environment = require(1),
-    eventTable = require(6);
+    eventTable = require(7);
 
 
 var eventListener = module.exports,
@@ -442,12 +442,38 @@ process.chdir = function (dir) {
 },
 function(require, exports, module, global) {
 
+var isNullOrUndefined = require(5);
+
+
 module.exports = isObject;
 
 
-function isObject(obj) {
-    var type = typeof(obj);
-    return type === "function" || (obj && type === "object") || false;
+function isObject(value) {
+    var type = typeof(value);
+    return type === "function" || (!isNullOrUndefined(value) && type === "object") || false;
+}
+
+
+},
+function(require, exports, module, global) {
+
+module.exports = isNullOrUndefined;
+
+/**
+  isNullOrUndefined accepts any value and returns true
+  if the value is null or undefined. For all other values
+  false is returned.
+  
+  @param {Any}        any value to test
+  @returns {Boolean}  the boolean result of testing value
+
+  @example
+    isNullOrUndefined(null);   // returns true
+    isNullOrUndefined(undefined);   // returns true
+    isNullOrUndefined("string");    // returns false
+**/
+function isNullOrUndefined(obj) {
+    return (obj === null || obj === void 0);
 }
 
 
@@ -458,13 +484,17 @@ var objectToString = Object.prototype.toString,
     isFunction;
 
 
-if (typeof(/./) === "function" || (typeof(Uint8Array) !== "undefined" && typeof(Uint8Array) !== "function")) {
-    isFunction = function isFunction(obj) {
-        return objectToString.call(obj) === "[object Function]";
+if (objectToString.call(function() {}) === "[object Object]") {
+    isFunction = function isFunction(value) {
+        return value instanceof Function;
+    };
+} else if (typeof(/./) === "function" || (typeof(Uint8Array) !== "undefined" && typeof(Uint8Array) !== "function")) {
+    isFunction = function isFunction(value) {
+        return objectToString.call(value) === "[object Function]";
     };
 } else {
-    isFunction = function isFunction(obj) {
-        return typeof(obj) === "function" || false;
+    isFunction = function isFunction(value) {
+        return typeof(value) === "function" || false;
     };
 }
 
@@ -475,7 +505,7 @@ module.exports = isFunction;
 },
 function(require, exports, module, global) {
 
-var isNode = require(7),
+var isNode = require(8),
     environment = require(1);
 
 
@@ -885,22 +915,22 @@ module.exports = {
 },
 function(require, exports, module, global) {
 
-var isFunction = require(5);
+var isFunction = require(6);
 
 
 var isNode;
 
 
 if (typeof(Node) !== "undefined" && isFunction(Node)) {
-    isNode = function isNode(obj) {
-        return obj instanceof Node;
+    isNode = function isNode(value) {
+        return value instanceof Node;
     };
 } else {
-    isNode = function isNode(obj) {
+    isNode = function isNode(value) {
         return (
-            typeof(obj) === "object" &&
-            typeof(obj.nodeType) === "number" &&
-            typeof(obj.nodeName) === "string"
+            typeof(value) === "object" &&
+            typeof(value.nodeType) === "number" &&
+            typeof(value.nodeName) === "string"
         );
     };
 }
@@ -915,58 +945,58 @@ function(require, exports, module, global) {
 var odin = exports;
 
 
-odin.Class = require(9);
-odin.createLoop = require(26);
+odin.Class = require(10);
+odin.createLoop = require(28);
 
-odin.enums = require(30);
+odin.enums = require(32);
 
-odin.BaseApplication = require(96);
-odin.Application = require(123);
+odin.BaseApplication = require(99);
+odin.Application = require(126);
 
-odin.Assets = require(97);
-odin.Asset = require(124);
-odin.ImageAsset = require(125);
-odin.JSONAsset = require(128);
-odin.Texture = require(144);
-odin.Material = require(145);
-odin.Geometry = require(151);
+odin.Assets = require(100);
+odin.Asset = require(127);
+odin.ImageAsset = require(128);
+odin.JSONAsset = require(131);
+odin.Texture = require(146);
+odin.Material = require(147);
+odin.Geometry = require(153);
 
-odin.Canvas = require(156);
-odin.Renderer = require(157);
-odin.ComponentRenderer = require(159);
+odin.Canvas = require(158);
+odin.Renderer = require(159);
+odin.ComponentRenderer = require(161);
 
-odin.Shader = require(146);
+odin.Shader = require(148);
 
-odin.Scene = require(98);
-odin.Plugin = require(163);
-odin.Entity = require(122);
+odin.Scene = require(101);
+odin.Plugin = require(165);
+odin.Entity = require(125);
 
-odin.ComponentManager = require(164);
+odin.ComponentManager = require(166);
 
-odin.Component = require(165);
+odin.Component = require(167);
 
-odin.Transform = require(166);
-odin.Transform2D = require(168);
-odin.Camera = require(171);
+odin.Transform = require(168);
+odin.Transform2D = require(170);
+odin.Camera = require(173);
 
-odin.Sprite = require(173);
+odin.Sprite = require(175);
 
-odin.Mesh = require(175);
-odin.MeshAnimation = require(179);
+odin.Mesh = require(177);
+odin.MeshAnimation = require(181);
 
-odin.OrbitControl = require(180);
+odin.OrbitControl = require(182);
 
-odin.ParticleSystem = require(181);
+odin.ParticleSystem = require(183);
 
 
 },
 function(require, exports, module, global) {
 
-var has = require(10),
-    isFunction = require(5),
-    inherits = require(11),
-    EventEmitter = require(23),
-    uuid = require(25);
+var has = require(11),
+    isFunction = require(6),
+    inherits = require(17),
+    EventEmitter = require(25),
+    uuid = require(27);
 
 
 var ClassPrototype;
@@ -1059,24 +1089,194 @@ ClassPrototype.fromJSON = function( /* json */ ) {
 },
 function(require, exports, module, global) {
 
-var hasOwnProp = Object.prototype.hasOwnProperty;
+var isNative = require(12),
+    getPrototypeOf = require(16),
+    isNullOrUndefined = require(5);
+
+
+var nativeHasOwnProp = Object.prototype.hasOwnProperty,
+    baseHas;
 
 
 module.exports = has;
 
 
-function has(obj, key) {
-    return hasOwnProp.call(obj, key);
+function has(object, key) {
+    if (isNullOrUndefined(object)) {
+        return false;
+    } else {
+        return baseHas(object, key);
+    }
+}
+
+if (isNative(nativeHasOwnProp)) {
+    baseHas = function baseHas(object, key) {
+        return nativeHasOwnProp.call(object, key);
+    };
+} else {
+    baseHas = function baseHas(object, key) {
+        var proto = getPrototypeOf(object);
+
+        if (isNullOrUndefined(proto)) {
+            return key in object;
+        } else {
+            return (key in object) && (!(key in proto) || proto[key] !== object[key]);
+        }
+    };
 }
 
 
 },
 function(require, exports, module, global) {
 
-var create = require(12),
-    extend = require(13),
-    mixin = require(20),
-    defineProperty = require(21);
+var isFunction = require(6),
+    isNullOrUndefined = require(5),
+    escapeRegExp = require(13);
+
+
+var reHostCtor = /^\[object .+?Constructor\]$/,
+
+    functionToString = Function.prototype.toString,
+
+    reNative = RegExp("^" +
+        escapeRegExp(Object.prototype.toString)
+        .replace(/toString|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"
+    ),
+
+    isHostObject;
+
+
+module.exports = isNative;
+
+
+function isNative(value) {
+    return !isNullOrUndefined(value) && (
+        isFunction(value) ?
+        reNative.test(functionToString.call(value)) : (
+            typeof(value) === "object" && (
+                (isHostObject(value) ? reNative : reHostCtor).test(value) || false
+            )
+        )
+    ) || false;
+}
+
+try {
+    String({
+        "toString": 0
+    } + "");
+} catch (e) {
+    isHostObject = function isHostObject() {
+        return false;
+    };
+}
+
+isHostObject = function isHostObject(value) {
+    return !isFunction(value.toString) && typeof(value + "") === "string";
+};
+
+
+},
+function(require, exports, module, global) {
+
+var toString = require(14);
+
+
+var reRegExpChars = /[.*+?\^${}()|\[\]\/\\]/g,
+    reHasRegExpChars = new RegExp(reRegExpChars.source);
+
+
+module.exports = escapeRegExp;
+
+
+function escapeRegExp(string) {
+    string = toString(string);
+    return (
+        (string && reHasRegExpChars.test(string)) ?
+        string.replace(reRegExpChars, "\\$&") :
+        string
+    );
+}
+
+
+},
+function(require, exports, module, global) {
+
+var isString = require(15),
+    isNullOrUndefined = require(5);
+
+
+module.exports = toString;
+
+
+function toString(value) {
+    if (isString(value)) {
+        return value;
+    } else if (isNullOrUndefined(value)) {
+        return "";
+    } else {
+        return value + "";
+    }
+}
+
+
+},
+function(require, exports, module, global) {
+
+module.exports = isString;
+
+
+function isString(obj) {
+    return typeof(obj) === "string" || false;
+}
+
+
+},
+function(require, exports, module, global) {
+
+var isObject = require(4),
+    isNative = require(12),
+    isNullOrUndefined = require(5);
+
+
+var nativeGetPrototypeOf = Object.getPrototypeOf,
+    baseGetPrototypeOf;
+
+
+module.exports = getPrototypeOf;
+
+
+function getPrototypeOf(value) {
+    if (isNullOrUndefined(value)) {
+        return null;
+    } else {
+        return baseGetPrototypeOf(value);
+    }
+}
+
+if (isNative(nativeGetPrototypeOf)) {
+    baseGetPrototypeOf = function baseGetPrototypeOf(value) {
+        return nativeGetPrototypeOf(isObject(value) ? value : Object(value)) || null;
+    };
+} else {
+    if ("".__proto__ === String.prototype) {
+        baseGetPrototypeOf = function baseGetPrototypeOf(value) {
+            return value.__proto__ || null;
+        };
+    } else {
+        baseGetPrototypeOf = function baseGetPrototypeOf(value) {
+            return value.constructor ? value.constructor.prototype : null;
+        };
+    }
+}
+
+
+},
+function(require, exports, module, global) {
+
+var create = require(18),
+    extend = require(21),
+    mixin = require(23),
+    defineProperty = require(24);
 
 
 var descriptor = {
@@ -1094,13 +1294,17 @@ function inherits(child, parent) {
 
     mixin(child, parent);
 
-    child.prototype = extend(create(parent.prototype), child.prototype);
+    if (child.__super) {
+        child.prototype = extend(create(parent.prototype), child.__super, child.prototype);
+    } else {
+        child.prototype = extend(create(parent.prototype), child.prototype);
+    }
 
     defineNonEnumerableProperty(child, "__super", parent.prototype);
     defineNonEnumerableProperty(child.prototype, "constructor", child);
 
     child.defineStatic = defineStatic;
-    child.super_ = parent; // support node
+    child.super_ = parent;
 
     return child;
 }
@@ -1120,16 +1324,38 @@ function defineStatic(name, value) {
 },
 function(require, exports, module, global) {
 
-var create, F;
+var isNull = require(19),
+    isNative = require(12),
+    isPrimitive = require(20);
 
 
-if (Object.create) {
-    create = Object.create;
-} else {
-    F = function F() {};
-    create = function create(object) {
-        F.prototype = object;
-        return new F();
+var nativeCreate = Object.create;
+
+
+module.exports = create;
+
+
+function create(object) {
+    return nativeCreate(isPrimitive(object) ? null : object);
+}
+
+if (!isNative(nativeCreate)) {
+    nativeCreate = function nativeCreate(object) {
+        var newObject;
+
+        function F() {
+            this.constructor = F;
+        }
+
+        if (isNull(object)) {
+            newObject = new F();
+            newObject.constructor = newObject.__proto__ = null;
+            delete newObject.__proto__;
+            return newObject;
+        } else {
+            F.prototype = object;
+            return new F();
+        }
     };
 }
 
@@ -1140,7 +1366,33 @@ module.exports = create;
 },
 function(require, exports, module, global) {
 
-var keys = require(14);
+module.exports = isNull;
+
+
+function isNull(obj) {
+    return obj === null;
+}
+
+
+},
+function(require, exports, module, global) {
+
+var isNullOrUndefined = require(5);
+
+
+module.exports = isPrimitive;
+
+
+function isPrimitive(obj) {
+    var typeStr;
+    return isNullOrUndefined(obj) || ((typeStr = typeof(obj)) !== "object" && typeStr !== "function") || false;
+}
+
+
+},
+function(require, exports, module, global) {
+
+var keys = require(22);
 
 
 module.exports = extend;
@@ -1173,8 +1425,9 @@ function baseExtend(a, b) {
 },
 function(require, exports, module, global) {
 
-var has = require(10),
-    isNative = require(15),
+var has = require(11),
+    isNative = require(12),
+    isNullOrUndefined = require(5),
     isObject = require(4);
 
 
@@ -1184,19 +1437,23 @@ var nativeKeys = Object.keys;
 module.exports = keys;
 
 
-function keys(obj) {
-    return nativeKeys(isObject(obj) ? obj : Object(obj));
+function keys(value) {
+    if (isNullOrUndefined(value)) {
+        return [];
+    } else {
+        return nativeKeys(isObject(value) ? value : Object(value));
+    }
 }
 
 if (!isNative(nativeKeys)) {
-    nativeKeys = function keys(obj) {
+    nativeKeys = function(value) {
         var localHas = has,
             out = [],
             i = 0,
             key;
 
-        for (key in obj) {
-            if (localHas(obj, key)) {
+        for (key in value) {
+            if (localHas(value, key)) {
                 out[i++] = key;
             }
         }
@@ -1209,137 +1466,8 @@ if (!isNative(nativeKeys)) {
 },
 function(require, exports, module, global) {
 
-var isFunction = require(5),
-    escapeRegExp = require(16);
-
-
-var reHostCtor = /^\[object .+?Constructor\]$/,
-
-    functionToString = Function.prototype.toString,
-
-    reNative = RegExp("^" +
-        escapeRegExp(Object.prototype.toString)
-        .replace(/toString|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"
-    ),
-
-    isHostObject;
-
-
-try {
-    String({
-        "toString": 0
-    } + "");
-} catch (e) {
-    isHostObject = function isHostObject() {
-        return false;
-    };
-}
-
-isHostObject = function isHostObject(value) {
-    return !isFunction(value.toString) && typeof(value + "") === "string";
-};
-
-
-module.exports = isNative;
-
-
-function isNative(obj) {
-    return obj && (
-        isFunction(obj) ?
-        reNative.test(functionToString.call(obj)) : (
-            typeof(obj) === "object" && (
-                (isHostObject(obj) ? reNative : reHostCtor).test(obj) || false
-            )
-        )
-    ) || false;
-}
-
-
-},
-function(require, exports, module, global) {
-
-var toString = require(17);
-
-
-var reRegExpChars = /[.*+?\^${}()|\[\]\/\\]/g,
-    reHasRegExpChars = new RegExp(reRegExpChars.source);
-
-
-module.exports = escapeRegExp;
-
-
-function escapeRegExp(string) {
-    string = toString(string);
-    return (
-        (string && reHasRegExpChars.test(string)) ?
-        string.replace(reRegExpChars, "\\$&") :
-        string
-    );
-}
-
-
-},
-function(require, exports, module, global) {
-
-var isString = require(18),
-    isNullOrUndefined = require(19);
-
-
-module.exports = toString;
-
-
-function toString(value) {
-    if (isString(value)) {
-        return value;
-    } else if (isNullOrUndefined(value)) {
-        return "";
-    } else {
-        return value + "";
-    }
-}
-
-
-},
-function(require, exports, module, global) {
-
-module.exports = isString;
-
-
-function isString(obj) {
-    return typeof(obj) === "string" || false;
-}
-
-
-},
-function(require, exports, module, global) {
-
-module.exports = isNullOrUndefined;
-
-/**
-  isNullOrUndefined accepts any value and returns true
-  if the value is null or undefined. For all other values
-  false is returned.
-  
-  @param {Any}        any value to test
-  @returns {Boolean}  the boolean result of testing value
-
-  @example
-    isNullOrUndefined(null);   // returns true
-    isNullOrUndefined(undefined);   // returns true
-    isNullOrUndefined("string");    // returns false
-**/
-function isNullOrUndefined(obj) {
-
-    return (obj === null || obj === void 0);
-
-}
-
-
-},
-function(require, exports, module, global) {
-
-var keys = require(14),
-    isNullOrUndefined = require(19);
+var keys = require(22),
+    isNullOrUndefined = require(5);
 
 
 module.exports = mixin;
@@ -1375,47 +1503,60 @@ function baseMixin(a, b) {
 },
 function(require, exports, module, global) {
 
-var isFunction = require(5),
-    isObjectLike = require(22),
-    isNative = require(15);
+var isObject = require(4),
+    isFunction = require(6),
+    isPrimitive = require(20),
+    isNative = require(12),
+    has = require(11);
 
 
-var defineProperty;
-
-
-if (!isNative(Object.defineProperty)) {
-    defineProperty = function defineProperty(object, name, value) {
-        if (!isObjectLike(object)) {
-            throw new TypeError("defineProperty called on non-object");
-        }
-        object[name] = isObjectLike(value) ? (isFunction(value.get) ? value.get : value.value) : value;
-    };
-} else {
-    defineProperty = Object.defineProperty;
-}
+var nativeDefineProperty = Object.defineProperty;
 
 
 module.exports = defineProperty;
 
 
-},
-function(require, exports, module, global) {
+function defineProperty(object, name, descriptor) {
+    if (isPrimitive(descriptor) || isFunction(descriptor)) {
+        descriptor = {
+            value: descriptor
+        };
+    }
+    return nativeDefineProperty(object, name, descriptor);
+}
 
-module.exports = isObjectLike;
 
-
-function isObjectLike(obj) {
-    return (obj && typeof(obj) === "object") || false;
+if (!isNative(nativeDefineProperty) || !(function() {
+        var object = {};
+        try {
+            nativeDefineProperty(object, "key", {
+                value: "value"
+            });
+            if (has(object, "key") && object.key === "value") {
+                return true;
+            }
+        } catch (e) {}
+        return false;
+    }())) {
+    nativeDefineProperty = function defineProperty(object, name, descriptor) {
+        if (!isObject(object)) {
+            throw new TypeError("defineProperty(object, name, descriptor) called on non-object");
+        }
+        if (has(descriptor, "get") || has(descriptor, "set")) {
+            throw new TypeError("defineProperty(object, name, descriptor) this environment does not support getters or setters");
+        }
+        object[name] = descriptor.value;
+    };
 }
 
 
 },
 function(require, exports, module, global) {
 
-var isFunction = require(5),
-    inherits = require(11),
-    fastSlice = require(24),
-    keys = require(14);
+var isFunction = require(6),
+    inherits = require(17),
+    fastSlice = require(26),
+    keys = require(22);
 
 
 function EventEmitter(maxListeners) {
@@ -1792,14 +1933,15 @@ module.exports = fastSlice;
 
 
 function fastSlice(array, offset) {
-    var length, i, il, result, j;
+    var length, newLength, i, il, result, j;
 
     offset = offset || 0;
 
     length = array.length;
     i = offset - 1;
     il = length - 1;
-    result = new Array(length - offset);
+    newLength = length - offset;
+    result = new Array(newLength <= 0 ? 0 : newLength);
     j = 0;
 
     while (i++ < il) {
@@ -1840,7 +1982,7 @@ function uuid() {
 },
 function(require, exports, module, global) {
 
-var requestAnimationFrame = require(27);
+var requestAnimationFrame = require(29);
 
 
 module.exports = function createLoop(callback, element) {
@@ -1894,8 +2036,8 @@ module.exports = function createLoop(callback, element) {
 function(require, exports, module, global) {
 
 var environment = require(1),
-    emptyFunction = require(28),
-    time = require(29);
+    emptyFunction = require(30),
+    time = require(31);
 
 
 var window = environment.window,
@@ -2052,36 +2194,36 @@ time.stamp = function stamp() {
 },
 function(require, exports, module, global) {
 
-var extend = require(13),
-    WebGLContext = require(31);
+var extend = require(21),
+    WebGLContext = require(33);
 
 
 var enums = extend(exports, WebGLContext.enums);
 
 
-enums.emitterRenderMode = require(89);
-enums.interpolation = require(90);
-enums.normalMode = require(91);
-enums.screenAlignment = require(92);
-enums.side = require(93);
-enums.sortMode = require(94);
-enums.wrapMode = require(95);
+enums.emitterRenderMode = require(92);
+enums.interpolation = require(93);
+enums.normalMode = require(94);
+enums.screenAlignment = require(95);
+enums.side = require(96);
+enums.sortMode = require(97);
+enums.wrapMode = require(98);
 
 
 },
 function(require, exports, module, global) {
 
-var mathf = require(32),
+var mathf = require(34),
 
     environment = require(1),
-    EventEmitter = require(23),
+    EventEmitter = require(25),
     eventListener = require(2),
-    color = require(35),
+    color = require(37),
 
-    enums = require(37),
-    WebGLBuffer = require(52),
-    WebGLTexture = require(53),
-    WebGLProgram = require(55);
+    enums = require(40),
+    WebGLBuffer = require(56),
+    WebGLTexture = require(57),
+    WebGLProgram = require(59);
 
 
 var NativeUint8Array = typeof(Uint8Array) !== "undefined" ? Uint8Array : Array,
@@ -2912,8 +3054,8 @@ function getWebGLContext(canvas, attributes) {
 },
 function(require, exports, module, global) {
 
-var keys = require(14),
-    isNaN = require(33);
+var keys = require(22),
+    isNaN = require(35);
 
 
 var mathf = exports,
@@ -3311,7 +3453,7 @@ mathf.direction = function(x, y) {
 },
 function(require, exports, module, global) {
 
-var isNumber = require(34);
+var isNumber = require(36);
 
 
 module.exports = Number.isNaN || function isNaN(obj) {
@@ -3333,9 +3475,10 @@ function isNumber(obj) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(32),
-    vec3 = require(36),
-    isNumber = require(34);
+var mathf = require(34),
+    vec3 = require(38),
+    vec4 = require(39),
+    isNumber = require(36);
 
 
 var color = exports;
@@ -3344,97 +3487,100 @@ var color = exports;
 color.ArrayType = typeof(Float32Array) !== "undefined" ? Float32Array : mathf.ArrayType;
 
 
-color.create = function(r, g, b) {
-    var out = new color.ArrayType(3);
+color.create = function(r, g, b, a) {
+    var out = new color.ArrayType(4);
 
     out[0] = r !== undefined ? r : 0;
     out[1] = g !== undefined ? g : 0;
     out[2] = b !== undefined ? b : 0;
+    out[3] = a !== undefined ? a : 1;
 
     return out;
 };
 
-color.copy = vec3.copy;
+color.copy = vec4.copy;
 
 color.clone = function(a) {
-    var out = new color.ArrayType(3);
+    var out = new color.ArrayType(4);
 
     out[0] = a[0];
     out[1] = a[1];
     out[2] = a[2];
+    out[3] = a[3];
 
     return out;
 };
 
 color.setRGB = vec3.set;
+color.setRGBA = vec4.set;
 
-color.add = vec3.add;
-color.sub = vec3.sub;
+color.add = vec4.add;
+color.sub = vec4.sub;
 
-color.mul = vec3.mul;
-color.div = vec3.div;
+color.mul = vec4.mul;
+color.div = vec4.div;
 
-color.sadd = vec3.sadd;
-color.ssub = vec3.ssub;
+color.sadd = vec4.sadd;
+color.ssub = vec4.ssub;
 
-color.smul = vec3.smul;
-color.sdiv = vec3.sdiv;
+color.smul = vec4.smul;
+color.sdiv = vec4.sdiv;
 
-color.lengthSqValues = vec3.lengthSqValues;
+color.lengthSqValues = vec4.lengthSqValues;
+color.lengthValues = vec4.lengthValues;
+color.invLengthValues = vec4.invLengthValues;
 
-color.lengthValues = vec3.lengthValues;
+color.dot = vec4.dot;
 
-color.invLengthValues = vec3.invLengthValues;
+color.lengthSq = vec4.lengthSq;
 
-color.dot = vec3.dot;
+color.length = vec4.length;
 
-color.lengthSq = vec3.lengthSq;
+color.invLength = vec4.invLength;
 
-color.length = vec3.length;
+color.setLength = vec4.setLength;
 
-color.invLength = vec3.invLength;
+color.normalize = vec4.normalize;
 
-color.setLength = vec3.setLength;
+color.lerp = vec4.lerp;
 
-color.normalize = vec3.normalize;
+color.min = vec4.min;
 
-color.lerp = vec3.lerp;
+color.max = vec4.max;
 
-color.min = vec3.min;
+color.clamp = vec4.clamp;
 
-color.max = vec3.max;
+color.equal = vec4.equal;
 
-color.clamp = vec3.clamp;
-
-color.equal = vec3.equal;
-
-color.notEqual = vec3.notEqual;
+color.notEqual = vec4.notEqual;
 
 
-var cmin = color.create(0, 0, 0),
-    cmax = color.create(1, 1, 1);
+var cmin = color.create(0, 0, 0, 0),
+    cmax = color.create(1, 1, 1, 1);
 
-color.cnormalize = function(out) {
-    return color.clamp(out, out, cmin, cmax);
+color.cnormalize = function(out, a) {
+    return color.clamp(out, a, cmin, cmax);
 };
 
 color.str = function(out) {
     return "Color(" + out[0] + ", " + out[1] + ", " + out[2] + ", " + out[3] + ")";
 };
 
-color.set = function(out, r, g, b) {
+color.set = function(out, r, g, b, a) {
     var type = typeof(r);
 
     if (type === "number") {
         out[0] = r !== undefined ? r : 0;
         out[1] = g !== undefined ? g : 0;
         out[2] = b !== undefined ? b : 0;
+        out[3] = a !== undefined ? a : 1;
     } else if (type === "string") {
-        color.setStyle(out, r);
+        color.fromStyle(out, r);
     } else if (r.length === +r.length) {
         out[0] = r[0] || 0;
         out[1] = r[1] || 0;
         out[2] = r[2] || 0;
+        out[3] = r[3] || 1;
     }
 
     return out;
@@ -3446,17 +3592,25 @@ function to256(value) {
 
 color.toRGB = function(out, alpha) {
     if (isNumber(alpha)) {
-        return "rgba(" + to256(out[0]) + "," + to256(out[1]) + "," + to256(out[2]) + "," + mathf.clamp01(alpha) + ")";
+        return "rgba(" + to256(out[0]) + "," + to256(out[1]) + "," + to256(out[2]) + "," + (mathf.clamp01(alpha) || 0) + ")";
     } else {
         return "rgb(" + to256(out[0]) + "," + to256(out[1]) + "," + to256(out[2]) + ")";
     }
 };
 
+color.toRGBA = function(out) {
+    return "rgba(" + to256(out[0]) + "," + to256(out[1]) + "," + to256(out[2]) + "," + (mathf.clamp01(out[3]) || 0) + ")";
+};
+
 function toHEX(value) {
+    value = mathf.clamp(value * 255, 0, 255) | 0;
+
     if (value < 16) {
         return "0" + value.toString(16);
-    } else {
+    } else if (value < 255) {
         return value.toString(16);
+    } else {
+        return "ff";
     }
 }
 
@@ -3464,51 +3618,80 @@ color.toHEX = function(out) {
     return "#" + toHEX(out[0]) + toHEX(out[1]) + toHEX(out[2]);
 };
 
-var rgb255 = /^rgb\((\d+),(\d+),(\d+)\)$/i,
-    rgb100 = /^rgb\((\d+)\%,(\d+)\%,(\d+)\%\)$/i,
-    hex6 = /^\#([0.0-9a-f]{6})$/i,
-    hex3 = /^\#([0.0-9a-f])([0.0-9a-f])([0.0-9a-f])$/i,
-    hex3to6 = /#(.)(.)(.)/,
-    hex3to6String = "#$1$1$2$2$3$3",
-    colorName = /^(\w+)$/i,
-    inv255 = 1 / 255,
-    inv100 = 1 / 100;
-
-color.setStyle = function(out, style) {
-    var color;
-
-    if (rgb255.test(style)) {
-        color = rgb255.exec(style);
-
-        out[0] = mathf.min(255, Number(color[1])) * inv255;
-        out[1] = mathf.min(255, Number(color[2])) * inv255;
-        out[2] = mathf.min(255, Number(color[3])) * inv255;
-    } else if (rgb100.test(style)) {
-        color = rgb100.exec(style);
-
-        out[0] = mathf.min(100, Number(color[1])) * inv100;
-        out[1] = mathf.min(100, Number(color[2])) * inv100;
-        out[2] = mathf.min(100, Number(color[3])) * inv100;
-    } else if (hex6.test(style)) {
-
-        out[0] = parseInt(style.substr(1, 2), 16) * inv255;
-        out[1] = parseInt(style.substr(3, 2), 16) * inv255;
-        out[2] = parseInt(style.substr(5, 2), 16) * inv255;
-    } else if (hex3.test(style)) {
-        style = style.replace(hex3to6, hex3to6String);
-
-        out[0] = parseInt(style.substr(1, 2), 16) * inv255;
-        out[1] = parseInt(style.substr(3, 2), 16) * inv255;
-        out[2] = parseInt(style.substr(5, 2), 16) * inv255;
-    } else if (colorName.test(style)) {
-        style = colorNames[style.toLowerCase()];
-
-        out[0] = parseInt(style.substr(1, 2), 16) * inv255;
-        out[1] = parseInt(style.substr(3, 2), 16) * inv255;
-        out[2] = parseInt(style.substr(5, 2), 16) * inv255;
-    }
-
+var rgb255 = /^rgb\((\d+),(?:\s+)?(\d+),(?:\s+)?(\d+)\)$/i,
+    inv255 = 1 / 255;
+color.fromRGB = function(out, style) {
+    var values = rgb255.exec(style);
+    out[0] = mathf.min(255, Number(values[1])) * inv255;
+    out[1] = mathf.min(255, Number(values[2])) * inv255;
+    out[2] = mathf.min(255, Number(values[3])) * inv255;
+    out[3] = 1;
     return out;
+};
+
+var rgba255 = /^rgba\((\d+),(?:\s+)?(\d+),(?:\s+)?(\d+),(?:\s+)?((?:\.)?\d+(?:\.\d+)?)\)$/i;
+color.fromRGBA = function(out, style) {
+    var values = rgba255.exec(style);
+    out[0] = mathf.min(255, Number(values[1])) * inv255;
+    out[1] = mathf.min(255, Number(values[2])) * inv255;
+    out[2] = mathf.min(255, Number(values[3])) * inv255;
+    out[3] = mathf.min(1, Number(values[4]));
+    return out;
+};
+
+var rgb100 = /^rgb\((\d+)\%,(?:\s+)?(\d+)\%,(?:\s+)?(\d+)\%\)$/i,
+    inv100 = 1 / 100;
+color.fromRGB100 = function(out, style) {
+    var values = rgb100.exec(style);
+    out[0] = mathf.min(100, Number(values[1])) * inv100;
+    out[1] = mathf.min(100, Number(values[2])) * inv100;
+    out[2] = mathf.min(100, Number(values[3])) * inv100;
+    out[3] = 1;
+    return out;
+};
+
+color.fromHEX = function(out, style) {
+    out[0] = parseInt(style.substr(1, 2), 16) * inv255;
+    out[1] = parseInt(style.substr(3, 2), 16) * inv255;
+    out[2] = parseInt(style.substr(5, 2), 16) * inv255;
+    out[3] = 1;
+    return out;
+};
+
+var hex3to6 = /#(.)(.)(.)/,
+    hex3to6String = "#$1$1$2$2$3$3";
+color.fromHEX3 = function(out, style) {
+    style = style.replace(hex3to6, hex3to6String);
+    out[0] = parseInt(style.substr(1, 2), 16) * inv255;
+    out[1] = parseInt(style.substr(3, 2), 16) * inv255;
+    out[2] = parseInt(style.substr(5, 2), 16) * inv255;
+    out[3] = 1;
+    return out;
+};
+
+color.fromColorName = function(out, style) {
+    return color.fromHEX(out, colorNames[style.toLowerCase()]);
+};
+
+var hex6 = /^\#([0.0-9a-f]{6})$/i,
+    hex3 = /^\#([0.0-9a-f])([0.0-9a-f])([0.0-9a-f])$/i,
+    colorName = /^(\w+)$/i;
+color.fromStyle = function(out, style) {
+    if (rgb255.test(style)) {
+        return color.fromRGB(out, style);
+    } else if (rgba255.test(style)) {
+        return color.fromRGBA(out, style);
+    } else if (rgb100.test(style)) {
+        return color.fromRGB100(out, style);
+    } else if (hex6.test(style)) {
+        return color.fromHEX(out, style);
+    } else if (hex3.test(style)) {
+        return color.fromHEX3(out, style);
+    } else if (colorName.test(style)) {
+        return color.fromColorName(out, style);
+    } else {
+        return out;
+    }
 };
 
 var colorNames = color.colorNames = {
@@ -3659,7 +3842,7 @@ var colorNames = color.colorNames = {
 },
 function(require, exports, module, global) {
 
-var mathf = require(32);
+var mathf = require(34);
 
 
 var vec3 = exports;
@@ -4053,30 +4236,392 @@ vec3.str = function(out) {
 },
 function(require, exports, module, global) {
 
-var reverse = require(38);
+var mathf = require(34);
 
 
-var enums = exports;
+var vec4 = exports;
 
 
-enums.blending = require(41);
-enums.cullFace = require(45);
-enums.depth = require(47);
-enums.filterMode = require(48);
+vec4.ArrayType = typeof(Float32Array) !== "undefined" ? Float32Array : mathf.ArrayType;
 
-enums.gl = require(46);
-enums.glValues = reverse(enums.gl);
 
-enums.textureFormat = require(49);
-enums.textureType = require(50);
-enums.textureWrap = require(51);
+vec4.create = function(x, y, z, w) {
+    var out = new vec4.ArrayType(4);
+
+    out[0] = x !== undefined ? x : 0;
+    out[1] = y !== undefined ? y : 0;
+    out[2] = z !== undefined ? z : 0;
+    out[3] = w !== undefined ? w : 1;
+
+    return out;
+};
+
+vec4.copy = function(out, a) {
+
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    out[3] = a[3];
+
+    return out;
+};
+
+vec4.clone = function(a) {
+    var out = new vec4.ArrayType(4);
+
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    out[3] = a[3];
+
+    return out;
+};
+
+vec4.set = function(out, x, y, z, w) {
+
+    out[0] = x !== undefined ? x : 0;
+    out[1] = y !== undefined ? y : 0;
+    out[2] = z !== undefined ? z : 0;
+    out[3] = w !== undefined ? w : 0;
+
+    return out;
+};
+
+vec4.add = function(out, a, b) {
+
+    out[0] = a[0] + b[0];
+    out[1] = a[1] + b[1];
+    out[2] = a[2] + b[2];
+    out[3] = a[3] + b[3];
+
+    return out;
+};
+
+vec4.sub = function(out, a, b) {
+
+    out[0] = a[0] - b[0];
+    out[1] = a[1] - b[1];
+    out[2] = a[2] - b[2];
+    out[3] = a[3] - b[3];
+
+    return out;
+};
+
+vec4.mul = function(out, a, b) {
+
+    out[0] = a[0] * b[0];
+    out[1] = a[1] * b[1];
+    out[2] = a[2] * b[2];
+    out[3] = a[3] * b[3];
+
+    return out;
+};
+
+vec4.div = function(out, a, b) {
+    var bx = b[0],
+        by = b[1],
+        bz = b[2],
+        bw = b[3];
+
+    out[0] = a[0] * (bx !== 0 ? 1 / bx : bx);
+    out[1] = a[1] * (by !== 0 ? 1 / by : by);
+    out[2] = a[2] * (bz !== 0 ? 1 / bz : bz);
+    out[3] = a[3] * (bw !== 0 ? 1 / bw : bw);
+
+    return out;
+};
+
+vec4.sadd = function(out, a, s) {
+
+    out[0] = a[0] + s;
+    out[1] = a[1] + s;
+    out[2] = a[2] + s;
+    out[3] = a[3] + s;
+
+    return out;
+};
+
+vec4.ssub = function(out, a, s) {
+
+    out[0] = a[0] - s;
+    out[1] = a[1] - s;
+    out[2] = a[2] - s;
+    out[3] = a[3] - s;
+
+    return out;
+};
+
+vec4.smul = function(out, a, s) {
+
+    out[0] = a[0] * s;
+    out[1] = a[1] * s;
+    out[2] = a[2] * s;
+    out[3] = a[3] * s;
+
+    return out;
+};
+
+vec4.sdiv = function(out, a, s) {
+    s = s !== 0 ? 1 / s : s;
+
+    out[0] = a[0] * s;
+    out[1] = a[1] * s;
+    out[2] = a[2] * s;
+    out[3] = a[3] * s;
+
+    return out;
+};
+
+vec4.lengthSqValues = function(x, y, z, w) {
+
+    return x * x + y * y + z * z + w * w;
+};
+
+vec4.lengthValues = function(x, y, z, w) {
+    var lsq = vec4.lengthSqValues(x, y, z, w);
+
+    return lsq !== 0 ? mathf.sqrt(lsq) : lsq;
+};
+
+vec4.invLengthValues = function(x, y, z, w) {
+    var lsq = vec4.lengthSqValues(x, y, z, w);
+
+    return lsq !== 0 ? 1 / mathf.sqrt(lsq) : lsq;
+};
+
+vec4.dot = function(a, b) {
+
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
+};
+
+vec4.lengthSq = function(a) {
+
+    return vec4.dot(a, a);
+};
+
+vec4.length = function(a) {
+    var lsq = vec4.lengthSq(a);
+
+    return lsq !== 0 ? mathf.sqrt(lsq) : lsq;
+};
+
+vec4.invLength = function(a) {
+    var lsq = vec4.lengthSq(a);
+
+    return lsq !== 0 ? 1 / mathf.sqrt(lsq) : lsq;
+};
+
+vec4.setLength = function(out, a, length) {
+    var x = a[0],
+        y = a[1],
+        z = a[2],
+        w = a[3],
+        s = length * vec4.invLengthValues(x, y, z, w);
+
+    out[0] = x * s;
+    out[1] = y * s;
+    out[2] = z * s;
+    out[3] = w * s;
+
+    return out;
+};
+
+vec4.normalize = function(out, a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2],
+        w = a[3],
+        lsq = vec4.invLengthValues(x, y, z, w);
+
+    out[0] = x * lsq;
+    out[1] = y * lsq;
+    out[2] = z * lsq;
+    out[3] = w * lsq;
+
+    return out;
+};
+
+vec4.inverse = function(out, a) {
+
+    out[0] = a[0] * -1;
+    out[1] = a[1] * -1;
+    out[2] = a[2] * -1;
+    out[3] = a[3] * -1;
+
+    return out;
+};
+
+vec4.lerp = function(out, a, b, x) {
+    var lerp = mathf.lerp;
+
+    out[0] = lerp(a[0], b[0], x);
+    out[1] = lerp(a[1], b[1], x);
+    out[2] = lerp(a[2], b[2], x);
+    out[3] = lerp(a[3], b[3], x);
+
+    return out;
+};
+
+vec4.min = function(out, a, b) {
+    var ax = a[0],
+        ay = a[1],
+        az = a[2],
+        aw = a[3],
+        bx = b[0],
+        by = b[1],
+        bz = b[2],
+        bw = b[3];
+
+    out[0] = bx < ax ? bx : ax;
+    out[1] = by < ay ? by : ay;
+    out[2] = bz < az ? bz : az;
+    out[3] = bw < aw ? bw : aw;
+
+    return out;
+};
+
+vec4.max = function(out, a, b) {
+    var ax = a[0],
+        ay = a[1],
+        az = a[2],
+        aw = a[3],
+        bx = b[0],
+        by = b[1],
+        bz = b[2],
+        bw = b[3];
+
+    out[0] = bx > ax ? bx : ax;
+    out[1] = by > ay ? by : ay;
+    out[2] = bz > az ? bz : az;
+    out[3] = bw > aw ? bw : aw;
+
+    return out;
+};
+
+vec4.clamp = function(out, a, min, max) {
+    var x = a[0],
+        y = a[1],
+        z = a[2],
+        w = a[3],
+        minx = min[0],
+        miny = min[1],
+        minz = min[2],
+        minw = min[3],
+        maxx = max[0],
+        maxy = max[1],
+        maxz = max[2],
+        maxw = max[3];
+
+    out[0] = x < minx ? minx : x > maxx ? maxx : x;
+    out[1] = y < miny ? miny : y > maxy ? maxy : y;
+    out[2] = z < minz ? minz : z > maxz ? maxz : z;
+    out[3] = w < minw ? minw : w > maxw ? maxw : w;
+
+    return out;
+};
+
+vec4.transformMat4 = function(out, a, m) {
+    var x = a[0],
+        y = a[1],
+        z = a[2],
+        w = a[3];
+
+    out[0] = x * m[0] + y * m[4] + z * m[8] + w * m[12];
+    out[1] = x * m[1] + y * m[5] + z * m[9] + w * m[13];
+    out[2] = x * m[2] + y * m[6] + z * m[10] + w * m[14];
+    out[3] = x * m[3] + y * m[7] + z * m[11] + w * m[15];
+
+    return out;
+};
+
+vec4.transformProjection = function(out, a, m) {
+    var x = a[0],
+        y = a[1],
+        z = a[2],
+        w = a[3],
+        d = x * m[3] + y * m[7] + z * m[11] + w * m[15];
+
+    d = d !== 0 ? 1 / d : d;
+
+    out[0] = (x * m[0] + y * m[4] + z * m[8] + w * m[12]) * d;
+    out[1] = (x * m[1] + y * m[5] + z * m[9] + w * m[13]) * d;
+    out[2] = (x * m[2] + y * m[6] + z * m[10] + w * m[14]) * d;
+    out[3] = (x * m[3] + y * m[7] + z * m[11] + w * m[15]) * d;
+
+    return out;
+};
+
+vec4.positionFromMat4 = function(out, m) {
+
+    out[0] = m[12];
+    out[1] = m[13];
+    out[2] = m[14];
+    out[3] = m[15];
+
+    return out;
+};
+
+vec4.scaleFromMat4 = function(out, m) {
+
+    out[0] = vec4.lengthValues(m[0], m[4], m[8], m[12]);
+    out[1] = vec4.lengthValues(m[1], m[5], m[9], m[13]);
+    out[2] = vec4.lengthValues(m[2], m[6], m[10], m[14]);
+    out[3] = vec4.lengthValues(m[3], m[7], m[11], m[15]);
+
+    return out;
+};
+
+vec4.equal = function(a, b) {
+    return !(
+        a[0] !== b[0] ||
+        a[1] !== b[1] ||
+        a[2] !== b[2] ||
+        a[3] !== b[3]
+    );
+};
+
+vec4.notEqual = function(a, b) {
+    return (
+        a[0] !== b[0] ||
+        a[1] !== b[1] ||
+        a[2] !== b[2] ||
+        a[3] !== b[3]
+    );
+};
+
+vec4.str = function(out) {
+
+    return "Vec4(" + out[0] + ", " + out[1] + ", " + out[2] + ", " + out[3] + ")";
+};
 
 
 },
 function(require, exports, module, global) {
 
-var keys = require(14),
-    isArrayLike = require(39);
+var reverse = require(41);
+
+
+var enums = exports;
+
+
+enums.blending = require(45);
+enums.cullFace = require(49);
+enums.depth = require(51);
+enums.filterMode = require(52);
+
+enums.gl = require(50);
+enums.glValues = reverse(enums.gl);
+
+enums.textureFormat = require(53);
+enums.textureType = require(54);
+enums.textureWrap = require(55);
+
+
+},
+function(require, exports, module, global) {
+
+var keys = require(22),
+    isArrayLike = require(42);
 
 
 module.exports = reverse;
@@ -4117,20 +4662,24 @@ function reverseObject(object) {
 },
 function(require, exports, module, global) {
 
-var isLength = require(40),
-    isObjectLike = require(22);
+var isLength = require(43),
+    isFunction = require(6),
+    isObjectLike = require(44);
 
 
 module.exports = isArrayLike;
 
 
-function isArrayLike(obj) {
-    return isObjectLike(obj) && isLength(obj.length);
+function isArrayLike(value) {
+    return isObjectLike(value) && isLength(value.length) && !isFunction(value);
 }
 
 
 },
 function(require, exports, module, global) {
+
+var isNumber = require(36);
+
 
 var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
 
@@ -4138,15 +4687,29 @@ var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
 module.exports = isLength;
 
 
-function isLength(obj) {
-    return typeof(obj) === "number" && obj > -1 && obj % 1 === 0 && obj <= MAX_SAFE_INTEGER;
+function isLength(value) {
+    return isNumber(value) && value > -1 && value % 1 === 0 && value <= MAX_SAFE_INTEGER;
 }
 
 
 },
 function(require, exports, module, global) {
 
-var enums = require(42);
+var isNullOrUndefined = require(5);
+
+
+module.exports = isObjectLike;
+
+
+function isObjectLike(value) {
+    return (!isNullOrUndefined(value) && typeof(value) === "object") || false;
+}
+
+
+},
+function(require, exports, module, global) {
+
+var enums = require(46);
 
 
 module.exports = enums([
@@ -4161,12 +4724,12 @@ module.exports = enums([
 },
 function(require, exports, module, global) {
 
-var create = require(12),
-    defineProperty = require(21),
-    forEach = require(43),
-    isString = require(18),
-    isNumber = require(34),
-    emptyFunction = require(28);
+var create = require(18),
+    defineProperty = require(24),
+    forEach = require(47),
+    isString = require(15),
+    isNumber = require(36),
+    emptyFunction = require(30);
 
 
 var reSpliter = /[\s\, ]+/,
@@ -4232,10 +4795,10 @@ function stringToHash(value) {
 },
 function(require, exports, module, global) {
 
-var keys = require(14),
-    isNullOrUndefined = require(19),
-    fastBindThis = require(44),
-    isArrayLike = require(39);
+var keys = require(22),
+    isNullOrUndefined = require(5),
+    fastBindThis = require(48),
+    isArrayLike = require(42);
 
 
 module.exports = forEach;
@@ -4280,7 +4843,7 @@ function forEachObject(object, callback) {
 },
 function(require, exports, module, global) {
 
-var isNumber = require(34);
+var isNumber = require(36);
 
 
 module.exports = fastBindThis;
@@ -4319,8 +4882,8 @@ function fastBindThis(callback, thisArg, length) {
 },
 function(require, exports, module, global) {
 
-var enums = require(42),
-    gl = require(46);
+var enums = require(46),
+    gl = require(50);
 
 
 module.exports = enums({
@@ -4334,7 +4897,7 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(42);
+var enums = require(46);
 
 
 module.exports = enums({
@@ -4641,8 +5204,8 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(42),
-    gl = require(46);
+var enums = require(46),
+    gl = require(50);
 
 
 module.exports = enums({
@@ -4661,7 +5224,7 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(42);
+var enums = require(46);
 
 
 module.exports = enums({
@@ -4673,8 +5236,8 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(42),
-    gl = require(46);
+var enums = require(46),
+    gl = require(50);
 
 
 module.exports = enums({
@@ -4689,8 +5252,8 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(42),
-    gl = require(46);
+var enums = require(46),
+    gl = require(50);
 
 
 module.exports = enums({
@@ -4707,8 +5270,8 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(42),
-    gl = require(46);
+var enums = require(46),
+    gl = require(50);
 
 
 module.exports = enums({
@@ -4757,9 +5320,9 @@ WebGLBuffer.prototype.compile = function(type, array, stride, draw) {
 },
 function(require, exports, module, global) {
 
-var isArray = require(54),
-    mathf = require(32),
-    enums = require(37);
+var isArray = require(58),
+    mathf = require(34),
+    enums = require(40);
 
 
 var textureType = enums.textureType,
@@ -4953,31 +5516,41 @@ function getWrap(gl, wrap) {
 },
 function(require, exports, module, global) {
 
-var isLength = require(40),
-    isObjectLike = require(22);
+var isNative = require(12),
+    isLength = require(43),
+    isObject = require(4);
 
 
-var objectToString = Object.prototype.toString;
+var objectToString = Object.prototype.toString,
+    nativeIsArray = Array.isArray,
+    isArray;
 
 
-module.exports = Array.isArray || function isArray(obj) {
-    return (
-        isObjectLike(obj) &&
-        isLength(obj.length) &&
-        objectToString.call(obj) === "[object Array]"
-    ) || false;
-};
+if (isNative(nativeIsArray)) {
+    isArray = nativeIsArray;
+} else {
+    isArray = function isArray(value) {
+        return (
+            isObject(value) &&
+            isLength(value.length) &&
+            objectToString.call(value) === "[object Array]"
+        ) || false;
+    };
+}
+
+
+module.exports = isArray;
 
 
 },
 function(require, exports, module, global) {
 
-var isArray = require(54),
-    FastHash = require(56),
+var isArray = require(58),
+    FastHash = require(60),
 
-    enums = require(37),
-    uniforms = require(58),
-    attributes = require(79);
+    enums = require(40),
+    uniforms = require(62),
+    attributes = require(82);
 
 
 var reUniformName = /[^\[]+/;
@@ -5119,9 +5692,9 @@ function createShader(gl, source, type) {
 },
 function(require, exports, module, global) {
 
-var has = require(10),
-    indexOf = require(57),
-    forEach = require(43);
+var has = require(11),
+    indexOf = require(61),
+    forEach = require(47);
 
 
 module.exports = FastHash;
@@ -5211,8 +5784,8 @@ FastHash.prototype.forEach = function(callback, thisArg) {
 },
 function(require, exports, module, global) {
 
-var isLength = require(40),
-    isObjectLike = require(22);
+var isLength = require(43),
+    isObjectLike = require(44);
 
 
 module.exports = indexOf;
@@ -5240,35 +5813,35 @@ function arrayIndexOf(array, value, fromIndex) {
 function(require, exports, module, global) {
 
 module.exports = {
-    BOOL: require(59),
-    INT: require(61),
-    FLOAT: require(62),
+    BOOL: require(63),
+    INT: require(65),
+    FLOAT: require(66),
 
-    BOOL_VEC2: require(63),
-    BOOL_VEC3: require(65),
-    BOOL_VEC4: require(66),
+    BOOL_VEC2: require(67),
+    BOOL_VEC3: require(69),
+    BOOL_VEC4: require(70),
 
-    INT_VEC2: require(63),
-    INT_VEC3: require(65),
-    INT_VEC4: require(66),
+    INT_VEC2: require(67),
+    INT_VEC3: require(69),
+    INT_VEC4: require(70),
 
-    FLOAT_VEC2: require(68),
-    FLOAT_VEC3: require(69),
-    FLOAT_VEC4: require(70),
+    FLOAT_VEC2: require(71),
+    FLOAT_VEC3: require(72),
+    FLOAT_VEC4: require(73),
 
-    FLOAT_MAT2: require(71),
-    FLOAT_MAT3: require(73),
-    FLOAT_MAT4: require(75),
+    FLOAT_MAT2: require(74),
+    FLOAT_MAT3: require(76),
+    FLOAT_MAT4: require(78),
 
-    SAMPLER_2D: require(77),
-    SAMPLER_CUBE: require(78)
+    SAMPLER_2D: require(80),
+    SAMPLER_CUBE: require(81)
 };
 
 
 },
 function(require, exports, module, global) {
 
-var Uniform = require(60);
+var Uniform = require(64);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -5302,7 +5875,7 @@ Uniform1b.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var inherits = require(11);
+var inherits = require(17);
 
 
 module.exports = Uniform;
@@ -5328,7 +5901,7 @@ Uniform.prototype.set = function( /* value, force */ ) {
 },
 function(require, exports, module, global) {
 
-var Uniform = require(60);
+var Uniform = require(64);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -5362,7 +5935,7 @@ Uniform1i.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var Uniform = require(60);
+var Uniform = require(64);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -5396,8 +5969,8 @@ Uniform1f.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(64),
-    Uniform = require(60);
+var vec2 = require(68),
+    Uniform = require(64);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -5431,7 +6004,7 @@ Uniform2i.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(32);
+var mathf = require(34);
 
 
 var vec2 = exports;
@@ -5808,8 +6381,8 @@ vec2.str = function(out) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(36),
-    Uniform = require(60);
+var vec3 = require(38),
+    Uniform = require(64);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -5843,8 +6416,8 @@ Uniform3i.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var vec4 = require(67),
-    Uniform = require(60);
+var vec4 = require(39),
+    Uniform = require(64);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -5878,370 +6451,8 @@ Uniform4i.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(32);
-
-
-var vec4 = exports;
-
-
-vec4.ArrayType = typeof(Float32Array) !== "undefined" ? Float32Array : mathf.ArrayType;
-
-
-vec4.create = function(x, y, z, w) {
-    var out = new vec4.ArrayType(4);
-
-    out[0] = x !== undefined ? x : 0;
-    out[1] = y !== undefined ? y : 0;
-    out[2] = z !== undefined ? z : 0;
-    out[3] = w !== undefined ? w : 1;
-
-    return out;
-};
-
-vec4.copy = function(out, a) {
-
-    out[0] = a[0];
-    out[1] = a[1];
-    out[2] = a[2];
-    out[3] = a[3];
-
-    return out;
-};
-
-vec4.clone = function(a) {
-    var out = new vec4.ArrayType(4);
-
-    out[0] = a[0];
-    out[1] = a[1];
-    out[2] = a[2];
-    out[3] = a[3];
-
-    return out;
-};
-
-vec4.set = function(out, x, y, z, w) {
-
-    out[0] = x !== undefined ? x : 0;
-    out[1] = y !== undefined ? y : 0;
-    out[2] = z !== undefined ? z : 0;
-    out[3] = w !== undefined ? w : 0;
-
-    return out;
-};
-
-vec4.add = function(out, a, b) {
-
-    out[0] = a[0] + b[0];
-    out[1] = a[1] + b[1];
-    out[2] = a[2] + b[2];
-    out[3] = a[3] + b[3];
-
-    return out;
-};
-
-vec4.sub = function(out, a, b) {
-
-    out[0] = a[0] - b[0];
-    out[1] = a[1] - b[1];
-    out[2] = a[2] - b[2];
-    out[3] = a[3] - b[3];
-
-    return out;
-};
-
-vec4.mul = function(out, a, b) {
-
-    out[0] = a[0] * b[0];
-    out[1] = a[1] * b[1];
-    out[2] = a[2] * b[2];
-    out[3] = a[3] * b[3];
-
-    return out;
-};
-
-vec4.div = function(out, a, b) {
-    var bx = b[0],
-        by = b[1],
-        bz = b[2],
-        bw = b[3];
-
-    out[0] = a[0] * (bx !== 0 ? 1 / bx : bx);
-    out[1] = a[1] * (by !== 0 ? 1 / by : by);
-    out[2] = a[2] * (bz !== 0 ? 1 / bz : bz);
-    out[3] = a[3] * (bw !== 0 ? 1 / bw : bw);
-
-    return out;
-};
-
-vec4.sadd = function(out, a, s) {
-
-    out[0] = a[0] + s;
-    out[1] = a[1] + s;
-    out[2] = a[2] + s;
-    out[3] = a[3] + s;
-
-    return out;
-};
-
-vec4.ssub = function(out, a, s) {
-
-    out[0] = a[0] - s;
-    out[1] = a[1] - s;
-    out[2] = a[2] - s;
-    out[3] = a[3] - s;
-
-    return out;
-};
-
-vec4.smul = function(out, a, s) {
-
-    out[0] = a[0] * s;
-    out[1] = a[1] * s;
-    out[2] = a[2] * s;
-    out[3] = a[3] * s;
-
-    return out;
-};
-
-vec4.sdiv = function(out, a, s) {
-    s = s !== 0 ? 1 / s : s;
-
-    out[0] = a[0] * s;
-    out[1] = a[1] * s;
-    out[2] = a[2] * s;
-    out[3] = a[3] * s;
-
-    return out;
-};
-
-vec4.lengthSqValues = function(x, y, z, w) {
-
-    return x * x + y * y + z * z + w * w;
-};
-
-vec4.lengthValues = function(x, y, z, w) {
-    var lsq = vec4.lengthSqValues(x, y, z, w);
-
-    return lsq !== 0 ? mathf.sqrt(lsq) : lsq;
-};
-
-vec4.invLengthValues = function(x, y, z, w) {
-    var lsq = vec4.lengthSqValues(x, y, z, w);
-
-    return lsq !== 0 ? 1 / mathf.sqrt(lsq) : lsq;
-};
-
-vec4.dot = function(a, b) {
-
-    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
-};
-
-vec4.lengthSq = function(a) {
-
-    return vec4.dot(a, a);
-};
-
-vec4.length = function(a) {
-    var lsq = vec4.lengthSq(a);
-
-    return lsq !== 0 ? mathf.sqrt(lsq) : lsq;
-};
-
-vec4.invLength = function(a) {
-    var lsq = vec4.lengthSq(a);
-
-    return lsq !== 0 ? 1 / mathf.sqrt(lsq) : lsq;
-};
-
-vec4.setLength = function(out, a, length) {
-    var x = a[0],
-        y = a[1],
-        z = a[2],
-        w = a[3],
-        s = length * vec4.invLengthValues(x, y, z, w);
-
-    out[0] = x * s;
-    out[1] = y * s;
-    out[2] = z * s;
-    out[3] = w * s;
-
-    return out;
-};
-
-vec4.normalize = function(out, a) {
-    var x = a[0],
-        y = a[1],
-        z = a[2],
-        w = a[3],
-        lsq = vec4.invLengthValues(x, y, z, w);
-
-    out[0] = x * lsq;
-    out[1] = y * lsq;
-    out[2] = z * lsq;
-    out[3] = w * lsq;
-
-    return out;
-};
-
-vec4.inverse = function(out, a) {
-
-    out[0] = a[0] * -1;
-    out[1] = a[1] * -1;
-    out[2] = a[2] * -1;
-    out[3] = a[3] * -1;
-
-    return out;
-};
-
-vec4.lerp = function(out, a, b, x) {
-    var lerp = mathf.lerp;
-
-    out[0] = lerp(a[0], b[0], x);
-    out[1] = lerp(a[1], b[1], x);
-    out[2] = lerp(a[2], b[2], x);
-    out[3] = lerp(a[3], b[3], x);
-
-    return out;
-};
-
-vec4.min = function(out, a, b) {
-    var ax = a[0],
-        ay = a[1],
-        az = a[2],
-        aw = a[3],
-        bx = b[0],
-        by = b[1],
-        bz = b[2],
-        bw = b[3];
-
-    out[0] = bx < ax ? bx : ax;
-    out[1] = by < ay ? by : ay;
-    out[2] = bz < az ? bz : az;
-    out[3] = bw < aw ? bw : aw;
-
-    return out;
-};
-
-vec4.max = function(out, a, b) {
-    var ax = a[0],
-        ay = a[1],
-        az = a[2],
-        aw = a[3],
-        bx = b[0],
-        by = b[1],
-        bz = b[2],
-        bw = b[3];
-
-    out[0] = bx > ax ? bx : ax;
-    out[1] = by > ay ? by : ay;
-    out[2] = bz > az ? bz : az;
-    out[3] = bw > aw ? bw : aw;
-
-    return out;
-};
-
-vec4.clamp = function(out, a, min, max) {
-    var x = a[0],
-        y = a[1],
-        z = a[2],
-        w = a[3],
-        minx = min[0],
-        miny = min[1],
-        minz = min[2],
-        minw = min[3],
-        maxx = max[0],
-        maxy = max[1],
-        maxz = max[2],
-        maxw = max[3];
-
-    out[0] = x < minx ? minx : x > maxx ? maxx : x;
-    out[1] = y < miny ? miny : y > maxy ? maxy : y;
-    out[2] = z < minz ? minz : z > maxz ? maxz : z;
-    out[3] = w < minw ? minw : w > maxw ? maxw : w;
-
-    return out;
-};
-
-vec4.transformMat4 = function(out, a, m) {
-    var x = a[0],
-        y = a[1],
-        z = a[2],
-        w = a[3];
-
-    out[0] = x * m[0] + y * m[4] + z * m[8] + w * m[12];
-    out[1] = x * m[1] + y * m[5] + z * m[9] + w * m[13];
-    out[2] = x * m[2] + y * m[6] + z * m[10] + w * m[14];
-    out[3] = x * m[3] + y * m[7] + z * m[11] + w * m[15];
-
-    return out;
-};
-
-vec4.transformProjection = function(out, a, m) {
-    var x = a[0],
-        y = a[1],
-        z = a[2],
-        w = a[3],
-        d = x * m[3] + y * m[7] + z * m[11] + w * m[15];
-
-    d = d !== 0 ? 1 / d : d;
-
-    out[0] = (x * m[0] + y * m[4] + z * m[8] + w * m[12]) * d;
-    out[1] = (x * m[1] + y * m[5] + z * m[9] + w * m[13]) * d;
-    out[2] = (x * m[2] + y * m[6] + z * m[10] + w * m[14]) * d;
-    out[3] = (x * m[3] + y * m[7] + z * m[11] + w * m[15]) * d;
-
-    return out;
-};
-
-vec4.positionFromMat4 = function(out, m) {
-
-    out[0] = m[12];
-    out[1] = m[13];
-    out[2] = m[14];
-    out[3] = m[15];
-
-    return out;
-};
-
-vec4.scaleFromMat4 = function(out, m) {
-
-    out[0] = vec4.lengthValues(m[0], m[4], m[8], m[12]);
-    out[1] = vec4.lengthValues(m[1], m[5], m[9], m[13]);
-    out[2] = vec4.lengthValues(m[2], m[6], m[10], m[14]);
-    out[3] = vec4.lengthValues(m[3], m[7], m[11], m[15]);
-
-    return out;
-};
-
-vec4.equal = function(a, b) {
-    return !(
-        a[0] !== b[0] ||
-        a[1] !== b[1] ||
-        a[2] !== b[2] ||
-        a[3] !== b[3]
-    );
-};
-
-vec4.notEqual = function(a, b) {
-    return (
-        a[0] !== b[0] ||
-        a[1] !== b[1] ||
-        a[2] !== b[2] ||
-        a[3] !== b[3]
-    );
-};
-
-vec4.str = function(out) {
-
-    return "Vec4(" + out[0] + ", " + out[1] + ", " + out[2] + ", " + out[3] + ")";
-};
-
-
-},
-function(require, exports, module, global) {
-
-var vec2 = require(64),
-    Uniform = require(60);
+var vec2 = require(68),
+    Uniform = require(64);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -6275,8 +6486,8 @@ Uniform2f.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(36),
-    Uniform = require(60);
+var vec3 = require(38),
+    Uniform = require(64);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -6310,8 +6521,8 @@ Uniform3f.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var vec4 = require(67),
-    Uniform = require(60);
+var vec4 = require(39),
+    Uniform = require(64);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -6345,8 +6556,8 @@ Uniform4f.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var mat2 = require(72),
-    Uniform = require(60);
+var mat2 = require(75),
+    Uniform = require(64);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -6380,7 +6591,7 @@ UniformMatrix2fv.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(32);
+var mathf = require(34);
 
 
 var mat2 = exports;
@@ -6598,8 +6809,8 @@ mat2.str = function(out) {
 },
 function(require, exports, module, global) {
 
-var mat3 = require(74),
-    Uniform = require(60);
+var mat3 = require(77),
+    Uniform = require(64);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -6637,7 +6848,7 @@ UniformMatrix3fv.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(32);
+var mathf = require(34);
 
 
 var mat3 = exports;
@@ -7028,8 +7239,8 @@ mat3.str = function(out) {
 },
 function(require, exports, module, global) {
 
-var mat4 = require(76),
-    Uniform = require(60);
+var mat4 = require(79),
+    Uniform = require(64);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -7068,8 +7279,8 @@ UniformMatrix4fv.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(32),
-    vec3 = require(36);
+var mathf = require(34),
+    vec3 = require(38);
 
 
 var mat4 = exports;
@@ -8081,7 +8292,7 @@ mat4.str = function(out) {
 },
 function(require, exports, module, global) {
 
-var Uniform = require(60);
+var Uniform = require(64);
 
 
 module.exports = UniformTexture;
@@ -8101,7 +8312,7 @@ UniformTexture.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var Uniform = require(60);
+var Uniform = require(64);
 
 
 module.exports = UniformTextureCube;
@@ -8122,23 +8333,23 @@ UniformTextureCube.prototype.set = function(value, force) {
 function(require, exports, module, global) {
 
 module.exports = {
-    INT: require(80),
-    FLOAT: require(82),
+    INT: require(83),
+    FLOAT: require(85),
 
-    INT_VEC2: require(83),
-    INT_VEC3: require(84),
-    INT_VEC4: require(85),
+    INT_VEC2: require(86),
+    INT_VEC3: require(87),
+    INT_VEC4: require(88),
 
-    FLOAT_VEC2: require(86),
-    FLOAT_VEC3: require(87),
-    FLOAT_VEC4: require(88)
+    FLOAT_VEC2: require(89),
+    FLOAT_VEC3: require(90),
+    FLOAT_VEC4: require(91)
 };
 
 
 },
 function(require, exports, module, global) {
 
-var Attribute = require(81);
+var Attribute = require(84);
 
 
 module.exports = Attribute1i;
@@ -8161,7 +8372,7 @@ Attribute1i.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var inherits = require(11);
+var inherits = require(17);
 
 
 module.exports = Attribute;
@@ -8185,7 +8396,7 @@ Attribute.prototype.set = function( /* buffer, offset, force */ ) {
 },
 function(require, exports, module, global) {
 
-var Attribute = require(81);
+var Attribute = require(84);
 
 
 module.exports = Attribute1f;
@@ -8208,7 +8419,7 @@ Attribute1f.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var Attribute = require(81);
+var Attribute = require(84);
 
 
 module.exports = Attribute2i;
@@ -8231,7 +8442,7 @@ Attribute2i.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var Attribute = require(81);
+var Attribute = require(84);
 
 
 module.exports = Attribute3i;
@@ -8254,7 +8465,7 @@ Attribute3i.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var Attribute = require(81);
+var Attribute = require(84);
 
 
 module.exports = Attribute4i;
@@ -8277,7 +8488,7 @@ Attribute4i.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var Attribute = require(81);
+var Attribute = require(84);
 
 
 module.exports = Attribute2f;
@@ -8300,7 +8511,7 @@ Attribute2f.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var Attribute = require(81);
+var Attribute = require(84);
 
 
 module.exports = Attribute3f;
@@ -8323,7 +8534,7 @@ Attribute3f.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var Attribute = require(81);
+var Attribute = require(84);
 
 
 module.exports = Attribute4f;
@@ -8346,7 +8557,7 @@ Attribute4f.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var enums = require(42);
+var enums = require(46);
 
 
 var emitterRenderMode = enums([
@@ -8363,7 +8574,7 @@ module.exports = emitterRenderMode;
 },
 function(require, exports, module, global) {
 
-var enums = require(42);
+var enums = require(46);
 
 
 var interpolation = enums([
@@ -8381,7 +8592,7 @@ module.exports = interpolation;
 },
 function(require, exports, module, global) {
 
-var enums = require(42);
+var enums = require(46);
 
 
 var normalMode = enums([
@@ -8397,7 +8608,7 @@ module.exports = normalMode;
 },
 function(require, exports, module, global) {
 
-var enums = require(42);
+var enums = require(46);
 
 
 var screenAlignment = enums([
@@ -8415,7 +8626,7 @@ module.exports = screenAlignment;
 },
 function(require, exports, module, global) {
 
-var enums = require(42);
+var enums = require(46);
 
 
 var side = enums([
@@ -8432,7 +8643,7 @@ module.exports = side;
 },
 function(require, exports, module, global) {
 
-var enums = require(42);
+var enums = require(46);
 
 
 var sortMode = enums([
@@ -8450,7 +8661,7 @@ module.exports = sortMode;
 },
 function(require, exports, module, global) {
 
-var enums = require(42);
+var enums = require(46);
 
 
 var wrapMode = enums([
@@ -8467,13 +8678,13 @@ module.exports = wrapMode;
 },
 function(require, exports, module, global) {
 
-var isString = require(18),
-    isNumber = require(34),
-    indexOf = require(57),
-    Class = require(9),
-    Assets = require(97),
-    createLoop = require(26),
-    Scene = require(98);
+var isString = require(15),
+    isNumber = require(36),
+    indexOf = require(61),
+    Class = require(10),
+    Assets = require(100),
+    createLoop = require(28),
+    Scene = require(101);
 
 
 var ClassPrototype = Class.prototype,
@@ -8635,8 +8846,8 @@ function BaseApplication_removeScene(_this, scene) {
 },
 function(require, exports, module, global) {
 
-var Class = require(9),
-    indexOf = require(57);
+var Class = require(10),
+    indexOf = require(61);
 
 
 var ClassPrototype = Class.prototype,
@@ -8792,11 +9003,11 @@ AssetsPrototype.load = function(callback) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(57),
-    Input = require(99),
-    Class = require(9),
-    Time = require(121),
-    Entity = require(122);
+var indexOf = require(61),
+    Input = require(102),
+    Class = require(10),
+    Time = require(124),
+    Entity = require(125);
 
 
 var ClassPrototype = Class.prototype,
@@ -9357,14 +9568,14 @@ ScenePrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(36),
-    EventEmitter = require(23),
-    Handler = require(100),
-    Mouse = require(113),
-    Buttons = require(114),
-    Touches = require(116),
-    Axes = require(118),
-    eventHandlers = require(120);
+var vec3 = require(38),
+    EventEmitter = require(25),
+    Handler = require(103),
+    Mouse = require(116),
+    Buttons = require(117),
+    Touches = require(119),
+    Axes = require(121),
+    eventHandlers = require(123);
 
 
 var MOUSE_BUTTONS = [
@@ -9550,12 +9761,12 @@ InputPrototype.update = function(time, frame) {
 },
 function(require, exports, module, global) {
 
-var EventEmitter = require(23),
-    focusNode = require(101),
-    blurNode = require(102),
-    getActiveElement = require(103),
+var EventEmitter = require(25),
+    focusNode = require(104),
+    blurNode = require(105),
+    getActiveElement = require(106),
     eventListener = require(2),
-    events = require(105);
+    events = require(108);
 
 
 var HandlerPrototype;
@@ -9687,7 +9898,7 @@ HandlerPrototype.detach = function() {
 },
 function(require, exports, module, global) {
 
-var isNode = require(7);
+var isNode = require(8);
 
 
 module.exports = focusNode;
@@ -9705,7 +9916,7 @@ function focusNode(node) {
 },
 function(require, exports, module, global) {
 
-var isNode = require(7);
+var isNode = require(8);
 
 
 module.exports = blurNode;
@@ -9723,7 +9934,7 @@ function blurNode(node) {
 },
 function(require, exports, module, global) {
 
-var isDocument = require(104),
+var isDocument = require(107),
     environment = require(1);
 
 
@@ -9747,7 +9958,7 @@ function getActiveElement(ownerDocument) {
 },
 function(require, exports, module, global) {
 
-var isNode = require(7);
+var isNode = require(8);
 
 
 module.exports = isDocument;
@@ -9761,11 +9972,11 @@ function isDocument(obj) {
 },
 function(require, exports, module, global) {
 
-var MouseEvent = require(106),
-    WheelEvent = require(108),
-    KeyEvent = require(109),
-    TouchEvent = require(111),
-    DeviceMotionEvent = require(112);
+var MouseEvent = require(109),
+    WheelEvent = require(111),
+    KeyEvent = require(112),
+    TouchEvent = require(114),
+    DeviceMotionEvent = require(115);
 
 
 module.exports = {
@@ -9791,7 +10002,7 @@ module.exports = {
 },
 function(require, exports, module, global) {
 
-var createPool = require(107),
+var createPool = require(110),
     environment = require(1);
 
 
@@ -9851,9 +10062,9 @@ function getButton(e) {
 },
 function(require, exports, module, global) {
 
-var isFunction = require(5),
-    isNumber = require(34),
-    defineProperty = require(21);
+var isFunction = require(6),
+    isNumber = require(36),
+    defineProperty = require(24);
 
 
 var descriptor = {
@@ -10038,7 +10249,7 @@ function createReleaser(Constructor) {
 },
 function(require, exports, module, global) {
 
-var createPool = require(107);
+var createPool = require(110);
 
 
 var WheelEventPrototype;
@@ -10089,8 +10300,8 @@ function getDeltaY(e) {
 },
 function(require, exports, module, global) {
 
-var createPool = require(107),
-    keyCodes = require(110);
+var createPool = require(110),
+    keyCodes = require(113);
 
 
 var KeyEventPrototype;
@@ -10246,7 +10457,7 @@ module.exports = {
 },
 function(require, exports, module, global) {
 
-var createPool = require(107);
+var createPool = require(110);
 
 
 var TouchEventPrototype,
@@ -10396,7 +10607,7 @@ function getForce(nativeTouch) {
 },
 function(require, exports, module, global) {
 
-var createPool = require(107);
+var createPool = require(110);
 
 
 var DeviceMotionEventPrototype;
@@ -10429,7 +10640,7 @@ DeviceMotionEventPrototype.destructor = function() {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(64);
+var vec2 = require(68);
 
 
 var MousePrototype;
@@ -10509,7 +10720,7 @@ MousePrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var Button = require(115);
+var Button = require(118);
 
 
 var ButtonsPrototype;
@@ -10745,8 +10956,8 @@ ButtonPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(57),
-    Touch = require(117);
+var indexOf = require(61),
+    Touch = require(120);
 
 
 var TouchesPrototype;
@@ -10884,8 +11095,8 @@ TouchesPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(64),
-    createPool = require(107);
+var vec2 = require(68),
+    createPool = require(110);
 
 
 var TouchPrototype;
@@ -11007,7 +11218,7 @@ TouchPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var Axis = require(119);
+var Axis = require(122);
 
 
 var AxesPrototype;
@@ -11200,7 +11411,7 @@ AxesPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(32);
+var mathf = require(34);
 
 
 var AxisPrototype;
@@ -11423,7 +11634,7 @@ AxisPrototype.toJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(32);
+var mathf = require(34);
 
 
 var eventHandlers = exports,
@@ -11555,7 +11766,7 @@ eventHandlers.devicemotion = function(input, e) {
 },
 function(require, exports, module, global) {
 
-var time = require(29);
+var time = require(31);
 
 
 var TimePrototype;
@@ -11690,8 +11901,8 @@ TimePrototype.stampMS = function() {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(57),
-    Class = require(9);
+var indexOf = require(61),
+    Class = require(10);
 
 
 var ClassPrototype = Class.prototype,
@@ -12007,10 +12218,10 @@ EntityPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var isString = require(18),
-    isNumber = require(34),
-    Class = require(9),
-    BaseApplication = require(96);
+var isString = require(15),
+    isNumber = require(36),
+    Class = require(10),
+    BaseApplication = require(99);
 
 
 var BaseApplicationPrototype = BaseApplication.prototype,
@@ -12094,7 +12305,7 @@ ApplicationPrototype.loop = function() {
 },
 function(require, exports, module, global) {
 
-var Class = require(9);
+var Class = require(10);
 
 
 var ClassPrototype = Class.prototype,
@@ -12158,8 +12369,8 @@ function(require, exports, module, global) {
 
 var environment = require(1),
     eventListener = require(2),
-    HttpError = require(126),
-    Asset = require(124);
+    HttpError = require(129),
+    Asset = require(127);
 
 
 var AssetPrototype = Asset.prototype,
@@ -12236,9 +12447,9 @@ ImageAssetPrototype.load = function(callback) {
 },
 function(require, exports, module, global) {
 
-var forEach = require(43),
-    create = require(12),
-    STATUS_CODES = require(127);
+var forEach = require(47),
+    create = require(18),
+    STATUS_CODES = require(130);
 
 
 var STATUS_NAMES = {},
@@ -12386,9 +12597,9 @@ module.exports = {
 },
 function(require, exports, module, global) {
 
-var request = require(129),
-    HttpError = require(126),
-    Asset = require(124);
+var request = require(132),
+    HttpError = require(129),
+    Asset = require(127);
 
 
 var JSONAssetPrototype;
@@ -12432,17 +12643,17 @@ JSONAssetPrototype.load = function(callback) {
 },
 function(require, exports, module, global) {
 
-module.exports = require(130)(require(133));
+module.exports = require(133)(require(136));
 
 
 },
 function(require, exports, module, global) {
 
 module.exports = function createRequest(request) {
-    var methods = require(131),
-        forEach = require(43),
-        EventEmitter = require(23),
-        defaults = require(132);
+    var methods = require(134),
+        forEach = require(47),
+        EventEmitter = require(25),
+        defaults = require(135);
 
 
     forEach(methods, function(method) {
@@ -12516,9 +12727,9 @@ module.exports = [
 },
 function(require, exports, module, global) {
 
-var extend = require(13),
-    isString = require(18),
-    isFunction = require(5);
+var extend = require(21),
+    isString = require(15),
+    isFunction = require(6);
 
 
 function defaults(options) {
@@ -12562,17 +12773,17 @@ module.exports = defaults;
 },
 function(require, exports, module, global) {
 
-var PromisePolyfill = require(134),
-    XMLHttpRequestPolyfill = require(137),
-    isFunction = require(5),
-    isString = require(18),
-    forEach = require(43),
-    trim = require(138),
-    extend = require(13),
-    Response = require(139),
-    defaults = require(132),
-    camelcaseHeader = require(140),
-    parseContentType = require(143);
+var PromisePolyfill = require(137),
+    XMLHttpRequestPolyfill = require(139),
+    isFunction = require(6),
+    isString = require(15),
+    forEach = require(47),
+    trim = require(140),
+    extend = require(21),
+    Response = require(141),
+    defaults = require(135),
+    camelcaseHeader = require(142),
+    parseContentType = require(145);
 
 
 var supportsFormData = typeof(FormData) !== "undefined";
@@ -12760,11 +12971,11 @@ module.exports = request;
 function(require, exports, module, global) {
 
 var process = require(3);
-var isArray = require(54),
+var isArray = require(58),
     isObject = require(4),
-    isFunction = require(5),
-    createStore = require(135),
-    fastSlice = require(24);
+    isFunction = require(6),
+    createStore = require(138),
+    fastSlice = require(26);
 
 
 var PromisePolyfill, PrivatePromise;
@@ -13038,9 +13249,9 @@ module.exports = PromisePolyfill;
 },
 function(require, exports, module, global) {
 
-var has = require(10),
-    defineProperty = require(21),
-    isPrimitive = require(136);
+var has = require(11),
+    defineProperty = require(24),
+    isPrimitive = require(20);
 
 
 var emptyObject = {};
@@ -13116,22 +13327,7 @@ function createStore() {
 },
 function(require, exports, module, global) {
 
-var isNullOrUndefined = require(19);
-
-
-module.exports = isPrimitive;
-
-
-function isPrimitive(obj) {
-    var typeStr;
-    return isNullOrUndefined(obj) || ((typeStr = typeof(obj)) !== "object" && typeStr !== "function") || false;
-}
-
-
-},
-function(require, exports, module, global) {
-
-var extend = require(13),
+var extend = require(21),
     environment = require(1);
 
 
@@ -13201,8 +13397,8 @@ module.exports = XMLHttpRequestPolyfill;
 },
 function(require, exports, module, global) {
 
-var isNative = require(15),
-    toString = require(17);
+var isNative = require(12),
+    toString = require(14);
 
 
 var StringPrototype = String.prototype,
@@ -13280,8 +13476,8 @@ function Response() {
 },
 function(require, exports, module, global) {
 
-var map = require(141),
-    capitalizeString = require(142);
+var map = require(143),
+    capitalizeString = require(144);
 
 
 module.exports = function camelcaseHeader(str) {
@@ -13292,10 +13488,10 @@ module.exports = function camelcaseHeader(str) {
 },
 function(require, exports, module, global) {
 
-var keys = require(14),
-    isNullOrUndefined = require(19),
-    fastBindThis = require(44),
-    isArrayLike = require(39);
+var keys = require(22),
+    isNullOrUndefined = require(5),
+    fastBindThis = require(48),
+    isArrayLike = require(42);
 
 
 module.exports = map;
@@ -13342,7 +13538,7 @@ module.exports = capitalizeString;
 
 
 function capitalizeString(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 
@@ -13370,9 +13566,9 @@ module.exports = function parseContentType(str) {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(64),
-    WebGLContext = require(31),
-    ImageAsset = require(125);
+var vec2 = require(68),
+    WebGLContext = require(33),
+    ImageAsset = require(128);
 
 
 var ImageAssetPrototype = ImageAsset.prototype,
@@ -13556,9 +13752,9 @@ TexturePrototype.setType = function(value) {
 },
 function(require, exports, module, global) {
 
-var JSONAsset = require(128),
-    Shader = require(146),
-    enums = require(30);
+var JSONAsset = require(131),
+    Shader = require(148),
+    enums = require(32);
 
 
 var JSONAssetPrototype = JSONAsset.prototype,
@@ -13643,12 +13839,12 @@ MaterialPrototype.parse = function() {
 },
 function(require, exports, module, global) {
 
-var map = require(141),
-    keys = require(14),
-    template = require(147),
-    pushUnique = require(148),
-    Class = require(9),
-    chunks = require(149);
+var map = require(143),
+    keys = require(22),
+    template = require(149),
+    pushUnique = require(150),
+    Class = require(10),
+    chunks = require(151);
 
 
 var ClassPrototype = Class.prototype,
@@ -13851,7 +14047,7 @@ template.settings = {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(57);
+var indexOf = require(61);
 
 
 module.exports = pushUnique;
@@ -13888,7 +14084,7 @@ function basePushUnique(array, value) {
 },
 function(require, exports, module, global) {
 
-var ShaderChunk = require(150);
+var ShaderChunk = require(152);
 
 
 var chunks = exports;
@@ -14162,7 +14358,7 @@ chunks.getUV = ShaderChunk.create({
 },
 function(require, exports, module, global) {
 
-var isArray = require(54);
+var isArray = require(58);
 
 
 var ShaderChunkPrototype;
@@ -14215,15 +14411,15 @@ ShaderChunkPrototype.destructor = function() {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(36),
-    quat = require(152),
-    mat4 = require(76),
-    mathf = require(32),
-    aabb3 = require(153),
-    FastHash = require(56),
-    Attribute = require(154),
-    JSONAsset = require(128),
-    GeometryBone = require(155);
+var vec3 = require(38),
+    quat = require(154),
+    mat4 = require(79),
+    mathf = require(34),
+    aabb3 = require(155),
+    FastHash = require(60),
+    Attribute = require(156),
+    JSONAsset = require(131),
+    GeometryBone = require(157);
 
 
 var JSONAssetPrototype = JSONAsset.prototype,
@@ -14716,9 +14912,9 @@ GeometryPrototype.calculateTangents = function() {
 },
 function(require, exports, module, global) {
 
-var mathf = require(32),
-    vec3 = require(36),
-    vec4 = require(67);
+var mathf = require(34),
+    vec3 = require(38),
+    vec4 = require(39);
 
 
 var quat = exports;
@@ -15102,7 +15298,7 @@ quat.fromMat4 = function(out, m) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(36);
+var vec3 = require(38);
 
 
 var aabb3 = exports;
@@ -15490,9 +15686,9 @@ AttributePrototype.setXYZW = function(index, x, y, z, w) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(36),
-    quat = require(152),
-    mat4 = require(76);
+var vec3 = require(38),
+    quat = require(154),
+    mat4 = require(79);
 
 
 var UNKNOWN_BONE_COUNT = 1,
@@ -15545,10 +15741,10 @@ GeometryBonePrototype.destructor = function() {
 },
 function(require, exports, module, global) {
 
-var isNumber = require(34),
+var isNumber = require(36),
     environment = require(1),
     eventListener = require(2),
-    Class = require(9);
+    Class = require(10);
 
 
 var ClassPrototype = Class.prototype,
@@ -15561,7 +15757,7 @@ var ClassPrototype = Class.prototype,
 
 
 if (environment.browser) {
-    addMeta = function(id, name, content) {
+    addMeta = function addMeta(id, name, content) {
         var meta = document.createElement("meta"),
             head = document.head;
 
@@ -15763,18 +15959,18 @@ function Canvas_update(_this) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(57),
-    WebGLContext = require(31),
-    mat4 = require(76),
+var indexOf = require(61),
+    WebGLContext = require(33),
+    mat4 = require(79),
 
-    Class = require(9),
-    side = require(93),
+    Class = require(10),
+    side = require(96),
 
-    MeshRenderer = require(158),
-    SpriteRenderer = require(160),
+    MeshRenderer = require(160),
+    SpriteRenderer = require(162),
 
-    RendererGeometry = require(161),
-    RendererMaterial = require(162);
+    RendererGeometry = require(163),
+    RendererMaterial = require(164);
 
 
 var enums = WebGLContext.enums,
@@ -16071,9 +16267,9 @@ RendererPrototype.render = function(scene, camera) {
 },
 function(require, exports, module, global) {
 
-var mat3 = require(74),
-    mat4 = require(76),
-    ComponentRenderer = require(159);
+var mat3 = require(77),
+    mat4 = require(79),
+    ComponentRenderer = require(161);
 
 
 var MeshRendererPrototype;
@@ -16134,7 +16330,7 @@ MeshRendererPrototype.render = function(mesh, camera) {
 },
 function(require, exports, module, global) {
 
-var Class = require(9);
+var Class = require(10);
 
 
 var ComponentRendererPrototype;
@@ -16222,13 +16418,13 @@ ComponentRendererPrototype.render = function( /* component, camera, scene, manag
 },
 function(require, exports, module, global) {
 
-var mat3 = require(74),
-    mat4 = require(76),
-    vec2 = require(64),
-    vec4 = require(67),
-    WebGLContext = require(31),
-    Geometry = require(151),
-    ComponentRenderer = require(159);
+var mat3 = require(77),
+    mat4 = require(79),
+    vec2 = require(68),
+    vec4 = require(39),
+    WebGLContext = require(33),
+    Geometry = require(153),
+    ComponentRenderer = require(161);
 
 
 var depth = WebGLContext.enums.depth,
@@ -16358,7 +16554,7 @@ SpriteRendererPrototype.render = function(sprite, camera) {
 },
 function(require, exports, module, global) {
 
-var FastHash = require(56);
+var FastHash = require(60);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array,
@@ -16586,7 +16782,7 @@ function DataBuffer(name, offset) {
 },
 function(require, exports, module, global) {
 
-var has = require(10);
+var has = require(11);
 
 
 var RendererMaterialPrototype;
@@ -16751,7 +16947,7 @@ function getOptions(data) {
 },
 function(require, exports, module, global) {
 
-var Class = require(9);
+var Class = require(10);
 
 
 var PluginPrototype;
@@ -16808,8 +17004,8 @@ PluginPrototype.destroy = function(emitEvent) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(57),
-    Class = require(9);
+var indexOf = require(61),
+    Class = require(10);
 
 
 var ClassPrototype = Class.prototype,
@@ -16962,8 +17158,8 @@ ComponentManagerPrototype.removeComponent = function(component) {
 },
 function(require, exports, module, global) {
 
-var Class = require(9),
-    ComponentManager = require(164);
+var Class = require(10),
+    ComponentManager = require(166);
 
 
 var ClassPrototype = Class.prototype,
@@ -17051,12 +17247,12 @@ ComponentPrototype.destroy = function(emitEvent) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(36),
-    quat = require(152),
-    mat3 = require(74),
-    mat4 = require(76),
-    Component = require(165),
-    TransformManager = require(167);
+var vec3 = require(38),
+    quat = require(154),
+    mat3 = require(77),
+    mat4 = require(79),
+    Component = require(167),
+    TransformManager = require(169);
 
 
 var ComponentPrototype = Component.prototype,
@@ -17240,7 +17436,7 @@ TransformPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(164);
+var ComponentManager = require(166);
 
 
 var TransformManagerPrototype;
@@ -17263,12 +17459,12 @@ TransformManagerPrototype.sortFunction = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(64),
-    mat3 = require(74),
-    mat32 = require(169),
-    mat4 = require(76),
-    Component = require(165),
-    Transform2DManager = require(170);
+var vec2 = require(68),
+    mat3 = require(77),
+    mat32 = require(171),
+    mat4 = require(79),
+    Component = require(167),
+    Transform2DManager = require(172);
 
 
 var ComponentPrototype = Component.prototype,
@@ -17449,8 +17645,8 @@ Transform2DPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(32),
-    vec2 = require(64);
+var mathf = require(34),
+    vec2 = require(68);
 
 
 var mat32 = exports;
@@ -17827,7 +18023,7 @@ mat32.notEqual = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(164);
+var ComponentManager = require(166);
 
 
 var Transform2DManagerPrototype;
@@ -17850,14 +18046,14 @@ Transform2DManagerPrototype.sortFunction = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var isNumber = require(34),
-    Component = require(165),
-    CameraManager = require(172),
-    mathf = require(32),
-    vec2 = require(64),
-    vec3 = require(36),
-    mat4 = require(76),
-    color = require(35);
+var isNumber = require(36),
+    Component = require(167),
+    CameraManager = require(174),
+    mathf = require(34),
+    vec2 = require(68),
+    vec3 = require(38),
+    mat4 = require(79),
+    color = require(37);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18164,7 +18360,7 @@ CameraPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(164);
+var ComponentManager = require(166);
 
 
 var ComponentManagerPrototype = ComponentManager.prototype,
@@ -18246,9 +18442,9 @@ CameraManagerPrototype.remove = function(component) {
 },
 function(require, exports, module, global) {
 
-var isNumber = require(34),
-    Component = require(165),
-    SpriteManager = require(174);
+var isNumber = require(36),
+    Component = require(167),
+    SpriteManager = require(176);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18396,8 +18592,8 @@ SpritePrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(57),
-    ComponentManager = require(164);
+var indexOf = require(61),
+    ComponentManager = require(166);
 
 
 var SpriteManagerPrototype;
@@ -18597,11 +18793,11 @@ SpriteManagerPrototype.removeComponent = function(component) {
 },
 function(require, exports, module, global) {
 
-var Component = require(165),
-    Bone = require(176),
-    Transform = require(166),
-    Entity = require(122),
-    MeshManager = require(178);
+var Component = require(167),
+    Bone = require(178),
+    Transform = require(168),
+    Entity = require(125),
+    MeshManager = require(180);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18702,11 +18898,11 @@ MeshPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(36),
-    quat = require(152),
-    mat4 = require(76),
-    Component = require(165),
-    BoneManager = require(177);
+var vec3 = require(38),
+    quat = require(154),
+    mat4 = require(79),
+    Component = require(167),
+    BoneManager = require(179);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18849,7 +19045,7 @@ BonePrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(164);
+var ComponentManager = require(166);
 
 
 var BoneManagerPrototype;
@@ -18872,7 +19068,7 @@ BoneManagerPrototype.sortFunction = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(164);
+var ComponentManager = require(166);
 
 
 var MeshManagerPrototype;
@@ -18895,11 +19091,11 @@ MeshManagerPrototype.sortFunction = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(36),
-    quat = require(152),
-    mathf = require(32),
-    Component = require(165),
-    wrapMode = require(95);
+var vec3 = require(38),
+    quat = require(154),
+    mathf = require(34),
+    Component = require(167),
+    wrapMode = require(98);
 
 
 var ComponentPrototype = Component.prototype,
@@ -19171,9 +19367,9 @@ MeshAnimationPrototype.fromJSON = function(json) {
 function(require, exports, module, global) {
 
 var environment = require(1),
-    mathf = require(32),
-    vec3 = require(36),
-    Component = require(165);
+    mathf = require(34),
+    vec3 = require(38),
+    Component = require(167);
 
 
 var ComponentPrototype = Component.prototype,
@@ -19491,9 +19687,9 @@ function OrbitControl_onMouseWheel(_this, e, wheel) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(57),
-    particleState = require(182),
-    Component = require(165);
+var indexOf = require(61),
+    particleState = require(184),
+    Component = require(167);
 
 
 var ComponentPrototype = Component.prototype,
@@ -19515,7 +19711,7 @@ function ParticleSystem() {
 Component.extend(ParticleSystem, "odin.ParticleSystem");
 ParticleSystemPrototype = ParticleSystem.prototype;
 
-ParticleSystem.Emitter = require(183);
+ParticleSystem.Emitter = require(185);
 
 ParticleSystemPrototype.construct = function(options) {
     var emitters, i, il;
@@ -19689,7 +19885,7 @@ ParticleSystemPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var enums = require(42);
+var enums = require(46);
 
 
 var particleState = enums([
@@ -19706,21 +19902,21 @@ module.exports = particleState;
 },
 function(require, exports, module, global) {
 
-var indexOf = require(57),
-    isNumber = require(34),
-    mathf = require(32),
-    vec2 = require(64),
-    vec3 = require(36),
-    quat = require(152),
-    particleState = require(182),
-    normalMode = require(91),
-    emitterRenderMode = require(89),
-    interpolation = require(90),
-    screenAlignment = require(92),
-    sortMode = require(94),
-    createSeededRandom = require(184),
-    randFloat = require(185),
-    Class = require(9);
+var indexOf = require(61),
+    isNumber = require(36),
+    mathf = require(34),
+    vec2 = require(68),
+    vec3 = require(38),
+    quat = require(154),
+    particleState = require(184),
+    normalMode = require(94),
+    emitterRenderMode = require(92),
+    interpolation = require(93),
+    screenAlignment = require(95),
+    sortMode = require(97),
+    createSeededRandom = require(186),
+    randFloat = require(187),
+    Class = require(10);
 
 
 var MAX_SAFE_INTEGER = mathf.pow(2, 53) - 1,
