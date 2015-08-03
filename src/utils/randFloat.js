@@ -1,6 +1,6 @@
 module.exports = randFloat;
 
 
-function randFloat(random, min, max) {
-    return min + (random() * (max - min));
+function randFloat(random, min, max, t) {
+    return min + (random(t) * (max - min));
 }

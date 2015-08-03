@@ -1,4 +1,5 @@
 var environment = require("environment"),
+    vec2 = require("vec2"),
     eventListener = require("event_listener");
 
 
@@ -10,18 +11,33 @@ global.odin = odin;
 
 function PlayerControl() {
     odin.Component.call(this);
+    
+    this.velocity = vec2.create();
 }
 odin.Component.extend(PlayerControl, "PlayerControl");
 
 PlayerControl.prototype.update = function update() {
-    var entity = this.entity,
+    var velocity = this.velocity,
+        entity = this.entity,
         scene = entity.scene,
         input = scene.input,
         dt = scene.time.delta,
-        transform = entity.getComponent("odin.Transform2D");
-
-    transform.position[0] += input.axis("horizontal") * dt;
-    transform.position[1] += input.axis("vertical") * dt;
+        transform = entity.getComponent("odin.Transform2D"),
+        audioSource = entity.getComponent("odin.AudioSource"),
+        velLength;
+    
+    velocity[0] = input.axis("horizontal") * dt;
+    velocity[1] = input.axis("vertical") * dt;
+    velLength = vec2.length(velocity) / dt;
+    
+    vec2.add(transform.position, transform.position, velocity);
+    
+    if (velLength > 0) {
+        audioSource.play();
+        audioSource.setVolume(velLength);
+    } else {
+        audioSource.pause();
+    }
 };
 
 
@@ -68,8 +84,14 @@ eventListener.on(environment.window, "load", function load() {
             texture: texture
         }
     });
+    
+    var engineLoop = odin.AudioAsset.create("audio_engine-loop", [
+        "../content/audio/engine-loop.mp3",
+        "../content/audio/engine-loop.ogg",
+        "../content/audio/engine-loop.wav"
+    ]);
 
-    assets.addAsset(material, texture);
+    assets.addAsset(material, texture, engineLoop);
 
     var camera = odin.Entity.create("main_camera").addComponent(
         odin.Transform.create()
@@ -93,6 +115,9 @@ eventListener.on(environment.window, "load", function load() {
 
     var sprite2 = global.object = odin.Entity.create().addComponent(
         odin.Transform2D.create(),
+        odin.AudioSource.create(engineLoop, {
+            loop: true
+        }),
         PlayerControl.create(),
         odin.Sprite.create({
             z: 1,
@@ -104,7 +129,7 @@ eventListener.on(environment.window, "load", function load() {
 
     var scene = global.scene = odin.Scene.create("scene").addEntity(camera, sprite2, sprite),
         cameraComponent = camera.getComponent("odin.Camera");
-
+    
     scene.assets = assets;
 
     canvas.on("resize", function(w, h) {

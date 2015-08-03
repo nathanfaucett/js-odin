@@ -11,6 +11,7 @@ odin.Application = require("./Application");
 
 odin.Assets = require("./Assets");
 odin.Asset = require("./Assets/Asset");
+odin.AudioAsset = require("./Assets/AudioAsset");
 odin.ImageAsset = require("./Assets/ImageAsset");
 odin.JSONAsset = require("./Assets/JSONAsset");
 odin.Texture = require("./Assets/Texture");
@@ -31,6 +32,8 @@ odin.ComponentManager = require("./scene_graph/component_managers/ComponentManag
 
 odin.Component = require("./scene_graph/components/Component");
 
+odin.AudioSource = require("./scene_graph/components/AudioSource");
+
 odin.Transform = require("./scene_graph/components/Transform");
 odin.Transform2D = require("./scene_graph/components/Transform2D");
 odin.Camera = require("./scene_graph/components/Camera");
@@ -43,3 +46,7 @@ odin.MeshAnimation = require("./scene_graph/components/MeshAnimation");
 odin.OrbitControl = require("./scene_graph/components/OrbitControl");
 
 odin.ParticleSystem = require("./scene_graph/components/ParticleSystem");
+
+odin.createSeededRandom = require("./utils/createSeededRandom");
+odin.randFloat = require("./utils/randFloat");
+odin.randInt = require("./utils/randInt");

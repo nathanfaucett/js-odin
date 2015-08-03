@@ -54,9 +54,9 @@ CameraManagerPrototype.getActive = function() {
     return this.__active;
 };
 
-CameraManagerPrototype.add = function(component) {
+CameraManagerPrototype.addComponent = function(component) {
 
-    ComponentManagerPrototype.add.call(this, component);
+    ComponentManagerPrototype.addComponent.call(this, component);
 
     if (component.__active) {
         this.setActive(component);
@@ -65,9 +65,9 @@ CameraManagerPrototype.add = function(component) {
     return this;
 };
 
-CameraManagerPrototype.remove = function(component) {
+CameraManagerPrototype.removeComponent = function(component) {
 
-    ComponentManagerPrototype.remove.call(this, component);
+    ComponentManagerPrototype.removeComponent.call(this, component);
 
     if (component.__active) {
         this.__active = null;

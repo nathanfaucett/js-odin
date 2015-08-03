@@ -10,6 +10,7 @@ module.exports = Particle;
 
 
 function Particle() {
+
     this.drag = 0.01;
 
     this.currentLife = 0;

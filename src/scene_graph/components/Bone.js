@@ -86,42 +86,40 @@ BonePrototype.update = function() {
 
     mat4.copy(uniform, transform.matrix);
 
-    if (this.skinned === false) {
-        return this;
-    }
+    if (this.skinned !== false) {
+        parent = entity.parent;
 
-    parent = entity.parent;
+        if (parent && this.parentIndex !== -1) {
+            mat = MAT;
+            mat4.copy(mat, parent.components["odin.Bone"].uniform);
 
-    if (parent && this.parentIndex !== -1) {
-        mat = MAT;
-        mat4.copy(mat, parent.components["odin.Bone"].uniform);
+            inheritPosition = this.inheritPosition;
+            inheritScale = this.inheritScale;
+            inheritRotation = this.inheritRotation;
 
-        inheritPosition = this.inheritPosition;
-        inheritScale = this.inheritScale;
-        inheritRotation = this.inheritRotation;
+            if (!inheritPosition || !inheritScale || !inheritRotation) {
 
-        if (!inheritPosition || !inheritScale || !inheritRotation) {
+                position = POSITION;
+                scale = SCALE;
+                rotation = ROTATION;
 
-            position = POSITION;
-            scale = SCALE;
-            rotation = ROTATION;
+                mat4.decompose(mat, position, scale, rotation);
 
-            mat4.decompose(mat, position, scale, rotation);
+                if (!inheritPosition) {
+                    vec3.set(position, 0, 0, 0);
+                }
+                if (!inheritScale) {
+                    vec3.set(scale, 1, 1, 1);
+                }
+                if (!inheritRotation) {
+                    quat.set(rotation, 0, 0, 0, 1);
+                }
 
-            if (!inheritPosition) {
-                vec3.set(position, 0, 0, 0);
+                mat4.compose(mat, position, scale, rotation);
             }
-            if (!inheritScale) {
-                vec3.set(scale, 1, 1, 1);
-            }
-            if (!inheritRotation) {
-                quat.set(rotation, 0, 0, 0, 1);
-            }
 
-            mat4.compose(mat, position, scale, rotation);
+            mat4.mul(uniform, mat, uniform);
         }
-
-        mat4.mul(uniform, mat, uniform);
     }
 
     return this;

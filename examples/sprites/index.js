@@ -40,10 +40,11 @@
 function(require, exports, module, global) {
 
 var environment = require(1),
-    eventListener = require(2);
+    vec2 = require(2),
+    eventListener = require(16);
 
 
-var odin = require(9);
+var odin = require(20);
 
 
 global.odin = odin;
@@ -51,18 +52,33 @@ global.odin = odin;
 
 function PlayerControl() {
     odin.Component.call(this);
+    
+    this.velocity = vec2.create();
 }
 odin.Component.extend(PlayerControl, "PlayerControl");
 
 PlayerControl.prototype.update = function update() {
-    var entity = this.entity,
+    var velocity = this.velocity,
+        entity = this.entity,
         scene = entity.scene,
         input = scene.input,
         dt = scene.time.delta,
-        transform = entity.getComponent("odin.Transform2D");
-
-    transform.position[0] += input.axis("horizontal") * dt;
-    transform.position[1] += input.axis("vertical") * dt;
+        transform = entity.getComponent("odin.Transform2D"),
+        audioSource = entity.getComponent("odin.AudioSource"),
+        velLength;
+    
+    velocity[0] = input.axis("horizontal") * dt;
+    velocity[1] = input.axis("vertical") * dt;
+    velLength = vec2.length(velocity) / dt;
+    
+    vec2.add(transform.position, transform.position, velocity);
+    
+    if (velLength > 0) {
+        audioSource.play();
+        audioSource.setVolume(velLength);
+    } else {
+        audioSource.pause();
+    }
 };
 
 
@@ -109,8 +125,14 @@ eventListener.on(environment.window, "load", function load() {
             texture: texture
         }
     });
+    
+    var engineLoop = odin.AudioAsset.create("audio_engine-loop", [
+        "../content/audio/engine-loop.mp3",
+        "../content/audio/engine-loop.ogg",
+        "../content/audio/engine-loop.wav"
+    ]);
 
-    assets.addAsset(material, texture);
+    assets.addAsset(material, texture, engineLoop);
 
     var camera = odin.Entity.create("main_camera").addComponent(
         odin.Transform.create()
@@ -134,6 +156,9 @@ eventListener.on(environment.window, "load", function load() {
 
     var sprite2 = global.object = odin.Entity.create().addComponent(
         odin.Transform2D.create(),
+        odin.AudioSource.create(engineLoop, {
+            loop: true
+        }),
         PlayerControl.create(),
         odin.Sprite.create({
             z: 1,
@@ -145,7 +170,7 @@ eventListener.on(environment.window, "load", function load() {
 
     var scene = global.scene = odin.Scene.create("scene").addEntity(camera, sprite2, sprite),
         cameraComponent = camera.getComponent("odin.Camera");
-
+    
     scene.assets = assets;
 
     canvas.on("resize", function(w, h) {
@@ -203,11 +228,1097 @@ environment.document = typeof(document) !== "undefined" ? document : {};
 },
 function(require, exports, module, global) {
 
-var process = require(3);
-var isObject = require(4),
-    isFunction = require(6),
+var mathf = require(3);
+
+
+var vec2 = exports;
+
+
+vec2.ArrayType = typeof(Float32Array) !== "undefined" ? Float32Array : mathf.ArrayType;
+
+
+vec2.create = function(x, y) {
+    var out = new vec2.ArrayType(2);
+
+    out[0] = x !== undefined ? x : 0;
+    out[1] = y !== undefined ? y : 0;
+
+    return out;
+};
+
+vec2.copy = function(out, a) {
+
+    out[0] = a[0];
+    out[1] = a[1];
+
+    return out;
+};
+
+vec2.clone = function(a) {
+    var out = new vec2.ArrayType(2);
+
+    out[0] = a[0];
+    out[1] = a[1];
+
+    return out;
+};
+
+vec2.set = function(out, x, y) {
+
+    out[0] = x !== undefined ? x : 0;
+    out[1] = y !== undefined ? y : 0;
+
+    return out;
+};
+
+vec2.add = function(out, a, b) {
+
+    out[0] = a[0] + b[0];
+    out[1] = a[1] + b[1];
+
+    return out;
+};
+
+vec2.sub = function(out, a, b) {
+
+    out[0] = a[0] - b[0];
+    out[1] = a[1] - b[1];
+
+    return out;
+};
+
+vec2.mul = function(out, a, b) {
+
+    out[0] = a[0] * b[0];
+    out[1] = a[1] * b[1];
+
+    return out;
+};
+
+vec2.div = function(out, a, b) {
+    var bx = b[0],
+        by = b[1];
+
+    out[0] = a[0] * (bx !== 0 ? 1 / bx : bx);
+    out[1] = a[1] * (by !== 0 ? 1 / by : by);
+
+    return out;
+};
+
+vec2.sadd = function(out, a, s) {
+
+    out[0] = a[0] + s;
+    out[1] = a[1] + s;
+
+    return out;
+};
+
+vec2.ssub = function(out, a, s) {
+
+    out[0] = a[0] - s;
+    out[1] = a[1] - s;
+
+    return out;
+};
+
+vec2.smul = function(out, a, s) {
+
+    out[0] = a[0] * s;
+    out[1] = a[1] * s;
+
+    return out;
+};
+
+vec2.sdiv = function(out, a, s) {
+    s = s !== 0 ? 1 / s : s;
+
+    out[0] = a[0] * s;
+    out[1] = a[1] * s;
+
+    return out;
+};
+
+vec2.lengthSqValues = function(x, y) {
+
+    return x * x + y * y;
+};
+
+vec2.lengthValues = function(x, y) {
+    var lsq = vec2.lengthSqValues(x, y);
+
+    return lsq !== 0 ? mathf.sqrt(lsq) : lsq;
+};
+
+vec2.invLengthValues = function(x, y) {
+    var lsq = vec2.lengthSqValues(x, y);
+
+    return lsq !== 0 ? 1 / mathf.sqrt(lsq) : lsq;
+};
+
+vec2.cross = function(a, b) {
+
+    return a[0] * b[1] - a[1] * b[0];
+};
+
+vec2.dot = function(a, b) {
+
+    return a[0] * b[0] + a[1] * b[1];
+};
+
+vec2.lengthSq = function(a) {
+
+    return vec2.dot(a, a);
+};
+
+vec2.length = function(a) {
+    var lsq = vec2.lengthSq(a);
+
+    return lsq !== 0 ? mathf.sqrt(lsq) : lsq;
+};
+
+vec2.invLength = function(a) {
+    var lsq = vec2.lengthSq(a);
+
+    return lsq !== 0 ? 1 / mathf.sqrt(lsq) : lsq;
+};
+
+vec2.setLength = function(out, a, length) {
+    var x = a[0],
+        y = a[1],
+        s = length * vec2.invLengthValues(x, y);
+
+    out[0] = x * s;
+    out[1] = y * s;
+
+    return out;
+};
+
+vec2.normalize = function(out, a) {
+    var x = a[0],
+        y = a[1],
+        invlsq = vec2.invLengthValues(x, y);
+
+    out[0] = x * invlsq;
+    out[1] = y * invlsq;
+
+    return out;
+};
+
+vec2.inverse = function(out, a) {
+
+    out[0] = a[0] * -1;
+    out[1] = a[1] * -1;
+
+    return out;
+};
+
+vec2.lerp = function(out, a, b, x) {
+    var lerp = mathf.lerp;
+
+    out[0] = lerp(a[0], b[0], x);
+    out[1] = lerp(a[1], b[1], x);
+
+    return out;
+};
+
+vec2.perp = function(out, a) {
+
+    out[0] = a[1];
+    out[1] = -a[0];
+
+    return out;
+};
+
+vec2.perpR = function(out, a) {
+
+    out[0] = -a[1];
+    out[1] = a[0];
+
+    return out;
+};
+
+vec2.min = function(out, a, b) {
+    var ax = a[0],
+        ay = a[1],
+        bx = b[0],
+        by = b[1];
+
+    out[0] = bx < ax ? bx : ax;
+    out[1] = by < ay ? by : ay;
+
+    return out;
+};
+
+vec2.max = function(out, a, b) {
+    var ax = a[0],
+        ay = a[1],
+        bx = b[0],
+        by = b[1];
+
+    out[0] = bx > ax ? bx : ax;
+    out[1] = by > ay ? by : ay;
+
+    return out;
+};
+
+vec2.clamp = function(out, a, min, max) {
+    var x = a[0],
+        y = a[1],
+        minx = min[0],
+        miny = min[1],
+        maxx = max[0],
+        maxy = max[1];
+
+    out[0] = x < minx ? minx : x > maxx ? maxx : x;
+    out[1] = y < miny ? miny : y > maxy ? maxy : y;
+
+    return out;
+};
+
+vec2.transformAngle = function(out, a, angle) {
+    var x = a[0],
+        y = a[1],
+        c = mathf.cos(angle),
+        s = mathf.sin(angle);
+
+    out[0] = x * c - y * s;
+    out[1] = x * s + y * c;
+
+    return out;
+};
+
+vec2.transformMat2 = function(out, a, m) {
+    var x = a[0],
+        y = a[1];
+
+    out[0] = x * m[0] + y * m[2];
+    out[1] = x * m[1] + y * m[3];
+
+    return out;
+};
+
+vec2.transformMat32 = function(out, a, m) {
+    var x = a[0],
+        y = a[1];
+
+    out[0] = x * m[0] + y * m[2] + m[4];
+    out[1] = x * m[1] + y * m[3] + m[5];
+
+    return out;
+};
+
+vec2.transformMat3 = function(out, a, m) {
+    var x = a[0],
+        y = a[1];
+
+    out[0] = x * m[0] + y * m[3] + m[6];
+    out[1] = x * m[1] + y * m[4] + m[7];
+
+    return out;
+};
+
+vec2.transformMat4 = function(out, a, m) {
+    var x = a[0],
+        y = a[1];
+
+    out[0] = x * m[0] + y * m[4] + m[12];
+    out[1] = x * m[1] + y * m[5] + m[13];
+
+    return out;
+};
+
+vec2.transformProjection = function(out, a, m) {
+    var x = a[0],
+        y = a[1],
+        d = x * m[3] + y * m[7] + m[11] + m[15];
+
+    d = d !== 0 ? 1 / d : d;
+
+    out[0] = (x * m[0] + y * m[4] + m[12]) * d;
+    out[1] = (x * m[1] + y * m[5] + m[13]) * d;
+
+    return out;
+};
+
+vec2.positionFromMat32 = function(out, m) {
+
+    out[0] = m[4];
+    out[1] = m[5];
+
+    return out;
+};
+
+vec2.positionFromMat4 = function(out, m) {
+
+    out[0] = m[12];
+    out[1] = m[13];
+
+    return out;
+};
+
+vec2.scaleFromMat2 = function(out, m) {
+
+    out[0] = vec2.lengthValues(m[0], m[2]);
+    out[1] = vec2.lengthValues(m[1], m[3]);
+
+    return out;
+};
+
+vec2.scaleFromMat32 = vec2.scaleFromMat2;
+
+vec2.scaleFromMat3 = function(out, m) {
+
+    out[0] = vec2.lengthValues(m[0], m[3]);
+    out[1] = vec2.lengthValues(m[1], m[4]);
+
+    return out;
+};
+
+vec2.scaleFromMat4 = function(out, m) {
+
+    out[0] = vec2.lengthValues(m[0], m[4]);
+    out[1] = vec2.lengthValues(m[1], m[5]);
+
+    return out;
+};
+
+vec2.equal = function(a, b) {
+    return !(
+        a[0] !== b[0] ||
+        a[1] !== b[1]
+    );
+};
+
+vec2.notEqual = function(a, b) {
+    return (
+        a[0] !== b[0] ||
+        a[1] !== b[1]
+    );
+};
+
+vec2.str = function(out) {
+
+    return "Vec2(" + out[0] + ", " + out[1] + ")";
+};
+
+
+},
+function(require, exports, module, global) {
+
+var keys = require(4),
+    isNaN = require(14);
+
+
+var mathf = exports,
+
+    NativeMath = global.Math,
+
+    NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
+
+
+mathf.ArrayType = NativeFloat32Array;
+
+mathf.PI = NativeMath.PI;
+mathf.TAU = mathf.PI * 2;
+mathf.TWO_PI = mathf.TAU;
+mathf.HALF_PI = mathf.PI * 0.5;
+mathf.FOURTH_PI = mathf.PI * 0.25;
+
+mathf.EPSILON = Number.EPSILON || NativeMath.pow(2, -52);
+
+mathf.TO_RADS = mathf.PI / 180;
+mathf.TO_DEGS = 180 / mathf.PI;
+
+mathf.E = NativeMath.E;
+mathf.LN2 = NativeMath.LN2;
+mathf.LN10 = NativeMath.LN10;
+mathf.LOG2E = NativeMath.LOG2E;
+mathf.LOG10E = NativeMath.LOG10E;
+mathf.SQRT1_2 = NativeMath.SQRT1_2;
+mathf.SQRT2 = NativeMath.SQRT2;
+
+mathf.abs = NativeMath.abs;
+
+mathf.acos = NativeMath.acos;
+mathf.acosh = NativeMath.acosh || (NativeMath.acosh = function acosh(x) {
+    return mathf.log(x + mathf.sqrt(x * x - 1));
+});
+mathf.asin = NativeMath.asin;
+mathf.asinh = NativeMath.asinh || (NativeMath.asinh = function asinh(x) {
+    if (x === -Infinity) {
+        return x;
+    } else {
+        return mathf.log(x + mathf.sqrt(x * x + 1));
+    }
+});
+mathf.atan = NativeMath.atan;
+mathf.atan2 = NativeMath.atan2;
+mathf.atanh = NativeMath.atanh || (NativeMath.atanh = function atanh(x) {
+    return mathf.log((1 + x) / (1 - x)) / 2;
+});
+
+mathf.cbrt = NativeMath.cbrt || (NativeMath.cbrt = function cbrt(x) {
+    var y = mathf.pow(mathf.abs(x), 1 / 3);
+    return x < 0 ? -y : y;
+});
+
+mathf.ceil = NativeMath.ceil;
+
+mathf.clz32 = NativeMath.clz32 || (NativeMath.clz32 = function clz32(value) {
+    value = +value >>> 0;
+    return value ? 32 - value.toString(2).length : 32;
+});
+
+mathf.cos = NativeMath.cos;
+mathf.cosh = NativeMath.cosh || (NativeMath.cosh = function cosh(x) {
+    return (mathf.exp(x) + mathf.exp(-x)) / 2;
+});
+
+mathf.exp = NativeMath.exp;
+
+mathf.expm1 = NativeMath.expm1 || (NativeMath.expm1 = function expm1(x) {
+    return mathf.exp(x) - 1;
+});
+
+mathf.floor = NativeMath.floor;
+mathf.fround = NativeMath.fround || (NativeMath.fround = function fround(x) {
+    return new NativeFloat32Array([x])[0];
+});
+
+mathf.hypot = NativeMath.hypot || (NativeMath.hypot = function hypot() {
+    var y = 0,
+        i = -1,
+        il = arguments.length - 1,
+        value;
+
+    while (i++ < il) {
+        value = arguments[i];
+
+        if (value === Infinity || value === -Infinity) {
+            return Infinity;
+        } else {
+            y += value * value;
+        }
+    }
+
+    return mathf.sqrt(y);
+});
+
+mathf.imul = NativeMath.imul || (NativeMath.imul = function imul(a, b) {
+    var ah = (a >>> 16) & 0xffff,
+        al = a & 0xffff,
+        bh = (b >>> 16) & 0xffff,
+        bl = b & 0xffff;
+
+    return ((al * bl) + (((ah * bl + al * bh) << 16) >>> 0) | 0);
+});
+
+mathf.log = NativeMath.log;
+
+mathf.log1p = NativeMath.log1p || (NativeMath.log1p = function log1p(x) {
+    return mathf.log(1 + x);
+});
+
+mathf.log10 = NativeMath.log10 || (NativeMath.log10 = function log10(x) {
+    return mathf.log(x) / mathf.LN10;
+});
+
+mathf.log2 = NativeMath.log2 || (NativeMath.log2 = function log2(x) {
+    return mathf.log(x) / mathf.LN2;
+});
+
+mathf.max = NativeMath.max;
+mathf.min = NativeMath.min;
+
+mathf.pow = NativeMath.pow;
+
+mathf.random = NativeMath.random;
+mathf.round = NativeMath.round;
+
+mathf.sign = NativeMath.sign || (NativeMath.sign = function sign(x) {
+    x = +x;
+    if (x === 0 || isNaN(x)) {
+        return x;
+    } else {
+        return x > 0 ? 1 : -1;
+    }
+});
+
+mathf.sin = NativeMath.sin;
+mathf.sinh = NativeMath.sinh || (NativeMath.sinh = function sinh(x) {
+    return (mathf.exp(x) - mathf.exp(-x)) / 2;
+});
+mathf.sqrt = NativeMath.sqrt;
+
+mathf.tan = NativeMath.tan;
+mathf.tanh = NativeMath.tanh || (NativeMath.tanh = function tanh(x) {
+    if (x === Infinity) {
+        return 1;
+    } else if (x === -Infinity) {
+        return -1;
+    } else {
+        return (mathf.exp(x) - mathf.exp(-x)) / (mathf.exp(x) + mathf.exp(-x));
+    }
+});
+
+mathf.trunc = NativeMath.trunc || (NativeMath.trunc = function trunc(x) {
+    return x < 0 ? mathf.ceil(x) : mathf.floor(x);
+});
+
+mathf.equals = function(a, b, e) {
+    return mathf.abs(a - b) < (e !== void 0 ? e : mathf.EPSILON);
+};
+
+mathf.modulo = function(a, b) {
+    var r = a % b;
+
+    return (r * b < 0) ? r + b : r;
+};
+
+mathf.standardRadian = function(x) {
+    return mathf.modulo(x, mathf.TWO_PI);
+};
+
+mathf.standardAngle = function(x) {
+    return mathf.modulo(x, 360);
+};
+
+mathf.snap = function(x, y) {
+    var m = x % y;
+    return m < (y * 0.5) ? x - m : x + y - m;
+};
+
+mathf.clamp = function(x, min, max) {
+    return x < min ? min : x > max ? max : x;
+};
+
+mathf.clampBottom = function(x, min) {
+    return x < min ? min : x;
+};
+
+mathf.clampTop = function(x, max) {
+    return x > max ? max : x;
+};
+
+mathf.clamp01 = function(x) {
+    return x < 0 ? 0 : x > 1 ? 1 : x;
+};
+
+mathf.truncate = function(x, n) {
+    var p = mathf.pow(10, n),
+        num = x * p;
+
+    return (num < 0 ? mathf.ceil(num) : mathf.floor(num)) / p;
+};
+
+mathf.lerp = function(a, b, x) {
+    return a + (b - a) * x;
+};
+
+mathf.lerpRadian = function(a, b, x) {
+    return mathf.standardRadian(a + (b - a) * x);
+};
+
+mathf.lerpAngle = function(a, b, x) {
+    return mathf.standardAngle(a + (b - a) * x);
+};
+
+mathf.lerpCos = function(a, b, x) {
+    var ft = x * mathf.PI,
+        f = (1 - mathf.cos(ft)) * 0.5;
+
+    return a * (1 - f) + b * f;
+};
+
+mathf.lerpCubic = function(v0, v1, v2, v3, x) {
+    var P, Q, R, S, Px, Qx, Rx;
+
+    v0 = v0 || v1;
+    v3 = v3 || v2;
+
+    P = (v3 - v2) - (v0 - v1);
+    Q = (v0 - v1) - P;
+    R = v2 - v0;
+    S = v1;
+
+    Px = P * x;
+    Qx = Q * x;
+    Rx = R * x;
+
+    return (Px * Px * Px) + (Qx * Qx) + Rx + S;
+};
+
+mathf.smoothStep = function(x, min, max) {
+    if (x <= min) {
+        return 0;
+    } else {
+        if (x >= max) {
+            return 1;
+        } else {
+            x = (x - min) / (max - min);
+            return x * x * (3 - 2 * x);
+        }
+    }
+};
+
+mathf.smootherStep = function(x, min, max) {
+    if (x <= min) {
+        return 0;
+    } else {
+        if (x >= max) {
+            return 1;
+        } else {
+            x = (x - min) / (max - min);
+            return x * x * x * (x * (x * 6 - 15) + 10);
+        }
+    }
+};
+
+mathf.pingPong = function(x, length) {
+    length = +length || 1;
+    return length - mathf.abs(x % (2 * length) - length);
+};
+
+mathf.degsToRads = function(x) {
+    return mathf.standardRadian(x * mathf.TO_RADS);
+};
+
+mathf.radsToDegs = function(x) {
+    return mathf.standardAngle(x * mathf.TO_DEGS);
+};
+
+mathf.randInt = function(min, max) {
+    return mathf.round(min + (mathf.random() * (max - min)));
+};
+
+mathf.randFloat = function(min, max) {
+    return min + (mathf.random() * (max - min));
+};
+
+mathf.randSign = function() {
+    return mathf.random() < 0.5 ? 1 : -1;
+};
+
+mathf.shuffle = function(array) {
+    var i = array.length,
+        j, x;
+
+    while (i) {
+        j = (mathf.random() * i--) | 0;
+        x = array[i];
+        array[i] = array[j];
+        array[j] = x;
+    }
+
+    return array;
+};
+
+mathf.randArg = function() {
+    return arguments[(mathf.random() * arguments.length) | 0];
+};
+
+mathf.randChoice = function(array) {
+    return array[(mathf.random() * array.length) | 0];
+};
+
+mathf.randChoiceObject = function(object) {
+    var objectKeys = keys(object);
+    return object[objectKeys[(mathf.random() * objectKeys.length) | 0]];
+};
+
+mathf.isPowerOfTwo = function(x) {
+    return (x & -x) === x;
+};
+
+mathf.floorPowerOfTwo = function(x) {
+    var i = 2,
+        prev;
+
+    while (i < x) {
+        prev = i;
+        i *= 2;
+    }
+
+    return prev;
+};
+
+mathf.ceilPowerOfTwo = function(x) {
+    var i = 2;
+
+    while (i < x) {
+        i *= 2;
+    }
+
+    return i;
+};
+
+var n225 = 0.39269908169872414,
+    n675 = 1.1780972450961724,
+    n1125 = 1.9634954084936207,
+    n1575 = 2.748893571891069,
+    n2025 = 3.5342917352885173,
+    n2475 = 4.319689898685966,
+    n2925 = 5.105088062083414,
+    n3375 = 5.8904862254808625,
+
+    RIGHT = "right",
+    UP_RIGHT = "up_right",
+    UP = "up",
+    UP_LEFT = "up_left",
+    LEFT = "left",
+    DOWN_LEFT = "down_left",
+    DOWN = "down",
+    DOWN_RIGHT = "down_right";
+
+mathf.directionAngle = function(a) {
+    a = mathf.standardRadian(a);
+
+    return (
+        (a >= n225 && a < n675) ? UP_RIGHT :
+        (a >= n675 && a < n1125) ? UP :
+        (a >= n1125 && a < n1575) ? UP_LEFT :
+        (a >= n1575 && a < n2025) ? LEFT :
+        (a >= n2025 && a < n2475) ? DOWN_LEFT :
+        (a >= n2475 && a < n2925) ? DOWN :
+        (a >= n2925 && a < n3375) ? DOWN_RIGHT :
+        RIGHT
+    );
+};
+
+mathf.direction = function(x, y) {
+    var a = mathf.standardRadian(mathf.atan2(y, x));
+
+    return (
+        (a >= n225 && a < n675) ? UP_RIGHT :
+        (a >= n675 && a < n1125) ? UP :
+        (a >= n1125 && a < n1575) ? UP_LEFT :
+        (a >= n1575 && a < n2025) ? LEFT :
+        (a >= n2025 && a < n2475) ? DOWN_LEFT :
+        (a >= n2475 && a < n2925) ? DOWN :
+        (a >= n2925 && a < n3375) ? DOWN_RIGHT :
+        RIGHT
+    );
+};
+
+
+},
+function(require, exports, module, global) {
+
+var has = require(5),
+    isNative = require(6),
+    isNullOrUndefined = require(8),
+    isObject = require(13);
+
+
+var nativeKeys = Object.keys;
+
+
+module.exports = keys;
+
+
+function keys(value) {
+    if (isNullOrUndefined(value)) {
+        return [];
+    } else {
+        return nativeKeys(isObject(value) ? value : Object(value));
+    }
+}
+
+if (!isNative(nativeKeys)) {
+    nativeKeys = function(value) {
+        var localHas = has,
+            out = [],
+            i = 0,
+            key;
+
+        for (key in value) {
+            if (localHas(value, key)) {
+                out[i++] = key;
+            }
+        }
+
+        return out;
+    };
+}
+
+
+},
+function(require, exports, module, global) {
+
+var isNative = require(6),
+    getPrototypeOf = require(12),
+    isNullOrUndefined = require(8);
+
+
+var nativeHasOwnProp = Object.prototype.hasOwnProperty,
+    baseHas;
+
+
+module.exports = has;
+
+
+function has(object, key) {
+    if (isNullOrUndefined(object)) {
+        return false;
+    } else {
+        return baseHas(object, key);
+    }
+}
+
+if (isNative(nativeHasOwnProp)) {
+    baseHas = function baseHas(object, key) {
+        return nativeHasOwnProp.call(object, key);
+    };
+} else {
+    baseHas = function baseHas(object, key) {
+        var proto = getPrototypeOf(object);
+
+        if (isNullOrUndefined(proto)) {
+            return key in object;
+        } else {
+            return (key in object) && (!(key in proto) || proto[key] !== object[key]);
+        }
+    };
+}
+
+
+},
+function(require, exports, module, global) {
+
+var isFunction = require(7),
+    isNullOrUndefined = require(8),
+    escapeRegExp = require(9);
+
+
+var reHostCtor = /^\[object .+?Constructor\]$/,
+
+    functionToString = Function.prototype.toString,
+
+    reNative = RegExp("^" +
+        escapeRegExp(Object.prototype.toString)
+        .replace(/toString|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"
+    ),
+
+    isHostObject;
+
+
+module.exports = isNative;
+
+
+function isNative(value) {
+    return !isNullOrUndefined(value) && (
+        isFunction(value) ?
+        reNative.test(functionToString.call(value)) : (
+            typeof(value) === "object" && (
+                (isHostObject(value) ? reNative : reHostCtor).test(value) || false
+            )
+        )
+    ) || false;
+}
+
+try {
+    String({
+        "toString": 0
+    } + "");
+} catch (e) {
+    isHostObject = function isHostObject() {
+        return false;
+    };
+}
+
+isHostObject = function isHostObject(value) {
+    return !isFunction(value.toString) && typeof(value + "") === "string";
+};
+
+
+},
+function(require, exports, module, global) {
+
+var objectToString = Object.prototype.toString,
+    isFunction;
+
+
+if (objectToString.call(function() {}) === "[object Object]") {
+    isFunction = function isFunction(value) {
+        return value instanceof Function;
+    };
+} else if (typeof(/./) === "function" || (typeof(Uint8Array) !== "undefined" && typeof(Uint8Array) !== "function")) {
+    isFunction = function isFunction(value) {
+        return objectToString.call(value) === "[object Function]";
+    };
+} else {
+    isFunction = function isFunction(value) {
+        return typeof(value) === "function" || false;
+    };
+}
+
+
+module.exports = isFunction;
+
+
+},
+function(require, exports, module, global) {
+
+module.exports = isNullOrUndefined;
+
+/**
+  isNullOrUndefined accepts any value and returns true
+  if the value is null or undefined. For all other values
+  false is returned.
+  
+  @param {Any}        any value to test
+  @returns {Boolean}  the boolean result of testing value
+
+  @example
+    isNullOrUndefined(null);   // returns true
+    isNullOrUndefined(undefined);   // returns true
+    isNullOrUndefined("string");    // returns false
+**/
+function isNullOrUndefined(obj) {
+    return (obj === null || obj === void 0);
+}
+
+
+},
+function(require, exports, module, global) {
+
+var toString = require(10);
+
+
+var reRegExpChars = /[.*+?\^${}()|\[\]\/\\]/g,
+    reHasRegExpChars = new RegExp(reRegExpChars.source);
+
+
+module.exports = escapeRegExp;
+
+
+function escapeRegExp(string) {
+    string = toString(string);
+    return (
+        (string && reHasRegExpChars.test(string)) ?
+        string.replace(reRegExpChars, "\\$&") :
+        string
+    );
+}
+
+
+},
+function(require, exports, module, global) {
+
+var isString = require(11),
+    isNullOrUndefined = require(8);
+
+
+module.exports = toString;
+
+
+function toString(value) {
+    if (isString(value)) {
+        return value;
+    } else if (isNullOrUndefined(value)) {
+        return "";
+    } else {
+        return value + "";
+    }
+}
+
+
+},
+function(require, exports, module, global) {
+
+module.exports = isString;
+
+
+function isString(obj) {
+    return typeof(obj) === "string" || false;
+}
+
+
+},
+function(require, exports, module, global) {
+
+var isObject = require(13),
+    isNative = require(6),
+    isNullOrUndefined = require(8);
+
+
+var nativeGetPrototypeOf = Object.getPrototypeOf,
+    baseGetPrototypeOf;
+
+
+module.exports = getPrototypeOf;
+
+
+function getPrototypeOf(value) {
+    if (isNullOrUndefined(value)) {
+        return null;
+    } else {
+        return baseGetPrototypeOf(value);
+    }
+}
+
+if (isNative(nativeGetPrototypeOf)) {
+    baseGetPrototypeOf = function baseGetPrototypeOf(value) {
+        return nativeGetPrototypeOf(isObject(value) ? value : Object(value)) || null;
+    };
+} else {
+    if ("".__proto__ === String.prototype) {
+        baseGetPrototypeOf = function baseGetPrototypeOf(value) {
+            return value.__proto__ || null;
+        };
+    } else {
+        baseGetPrototypeOf = function baseGetPrototypeOf(value) {
+            return value.constructor ? value.constructor.prototype : null;
+        };
+    }
+}
+
+
+},
+function(require, exports, module, global) {
+
+var isNullOrUndefined = require(8);
+
+
+module.exports = isObject;
+
+
+function isObject(value) {
+    var type = typeof(value);
+    return type === "function" || (!isNullOrUndefined(value) && type === "object") || false;
+}
+
+
+},
+function(require, exports, module, global) {
+
+var isNumber = require(15);
+
+
+module.exports = Number.isNaN || function isNaN(obj) {
+    return isNumber(obj) && obj !== obj;
+};
+
+
+},
+function(require, exports, module, global) {
+
+module.exports = isNumber;
+
+
+function isNumber(obj) {
+    return typeof(obj) === "number" || false;
+}
+
+
+},
+function(require, exports, module, global) {
+
+var process = require(17);
+var isObject = require(13),
+    isFunction = require(7),
     environment = require(1),
-    eventTable = require(7);
+    eventTable = require(18);
 
 
 var eventListener = module.exports,
@@ -442,70 +1553,7 @@ process.chdir = function (dir) {
 },
 function(require, exports, module, global) {
 
-var isNullOrUndefined = require(5);
-
-
-module.exports = isObject;
-
-
-function isObject(value) {
-    var type = typeof(value);
-    return type === "function" || (!isNullOrUndefined(value) && type === "object") || false;
-}
-
-
-},
-function(require, exports, module, global) {
-
-module.exports = isNullOrUndefined;
-
-/**
-  isNullOrUndefined accepts any value and returns true
-  if the value is null or undefined. For all other values
-  false is returned.
-  
-  @param {Any}        any value to test
-  @returns {Boolean}  the boolean result of testing value
-
-  @example
-    isNullOrUndefined(null);   // returns true
-    isNullOrUndefined(undefined);   // returns true
-    isNullOrUndefined("string");    // returns false
-**/
-function isNullOrUndefined(obj) {
-    return (obj === null || obj === void 0);
-}
-
-
-},
-function(require, exports, module, global) {
-
-var objectToString = Object.prototype.toString,
-    isFunction;
-
-
-if (objectToString.call(function() {}) === "[object Object]") {
-    isFunction = function isFunction(value) {
-        return value instanceof Function;
-    };
-} else if (typeof(/./) === "function" || (typeof(Uint8Array) !== "undefined" && typeof(Uint8Array) !== "function")) {
-    isFunction = function isFunction(value) {
-        return objectToString.call(value) === "[object Function]";
-    };
-} else {
-    isFunction = function isFunction(value) {
-        return typeof(value) === "function" || false;
-    };
-}
-
-
-module.exports = isFunction;
-
-
-},
-function(require, exports, module, global) {
-
-var isNode = require(8),
+var isNode = require(19),
     environment = require(1);
 
 
@@ -915,7 +1963,7 @@ module.exports = {
 },
 function(require, exports, module, global) {
 
-var isFunction = require(6);
+var isFunction = require(7);
 
 
 var isNode;
@@ -945,58 +1993,65 @@ function(require, exports, module, global) {
 var odin = exports;
 
 
-odin.Class = require(10);
-odin.createLoop = require(28);
+odin.Class = require(21);
+odin.createLoop = require(32);
 
-odin.enums = require(32);
+odin.enums = require(36);
 
 odin.BaseApplication = require(99);
 odin.Application = require(126);
 
 odin.Assets = require(100);
 odin.Asset = require(127);
-odin.ImageAsset = require(128);
-odin.JSONAsset = require(131);
-odin.Texture = require(146);
-odin.Material = require(147);
-odin.Geometry = require(153);
+odin.AudioAsset = require(128);
+odin.ImageAsset = require(133);
+odin.JSONAsset = require(136);
+odin.Texture = require(151);
+odin.Material = require(152);
+odin.Geometry = require(158);
 
-odin.Canvas = require(158);
-odin.Renderer = require(159);
-odin.ComponentRenderer = require(161);
+odin.Canvas = require(163);
+odin.Renderer = require(164);
+odin.ComponentRenderer = require(166);
 
-odin.Shader = require(148);
+odin.Shader = require(153);
 
 odin.Scene = require(101);
-odin.Plugin = require(165);
+odin.Plugin = require(170);
 odin.Entity = require(125);
 
-odin.ComponentManager = require(166);
+odin.ComponentManager = require(171);
 
-odin.Component = require(167);
+odin.Component = require(172);
 
-odin.Transform = require(168);
-odin.Transform2D = require(170);
-odin.Camera = require(173);
+odin.AudioSource = require(173);
 
-odin.Sprite = require(175);
+odin.Transform = require(174);
+odin.Transform2D = require(176);
+odin.Camera = require(179);
 
-odin.Mesh = require(177);
-odin.MeshAnimation = require(181);
+odin.Sprite = require(181);
 
-odin.OrbitControl = require(182);
+odin.Mesh = require(183);
+odin.MeshAnimation = require(187);
 
-odin.ParticleSystem = require(183);
+odin.OrbitControl = require(188);
+
+odin.ParticleSystem = require(189);
+
+odin.createSeededRandom = require(192);
+odin.randFloat = require(193);
+odin.randInt = require(194);
 
 
 },
 function(require, exports, module, global) {
 
-var has = require(11),
-    isFunction = require(6),
-    inherits = require(17),
-    EventEmitter = require(25),
-    uuid = require(27);
+var has = require(5),
+    isFunction = require(7),
+    inherits = require(22),
+    EventEmitter = require(29),
+    uuid = require(31);
 
 
 var ClassPrototype;
@@ -1089,194 +2144,10 @@ ClassPrototype.fromJSON = function( /* json */ ) {
 },
 function(require, exports, module, global) {
 
-var isNative = require(12),
-    getPrototypeOf = require(16),
-    isNullOrUndefined = require(5);
-
-
-var nativeHasOwnProp = Object.prototype.hasOwnProperty,
-    baseHas;
-
-
-module.exports = has;
-
-
-function has(object, key) {
-    if (isNullOrUndefined(object)) {
-        return false;
-    } else {
-        return baseHas(object, key);
-    }
-}
-
-if (isNative(nativeHasOwnProp)) {
-    baseHas = function baseHas(object, key) {
-        return nativeHasOwnProp.call(object, key);
-    };
-} else {
-    baseHas = function baseHas(object, key) {
-        var proto = getPrototypeOf(object);
-
-        if (isNullOrUndefined(proto)) {
-            return key in object;
-        } else {
-            return (key in object) && (!(key in proto) || proto[key] !== object[key]);
-        }
-    };
-}
-
-
-},
-function(require, exports, module, global) {
-
-var isFunction = require(6),
-    isNullOrUndefined = require(5),
-    escapeRegExp = require(13);
-
-
-var reHostCtor = /^\[object .+?Constructor\]$/,
-
-    functionToString = Function.prototype.toString,
-
-    reNative = RegExp("^" +
-        escapeRegExp(Object.prototype.toString)
-        .replace(/toString|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"
-    ),
-
-    isHostObject;
-
-
-module.exports = isNative;
-
-
-function isNative(value) {
-    return !isNullOrUndefined(value) && (
-        isFunction(value) ?
-        reNative.test(functionToString.call(value)) : (
-            typeof(value) === "object" && (
-                (isHostObject(value) ? reNative : reHostCtor).test(value) || false
-            )
-        )
-    ) || false;
-}
-
-try {
-    String({
-        "toString": 0
-    } + "");
-} catch (e) {
-    isHostObject = function isHostObject() {
-        return false;
-    };
-}
-
-isHostObject = function isHostObject(value) {
-    return !isFunction(value.toString) && typeof(value + "") === "string";
-};
-
-
-},
-function(require, exports, module, global) {
-
-var toString = require(14);
-
-
-var reRegExpChars = /[.*+?\^${}()|\[\]\/\\]/g,
-    reHasRegExpChars = new RegExp(reRegExpChars.source);
-
-
-module.exports = escapeRegExp;
-
-
-function escapeRegExp(string) {
-    string = toString(string);
-    return (
-        (string && reHasRegExpChars.test(string)) ?
-        string.replace(reRegExpChars, "\\$&") :
-        string
-    );
-}
-
-
-},
-function(require, exports, module, global) {
-
-var isString = require(15),
-    isNullOrUndefined = require(5);
-
-
-module.exports = toString;
-
-
-function toString(value) {
-    if (isString(value)) {
-        return value;
-    } else if (isNullOrUndefined(value)) {
-        return "";
-    } else {
-        return value + "";
-    }
-}
-
-
-},
-function(require, exports, module, global) {
-
-module.exports = isString;
-
-
-function isString(obj) {
-    return typeof(obj) === "string" || false;
-}
-
-
-},
-function(require, exports, module, global) {
-
-var isObject = require(4),
-    isNative = require(12),
-    isNullOrUndefined = require(5);
-
-
-var nativeGetPrototypeOf = Object.getPrototypeOf,
-    baseGetPrototypeOf;
-
-
-module.exports = getPrototypeOf;
-
-
-function getPrototypeOf(value) {
-    if (isNullOrUndefined(value)) {
-        return null;
-    } else {
-        return baseGetPrototypeOf(value);
-    }
-}
-
-if (isNative(nativeGetPrototypeOf)) {
-    baseGetPrototypeOf = function baseGetPrototypeOf(value) {
-        return nativeGetPrototypeOf(isObject(value) ? value : Object(value)) || null;
-    };
-} else {
-    if ("".__proto__ === String.prototype) {
-        baseGetPrototypeOf = function baseGetPrototypeOf(value) {
-            return value.__proto__ || null;
-        };
-    } else {
-        baseGetPrototypeOf = function baseGetPrototypeOf(value) {
-            return value.constructor ? value.constructor.prototype : null;
-        };
-    }
-}
-
-
-},
-function(require, exports, module, global) {
-
-var create = require(18),
-    extend = require(21),
-    mixin = require(23),
-    defineProperty = require(24);
+var create = require(23),
+    extend = require(26),
+    mixin = require(27),
+    defineProperty = require(28);
 
 
 var descriptor = {
@@ -1324,9 +2195,9 @@ function defineStatic(name, value) {
 },
 function(require, exports, module, global) {
 
-var isNull = require(19),
-    isNative = require(12),
-    isPrimitive = require(20);
+var isNull = require(24),
+    isNative = require(6),
+    isPrimitive = require(25);
 
 
 var nativeCreate = Object.create;
@@ -1377,7 +2248,7 @@ function isNull(obj) {
 },
 function(require, exports, module, global) {
 
-var isNullOrUndefined = require(5);
+var isNullOrUndefined = require(8);
 
 
 module.exports = isPrimitive;
@@ -1392,7 +2263,7 @@ function isPrimitive(obj) {
 },
 function(require, exports, module, global) {
 
-var keys = require(22);
+var keys = require(4);
 
 
 module.exports = extend;
@@ -1425,49 +2296,8 @@ function baseExtend(a, b) {
 },
 function(require, exports, module, global) {
 
-var has = require(11),
-    isNative = require(12),
-    isNullOrUndefined = require(5),
-    isObject = require(4);
-
-
-var nativeKeys = Object.keys;
-
-
-module.exports = keys;
-
-
-function keys(value) {
-    if (isNullOrUndefined(value)) {
-        return [];
-    } else {
-        return nativeKeys(isObject(value) ? value : Object(value));
-    }
-}
-
-if (!isNative(nativeKeys)) {
-    nativeKeys = function(value) {
-        var localHas = has,
-            out = [],
-            i = 0,
-            key;
-
-        for (key in value) {
-            if (localHas(value, key)) {
-                out[i++] = key;
-            }
-        }
-
-        return out;
-    };
-}
-
-
-},
-function(require, exports, module, global) {
-
-var keys = require(22),
-    isNullOrUndefined = require(5);
+var keys = require(4),
+    isNullOrUndefined = require(8);
 
 
 module.exports = mixin;
@@ -1503,11 +2333,11 @@ function baseMixin(a, b) {
 },
 function(require, exports, module, global) {
 
-var isObject = require(4),
-    isFunction = require(6),
-    isPrimitive = require(20),
-    isNative = require(12),
-    has = require(11);
+var isObject = require(13),
+    isFunction = require(7),
+    isPrimitive = require(25),
+    isNative = require(6),
+    has = require(5);
 
 
 var nativeDefineProperty = Object.defineProperty;
@@ -1553,10 +2383,10 @@ if (!isNative(nativeDefineProperty) || !(function() {
 },
 function(require, exports, module, global) {
 
-var isFunction = require(6),
-    inherits = require(17),
-    fastSlice = require(26),
-    keys = require(22);
+var isFunction = require(7),
+    inherits = require(22),
+    fastSlice = require(30),
+    keys = require(4);
 
 
 function EventEmitter(maxListeners) {
@@ -1982,7 +2812,7 @@ function uuid() {
 },
 function(require, exports, module, global) {
 
-var requestAnimationFrame = require(29);
+var requestAnimationFrame = require(33);
 
 
 module.exports = function createLoop(callback, element) {
@@ -2036,8 +2866,8 @@ module.exports = function createLoop(callback, element) {
 function(require, exports, module, global) {
 
 var environment = require(1),
-    emptyFunction = require(30),
-    time = require(31);
+    emptyFunction = require(34),
+    time = require(35);
 
 
 var window = environment.window,
@@ -2140,7 +2970,7 @@ emptyFunction.thatReturnsArgument = function(argument) {
 },
 function(require, exports, module, global) {
 
-var process = require(3);
+var process = require(17);
 var environment = require(1);
 
 
@@ -2194,8 +3024,8 @@ time.stamp = function stamp() {
 },
 function(require, exports, module, global) {
 
-var extend = require(21),
-    WebGLContext = require(33);
+var extend = require(26),
+    WebGLContext = require(37);
 
 
 var enums = extend(exports, WebGLContext.enums);
@@ -2213,17 +3043,17 @@ enums.wrapMode = require(98);
 },
 function(require, exports, module, global) {
 
-var mathf = require(34),
+var mathf = require(3),
 
     environment = require(1),
-    EventEmitter = require(25),
-    eventListener = require(2),
-    color = require(37),
+    EventEmitter = require(29),
+    eventListener = require(16),
+    color = require(38),
 
-    enums = require(40),
-    WebGLBuffer = require(56),
-    WebGLTexture = require(57),
-    WebGLProgram = require(59);
+    enums = require(41),
+    WebGLBuffer = require(57),
+    WebGLTexture = require(58),
+    WebGLProgram = require(60);
 
 
 var NativeUint8Array = typeof(Uint8Array) !== "undefined" ? Uint8Array : Array,
@@ -3054,431 +3884,10 @@ function getWebGLContext(canvas, attributes) {
 },
 function(require, exports, module, global) {
 
-var keys = require(22),
-    isNaN = require(35);
-
-
-var mathf = exports,
-
-    NativeMath = Math,
-
-    NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
-
-
-mathf.ArrayType = NativeFloat32Array;
-
-mathf.PI = NativeMath.PI;
-mathf.TAU = mathf.PI * 2;
-mathf.TWO_PI = mathf.TAU;
-mathf.HALF_PI = mathf.PI * 0.5;
-mathf.FOURTH_PI = mathf.PI * 0.25;
-
-mathf.EPSILON = Number.EPSILON || NativeMath.pow(2, -52);
-
-mathf.TO_RADS = mathf.PI / 180;
-mathf.TO_DEGS = 180 / mathf.PI;
-
-mathf.E = NativeMath.E;
-mathf.LN2 = NativeMath.LN2;
-mathf.LN10 = NativeMath.LN10;
-mathf.LOG2E = NativeMath.LOG2E;
-mathf.LOG10E = NativeMath.LOG10E;
-mathf.SQRT1_2 = NativeMath.SQRT1_2;
-mathf.SQRT2 = NativeMath.SQRT2;
-
-mathf.abs = NativeMath.abs;
-
-mathf.acos = NativeMath.acos;
-mathf.acosh = NativeMath.acosh || (NativeMath.acosh = function acosh(x) {
-    return mathf.log(x + mathf.sqrt(x * x - 1));
-});
-mathf.asin = NativeMath.asin;
-mathf.asinh = NativeMath.asinh || (NativeMath.asinh = function asinh(x) {
-    if (x === -Infinity) {
-        return x;
-    } else {
-        return mathf.log(x + mathf.sqrt(x * x + 1));
-    }
-});
-mathf.atan = NativeMath.atan;
-mathf.atan2 = NativeMath.atan2;
-mathf.atanh = NativeMath.atanh || (NativeMath.atanh = function atanh(x) {
-    return mathf.log((1 + x) / (1 - x)) / 2;
-});
-
-mathf.cbrt = NativeMath.cbrt || (NativeMath.cbrt = function cbrt(x) {
-    var y = mathf.pow(mathf.abs(x), 1 / 3);
-    return x < 0 ? -y : y;
-});
-
-mathf.ceil = NativeMath.ceil;
-
-mathf.clz32 = NativeMath.clz32 || (NativeMath.clz32 = function clz32(value) {
-    value = +value >>> 0;
-    return value ? 32 - value.toString(2).length : 32;
-});
-
-mathf.cos = NativeMath.cos;
-mathf.cosh = NativeMath.cosh || (NativeMath.cosh = function cosh(x) {
-    return (mathf.exp(x) + mathf.exp(-x)) / 2;
-});
-
-mathf.exp = NativeMath.exp;
-
-mathf.expm1 = NativeMath.expm1 || (NativeMath.expm1 = function expm1(x) {
-    return mathf.exp(x) - 1;
-});
-
-mathf.floor = NativeMath.floor;
-mathf.fround = NativeMath.fround || (NativeMath.fround = function fround(x) {
-    return new NativeFloat32Array([x])[0];
-});
-
-mathf.hypot = NativeMath.hypot || (NativeMath.hypot = function hypot() {
-    var y = 0,
-        i = -1,
-        il = arguments.length - 1,
-        value;
-
-    while (i++ < il) {
-        value = arguments[i];
-
-        if (value === Infinity || value === -Infinity) {
-            return Infinity;
-        } else {
-            y += value * value;
-        }
-    }
-
-    return mathf.sqrt(y);
-});
-
-mathf.imul = NativeMath.imul || (NativeMath.imul = function imul(a, b) {
-    var ah = (a >>> 16) & 0xffff,
-        al = a & 0xffff,
-        bh = (b >>> 16) & 0xffff,
-        bl = b & 0xffff;
-
-    return ((al * bl) + (((ah * bl + al * bh) << 16) >>> 0) | 0);
-});
-
-mathf.log = NativeMath.log;
-
-mathf.log1p = NativeMath.log1p || (NativeMath.log1p = function log1p(x) {
-    return mathf.log(1 + x);
-});
-
-mathf.log10 = NativeMath.log10 || (NativeMath.log10 = function log10(x) {
-    return mathf.log(x) / mathf.LN10;
-});
-
-mathf.log2 = NativeMath.log2 || (NativeMath.log2 = function log2(x) {
-    return mathf.log(x) / mathf.LN2;
-});
-
-mathf.max = NativeMath.max;
-mathf.min = NativeMath.min;
-
-mathf.pow = NativeMath.pow;
-
-mathf.random = NativeMath.random;
-mathf.round = NativeMath.round;
-
-mathf.sign = NativeMath.sign || (NativeMath.sign = function sign(x) {
-    x = +x;
-    if (x === 0 || isNaN(x)) {
-        return x;
-    } else {
-        return x > 0 ? 1 : -1;
-    }
-});
-
-mathf.sin = NativeMath.sin;
-mathf.sinh = NativeMath.sinh || (NativeMath.sinh = function sinh(x) {
-    return (mathf.exp(x) - mathf.exp(-x)) / 2;
-});
-mathf.sqrt = NativeMath.sqrt;
-
-mathf.tan = NativeMath.tan;
-mathf.tanh = NativeMath.tanh || (NativeMath.tanh = function tanh(x) {
-    if (x === Infinity) {
-        return 1;
-    } else if (x === -Infinity) {
-        return -1;
-    } else {
-        return (mathf.exp(x) - mathf.exp(-x)) / (mathf.exp(x) + mathf.exp(-x));
-    }
-});
-
-mathf.trunc = NativeMath.trunc || (NativeMath.trunc = function trunc(x) {
-    return x < 0 ? mathf.ceil(x) : mathf.floor(x);
-});
-
-mathf.equals = function(a, b, e) {
-    return mathf.abs(a - b) < (e !== void 0 ? e : mathf.EPSILON);
-};
-
-mathf.modulo = function(a, b) {
-    var r = a % b;
-
-    return (r * b < 0) ? r + b : r;
-};
-
-mathf.standardRadian = function(x) {
-    return mathf.modulo(x, mathf.TWO_PI);
-};
-
-mathf.standardAngle = function(x) {
-    return mathf.modulo(x, 360);
-};
-
-mathf.snap = function(x, y) {
-    var m = x % y;
-    return m < (y * 0.5) ? x - m : x + y - m;
-};
-
-mathf.clamp = function(x, min, max) {
-    return x < min ? min : x > max ? max : x;
-};
-
-mathf.clampBottom = function(x, min) {
-    return x < min ? min : x;
-};
-
-mathf.clampTop = function(x, max) {
-    return x > max ? max : x;
-};
-
-mathf.clamp01 = function(x) {
-    return x < 0 ? 0 : x > 1 ? 1 : x;
-};
-
-mathf.truncate = function(x, n) {
-    var p = mathf.pow(10, n),
-        num = x * p;
-
-    return (num < 0 ? mathf.ceil(num) : mathf.floor(num)) / p;
-};
-
-mathf.lerp = function(a, b, x) {
-    return a + (b - a) * x;
-};
-
-mathf.lerpRadian = function(a, b, x) {
-    return mathf.standardRadian(a + (b - a) * x);
-};
-
-mathf.lerpAngle = function(a, b, x) {
-    return mathf.standardAngle(a + (b - a) * x);
-};
-
-mathf.lerpCos = function(a, b, x) {
-    var ft = x * mathf.PI,
-        f = (1 - mathf.cos(ft)) * 0.5;
-
-    return a * (1 - f) + b * f;
-};
-
-mathf.lerpCubic = function(v0, v1, v2, v3, x) {
-    var P, Q, R, S, Px, Qx, Rx;
-
-    v0 = v0 || v1;
-    v3 = v3 || v2;
-
-    P = (v3 - v2) - (v0 - v1);
-    Q = (v0 - v1) - P;
-    R = v2 - v0;
-    S = v1;
-
-    Px = P * x;
-    Qx = Q * x;
-    Rx = R * x;
-
-    return (Px * Px * Px) + (Qx * Qx) + Rx + S;
-};
-
-mathf.smoothStep = function(x, min, max) {
-    if (x <= min) {
-        return 0;
-    } else {
-        if (x >= max) {
-            return 1;
-        } else {
-            x = (x - min) / (max - min);
-            return x * x * (3 - 2 * x);
-        }
-    }
-};
-
-mathf.smootherStep = function(x, min, max) {
-    if (x <= min) {
-        return 0;
-    } else {
-        if (x >= max) {
-            return 1;
-        } else {
-            x = (x - min) / (max - min);
-            return x * x * x * (x * (x * 6 - 15) + 10);
-        }
-    }
-};
-
-mathf.pingPong = function(x, length) {
-    length = +length || 1;
-    return length - mathf.abs(x % (2 * length) - length);
-};
-
-mathf.degsToRads = function(x) {
-    return mathf.standardRadian(x * mathf.TO_RADS);
-};
-
-mathf.radsToDegs = function(x) {
-    return mathf.standardAngle(x * mathf.TO_DEGS);
-};
-
-mathf.randInt = function(min, max) {
-    return mathf.round(min + (mathf.random() * (max - min)));
-};
-
-mathf.randFloat = function(min, max) {
-    return min + (mathf.random() * (max - min));
-};
-
-mathf.randSign = function() {
-    return mathf.random() < 0.5 ? 1 : -1;
-};
-
-mathf.shuffle = function(array) {
-    var i = array.length,
-        j, x;
-
-    while (i) {
-        j = (mathf.random() * i--) | 0;
-        x = array[i];
-        array[i] = array[j];
-        array[j] = x;
-    }
-
-    return array;
-};
-
-mathf.randArg = function() {
-    return arguments[(mathf.random() * arguments.length) | 0];
-};
-
-mathf.randChoice = function(array) {
-    return array[(mathf.random() * array.length) | 0];
-};
-
-mathf.randChoiceObject = function(object) {
-    var objectKeys = keys(object);
-    return object[objectKeys[(mathf.random() * objectKeys.length) | 0]];
-};
-
-mathf.isPowerOfTwo = function(x) {
-    return (x & -x) === x;
-};
-
-mathf.floorPowerOfTwo = function(x) {
-    var i = 2,
-        prev;
-
-    while (i < x) {
-        prev = i;
-        i *= 2;
-    }
-
-    return prev;
-};
-
-mathf.ceilPowerOfTwo = function(x) {
-    var i = 2;
-
-    while (i < x) {
-        i *= 2;
-    }
-
-    return i;
-};
-
-var n225 = 0.39269908169872414,
-    n675 = 1.1780972450961724,
-    n1125 = 1.9634954084936207,
-    n1575 = 2.748893571891069,
-    n2025 = 3.5342917352885173,
-    n2475 = 4.319689898685966,
-    n2925 = 5.105088062083414,
-    n3375 = 5.8904862254808625,
-
-    RIGHT = "right",
-    UP_RIGHT = "up_right",
-    UP = "up",
-    UP_LEFT = "up_left",
-    LEFT = "left",
-    DOWN_LEFT = "down_left",
-    DOWN = "down",
-    DOWN_RIGHT = "down_right";
-
-mathf.directionAngle = function(a) {
-    a = mathf.standardRadian(a);
-
-    return (
-        (a >= n225 && a < n675) ? UP_RIGHT :
-        (a >= n675 && a < n1125) ? UP :
-        (a >= n1125 && a < n1575) ? UP_LEFT :
-        (a >= n1575 && a < n2025) ? LEFT :
-        (a >= n2025 && a < n2475) ? DOWN_LEFT :
-        (a >= n2475 && a < n2925) ? DOWN :
-        (a >= n2925 && a < n3375) ? DOWN_RIGHT :
-        RIGHT
-    );
-};
-
-mathf.direction = function(x, y) {
-    var a = mathf.standardRadian(mathf.atan2(y, x));
-
-    return (
-        (a >= n225 && a < n675) ? UP_RIGHT :
-        (a >= n675 && a < n1125) ? UP :
-        (a >= n1125 && a < n1575) ? UP_LEFT :
-        (a >= n1575 && a < n2025) ? LEFT :
-        (a >= n2025 && a < n2475) ? DOWN_LEFT :
-        (a >= n2475 && a < n2925) ? DOWN :
-        (a >= n2925 && a < n3375) ? DOWN_RIGHT :
-        RIGHT
-    );
-};
-
-
-},
-function(require, exports, module, global) {
-
-var isNumber = require(36);
-
-
-module.exports = Number.isNaN || function isNaN(obj) {
-    return isNumber(obj) && obj !== obj;
-};
-
-
-},
-function(require, exports, module, global) {
-
-module.exports = isNumber;
-
-
-function isNumber(obj) {
-    return typeof(obj) === "number" || false;
-}
-
-
-},
-function(require, exports, module, global) {
-
-var mathf = require(34),
-    vec3 = require(38),
-    vec4 = require(39),
-    isNumber = require(36);
+var mathf = require(3),
+    vec3 = require(39),
+    vec4 = require(40),
+    isNumber = require(15);
 
 
 var color = exports;
@@ -3842,7 +4251,7 @@ var colorNames = color.colorNames = {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34);
+var mathf = require(3);
 
 
 var vec3 = exports;
@@ -4236,7 +4645,7 @@ vec3.str = function(out) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34);
+var mathf = require(3);
 
 
 var vec4 = exports;
@@ -4598,30 +5007,30 @@ vec4.str = function(out) {
 },
 function(require, exports, module, global) {
 
-var reverse = require(41);
+var reverse = require(42);
 
 
 var enums = exports;
 
 
-enums.blending = require(45);
-enums.cullFace = require(49);
-enums.depth = require(51);
-enums.filterMode = require(52);
+enums.blending = require(46);
+enums.cullFace = require(50);
+enums.depth = require(52);
+enums.filterMode = require(53);
 
-enums.gl = require(50);
+enums.gl = require(51);
 enums.glValues = reverse(enums.gl);
 
-enums.textureFormat = require(53);
-enums.textureType = require(54);
-enums.textureWrap = require(55);
+enums.textureFormat = require(54);
+enums.textureType = require(55);
+enums.textureWrap = require(56);
 
 
 },
 function(require, exports, module, global) {
 
-var keys = require(22),
-    isArrayLike = require(42);
+var keys = require(4),
+    isArrayLike = require(43);
 
 
 module.exports = reverse;
@@ -4662,9 +5071,9 @@ function reverseObject(object) {
 },
 function(require, exports, module, global) {
 
-var isLength = require(43),
-    isFunction = require(6),
-    isObjectLike = require(44);
+var isLength = require(44),
+    isFunction = require(7),
+    isObjectLike = require(45);
 
 
 module.exports = isArrayLike;
@@ -4678,7 +5087,7 @@ function isArrayLike(value) {
 },
 function(require, exports, module, global) {
 
-var isNumber = require(36);
+var isNumber = require(15);
 
 
 var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
@@ -4695,7 +5104,7 @@ function isLength(value) {
 },
 function(require, exports, module, global) {
 
-var isNullOrUndefined = require(5);
+var isNullOrUndefined = require(8);
 
 
 module.exports = isObjectLike;
@@ -4709,7 +5118,7 @@ function isObjectLike(value) {
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(47);
 
 
 module.exports = enums([
@@ -4724,12 +5133,12 @@ module.exports = enums([
 },
 function(require, exports, module, global) {
 
-var create = require(18),
-    defineProperty = require(24),
-    forEach = require(47),
-    isString = require(15),
-    isNumber = require(36),
-    emptyFunction = require(30);
+var create = require(23),
+    defineProperty = require(28),
+    forEach = require(48),
+    isString = require(11),
+    isNumber = require(15),
+    emptyFunction = require(34);
 
 
 var reSpliter = /[\s\, ]+/,
@@ -4795,10 +5204,10 @@ function stringToHash(value) {
 },
 function(require, exports, module, global) {
 
-var keys = require(22),
-    isNullOrUndefined = require(5),
-    fastBindThis = require(48),
-    isArrayLike = require(42);
+var keys = require(4),
+    isNullOrUndefined = require(8),
+    fastBindThis = require(49),
+    isArrayLike = require(43);
 
 
 module.exports = forEach;
@@ -4843,7 +5252,7 @@ function forEachObject(object, callback) {
 },
 function(require, exports, module, global) {
 
-var isNumber = require(36);
+var isNumber = require(15);
 
 
 module.exports = fastBindThis;
@@ -4882,8 +5291,8 @@ function fastBindThis(callback, thisArg, length) {
 },
 function(require, exports, module, global) {
 
-var enums = require(46),
-    gl = require(50);
+var enums = require(47),
+    gl = require(51);
 
 
 module.exports = enums({
@@ -4897,7 +5306,7 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(47);
 
 
 module.exports = enums({
@@ -5204,8 +5613,8 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(46),
-    gl = require(50);
+var enums = require(47),
+    gl = require(51);
 
 
 module.exports = enums({
@@ -5224,7 +5633,7 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(47);
 
 
 module.exports = enums({
@@ -5236,8 +5645,8 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(46),
-    gl = require(50);
+var enums = require(47),
+    gl = require(51);
 
 
 module.exports = enums({
@@ -5252,8 +5661,8 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(46),
-    gl = require(50);
+var enums = require(47),
+    gl = require(51);
 
 
 module.exports = enums({
@@ -5270,8 +5679,8 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(46),
-    gl = require(50);
+var enums = require(47),
+    gl = require(51);
 
 
 module.exports = enums({
@@ -5320,9 +5729,9 @@ WebGLBuffer.prototype.compile = function(type, array, stride, draw) {
 },
 function(require, exports, module, global) {
 
-var isArray = require(58),
-    mathf = require(34),
-    enums = require(40);
+var isArray = require(59),
+    mathf = require(3),
+    enums = require(41);
 
 
 var textureType = enums.textureType,
@@ -5516,9 +5925,9 @@ function getWrap(gl, wrap) {
 },
 function(require, exports, module, global) {
 
-var isNative = require(12),
-    isLength = require(43),
-    isObject = require(4);
+var isNative = require(6),
+    isLength = require(44),
+    isObject = require(13);
 
 
 var objectToString = Object.prototype.toString,
@@ -5545,11 +5954,11 @@ module.exports = isArray;
 },
 function(require, exports, module, global) {
 
-var isArray = require(58),
-    FastHash = require(60),
+var isArray = require(59),
+    FastHash = require(61),
 
-    enums = require(40),
-    uniforms = require(62),
+    enums = require(41),
+    uniforms = require(63),
     attributes = require(82);
 
 
@@ -5692,9 +6101,9 @@ function createShader(gl, source, type) {
 },
 function(require, exports, module, global) {
 
-var has = require(11),
-    indexOf = require(61),
-    forEach = require(47);
+var has = require(5),
+    indexOf = require(62),
+    forEach = require(48);
 
 
 module.exports = FastHash;
@@ -5784,8 +6193,8 @@ FastHash.prototype.forEach = function(callback, thisArg) {
 },
 function(require, exports, module, global) {
 
-var isLength = require(43),
-    isObjectLike = require(44);
+var isLength = require(44),
+    isObjectLike = require(45);
 
 
 module.exports = indexOf;
@@ -5813,15 +6222,15 @@ function arrayIndexOf(array, value, fromIndex) {
 function(require, exports, module, global) {
 
 module.exports = {
-    BOOL: require(63),
-    INT: require(65),
-    FLOAT: require(66),
+    BOOL: require(64),
+    INT: require(66),
+    FLOAT: require(67),
 
-    BOOL_VEC2: require(67),
+    BOOL_VEC2: require(68),
     BOOL_VEC3: require(69),
     BOOL_VEC4: require(70),
 
-    INT_VEC2: require(67),
+    INT_VEC2: require(68),
     INT_VEC3: require(69),
     INT_VEC4: require(70),
 
@@ -5841,7 +6250,7 @@ module.exports = {
 },
 function(require, exports, module, global) {
 
-var Uniform = require(64);
+var Uniform = require(65);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -5875,7 +6284,7 @@ Uniform1b.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var inherits = require(17);
+var inherits = require(22);
 
 
 module.exports = Uniform;
@@ -5901,7 +6310,7 @@ Uniform.prototype.set = function( /* value, force */ ) {
 },
 function(require, exports, module, global) {
 
-var Uniform = require(64);
+var Uniform = require(65);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -5935,7 +6344,7 @@ Uniform1i.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var Uniform = require(64);
+var Uniform = require(65);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -5969,8 +6378,8 @@ Uniform1f.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(68),
-    Uniform = require(64);
+var vec2 = require(2),
+    Uniform = require(65);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -6004,385 +6413,8 @@ Uniform2i.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34);
-
-
-var vec2 = exports;
-
-
-vec2.ArrayType = typeof(Float32Array) !== "undefined" ? Float32Array : mathf.ArrayType;
-
-
-vec2.create = function(x, y) {
-    var out = new vec2.ArrayType(2);
-
-    out[0] = x !== undefined ? x : 0;
-    out[1] = y !== undefined ? y : 0;
-
-    return out;
-};
-
-vec2.copy = function(out, a) {
-
-    out[0] = a[0];
-    out[1] = a[1];
-
-    return out;
-};
-
-vec2.clone = function(a) {
-    var out = new vec2.ArrayType(2);
-
-    out[0] = a[0];
-    out[1] = a[1];
-
-    return out;
-};
-
-vec2.set = function(out, x, y) {
-
-    out[0] = x !== undefined ? x : 0;
-    out[1] = y !== undefined ? y : 0;
-
-    return out;
-};
-
-vec2.add = function(out, a, b) {
-
-    out[0] = a[0] + b[0];
-    out[1] = a[1] + b[1];
-
-    return out;
-};
-
-vec2.sub = function(out, a, b) {
-
-    out[0] = a[0] - b[0];
-    out[1] = a[1] - b[1];
-
-    return out;
-};
-
-vec2.mul = function(out, a, b) {
-
-    out[0] = a[0] * b[0];
-    out[1] = a[1] * b[1];
-
-    return out;
-};
-
-vec2.div = function(out, a, b) {
-    var bx = b[0],
-        by = b[1];
-
-    out[0] = a[0] * (bx !== 0 ? 1 / bx : bx);
-    out[1] = a[1] * (by !== 0 ? 1 / by : by);
-
-    return out;
-};
-
-vec2.sadd = function(out, a, s) {
-
-    out[0] = a[0] + s;
-    out[1] = a[1] + s;
-
-    return out;
-};
-
-vec2.ssub = function(out, a, s) {
-
-    out[0] = a[0] - s;
-    out[1] = a[1] - s;
-
-    return out;
-};
-
-vec2.smul = function(out, a, s) {
-
-    out[0] = a[0] * s;
-    out[1] = a[1] * s;
-
-    return out;
-};
-
-vec2.sdiv = function(out, a, s) {
-    s = s !== 0 ? 1 / s : s;
-
-    out[0] = a[0] * s;
-    out[1] = a[1] * s;
-
-    return out;
-};
-
-vec2.lengthSqValues = function(x, y) {
-
-    return x * x + y * y;
-};
-
-vec2.lengthValues = function(x, y) {
-    var lsq = vec2.lengthSqValues(x, y);
-
-    return lsq !== 0 ? mathf.sqrt(lsq) : lsq;
-};
-
-vec2.invLengthValues = function(x, y) {
-    var lsq = vec2.lengthSqValues(x, y);
-
-    return lsq !== 0 ? 1 / mathf.sqrt(lsq) : lsq;
-};
-
-vec2.cross = function(a, b) {
-
-    return a[0] * b[1] - a[1] * b[0];
-};
-
-vec2.dot = function(a, b) {
-
-    return a[0] * b[0] + a[1] * b[1];
-};
-
-vec2.lengthSq = function(a) {
-
-    return vec2.dot(a, a);
-};
-
-vec2.length = function(a) {
-    var lsq = vec2.lengthSq(a);
-
-    return lsq !== 0 ? mathf.sqrt(lsq) : lsq;
-};
-
-vec2.invLength = function(a) {
-    var lsq = vec2.lengthSq(a);
-
-    return lsq !== 0 ? 1 / mathf.sqrt(lsq) : lsq;
-};
-
-vec2.setLength = function(out, a, length) {
-    var x = a[0],
-        y = a[1],
-        s = length * vec2.invLengthValues(x, y);
-
-    out[0] = x * s;
-    out[1] = y * s;
-
-    return out;
-};
-
-vec2.normalize = function(out, a) {
-    var x = a[0],
-        y = a[1],
-        invlsq = vec2.invLengthValues(x, y);
-
-    out[0] = x * invlsq;
-    out[1] = y * invlsq;
-
-    return out;
-};
-
-vec2.inverse = function(out, a) {
-
-    out[0] = a[0] * -1;
-    out[1] = a[1] * -1;
-
-    return out;
-};
-
-vec2.lerp = function(out, a, b, x) {
-    var lerp = mathf.lerp;
-
-    out[0] = lerp(a[0], b[0], x);
-    out[1] = lerp(a[1], b[1], x);
-
-    return out;
-};
-
-vec2.perp = function(out, a) {
-
-    out[0] = a[1];
-    out[1] = -a[0];
-
-    return out;
-};
-
-vec2.perpR = function(out, a) {
-
-    out[0] = -a[1];
-    out[1] = a[0];
-
-    return out;
-};
-
-vec2.min = function(out, a, b) {
-    var ax = a[0],
-        ay = a[1],
-        bx = b[0],
-        by = b[1];
-
-    out[0] = bx < ax ? bx : ax;
-    out[1] = by < ay ? by : ay;
-
-    return out;
-};
-
-vec2.max = function(out, a, b) {
-    var ax = a[0],
-        ay = a[1],
-        bx = b[0],
-        by = b[1];
-
-    out[0] = bx > ax ? bx : ax;
-    out[1] = by > ay ? by : ay;
-
-    return out;
-};
-
-vec2.clamp = function(out, a, min, max) {
-    var x = a[0],
-        y = a[1],
-        minx = min[0],
-        miny = min[1],
-        maxx = max[0],
-        maxy = max[1];
-
-    out[0] = x < minx ? minx : x > maxx ? maxx : x;
-    out[1] = y < miny ? miny : y > maxy ? maxy : y;
-
-    return out;
-};
-
-vec2.transformAngle = function(out, a, angle) {
-    var x = a[0],
-        y = a[1],
-        c = mathf.cos(angle),
-        s = mathf.sin(angle);
-
-    out[0] = x * c - y * s;
-    out[1] = x * s + y * c;
-
-    return out;
-};
-
-vec2.transformMat2 = function(out, a, m) {
-    var x = a[0],
-        y = a[1];
-
-    out[0] = x * m[0] + y * m[2];
-    out[1] = x * m[1] + y * m[3];
-
-    return out;
-};
-
-vec2.transformMat32 = function(out, a, m) {
-    var x = a[0],
-        y = a[1];
-
-    out[0] = x * m[0] + y * m[2] + m[4];
-    out[1] = x * m[1] + y * m[3] + m[5];
-
-    return out;
-};
-
-vec2.transformMat3 = function(out, a, m) {
-    var x = a[0],
-        y = a[1];
-
-    out[0] = x * m[0] + y * m[3] + m[6];
-    out[1] = x * m[1] + y * m[4] + m[7];
-
-    return out;
-};
-
-vec2.transformMat4 = function(out, a, m) {
-    var x = a[0],
-        y = a[1];
-
-    out[0] = x * m[0] + y * m[4] + m[12];
-    out[1] = x * m[1] + y * m[5] + m[13];
-
-    return out;
-};
-
-vec2.transformProjection = function(out, a, m) {
-    var x = a[0],
-        y = a[1],
-        d = x * m[3] + y * m[7] + m[11] + m[15];
-
-    d = d !== 0 ? 1 / d : d;
-
-    out[0] = (x * m[0] + y * m[4] + m[12]) * d;
-    out[1] = (x * m[1] + y * m[5] + m[13]) * d;
-
-    return out;
-};
-
-vec2.positionFromMat32 = function(out, m) {
-
-    out[0] = m[4];
-    out[1] = m[5];
-
-    return out;
-};
-
-vec2.positionFromMat4 = function(out, m) {
-
-    out[0] = m[12];
-    out[1] = m[13];
-
-    return out;
-};
-
-vec2.scaleFromMat2 = function(out, m) {
-
-    out[0] = vec2.lengthValues(m[0], m[2]);
-    out[1] = vec2.lengthValues(m[1], m[3]);
-
-    return out;
-};
-
-vec2.scaleFromMat32 = vec2.scaleFromMat2;
-
-vec2.scaleFromMat3 = function(out, m) {
-
-    out[0] = vec2.lengthValues(m[0], m[3]);
-    out[1] = vec2.lengthValues(m[1], m[4]);
-
-    return out;
-};
-
-vec2.scaleFromMat4 = function(out, m) {
-
-    out[0] = vec2.lengthValues(m[0], m[4]);
-    out[1] = vec2.lengthValues(m[1], m[5]);
-
-    return out;
-};
-
-vec2.equal = function(a, b) {
-    return !(
-        a[0] !== b[0] ||
-        a[1] !== b[1]
-    );
-};
-
-vec2.notEqual = function(a, b) {
-    return (
-        a[0] !== b[0] ||
-        a[1] !== b[1]
-    );
-};
-
-vec2.str = function(out) {
-
-    return "Vec2(" + out[0] + ", " + out[1] + ")";
-};
-
-
-},
-function(require, exports, module, global) {
-
-var vec3 = require(38),
-    Uniform = require(64);
+var vec3 = require(39),
+    Uniform = require(65);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -6416,8 +6448,8 @@ Uniform3i.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var vec4 = require(39),
-    Uniform = require(64);
+var vec4 = require(40),
+    Uniform = require(65);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -6451,8 +6483,8 @@ Uniform4i.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(68),
-    Uniform = require(64);
+var vec2 = require(2),
+    Uniform = require(65);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -6486,8 +6518,8 @@ Uniform2f.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38),
-    Uniform = require(64);
+var vec3 = require(39),
+    Uniform = require(65);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -6521,8 +6553,8 @@ Uniform3f.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var vec4 = require(39),
-    Uniform = require(64);
+var vec4 = require(40),
+    Uniform = require(65);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -6557,7 +6589,7 @@ Uniform4f.prototype.set = function(value, force) {
 function(require, exports, module, global) {
 
 var mat2 = require(75),
-    Uniform = require(64);
+    Uniform = require(65);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -6591,7 +6623,7 @@ UniformMatrix2fv.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34);
+var mathf = require(3);
 
 
 var mat2 = exports;
@@ -6810,7 +6842,7 @@ mat2.str = function(out) {
 function(require, exports, module, global) {
 
 var mat3 = require(77),
-    Uniform = require(64);
+    Uniform = require(65);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -6848,7 +6880,7 @@ UniformMatrix3fv.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34);
+var mathf = require(3);
 
 
 var mat3 = exports;
@@ -7240,7 +7272,7 @@ mat3.str = function(out) {
 function(require, exports, module, global) {
 
 var mat4 = require(79),
-    Uniform = require(64);
+    Uniform = require(65);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -7279,8 +7311,8 @@ UniformMatrix4fv.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34),
-    vec3 = require(38);
+var mathf = require(3),
+    vec3 = require(39);
 
 
 var mat4 = exports;
@@ -8292,7 +8324,7 @@ mat4.str = function(out) {
 },
 function(require, exports, module, global) {
 
-var Uniform = require(64);
+var Uniform = require(65);
 
 
 module.exports = UniformTexture;
@@ -8312,7 +8344,7 @@ UniformTexture.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var Uniform = require(64);
+var Uniform = require(65);
 
 
 module.exports = UniformTextureCube;
@@ -8372,7 +8404,7 @@ Attribute1i.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var inherits = require(17);
+var inherits = require(22);
 
 
 module.exports = Attribute;
@@ -8557,7 +8589,7 @@ Attribute4f.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(47);
 
 
 var emitterRenderMode = enums([
@@ -8574,7 +8606,7 @@ module.exports = emitterRenderMode;
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(47);
 
 
 var interpolation = enums([
@@ -8592,7 +8624,7 @@ module.exports = interpolation;
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(47);
 
 
 var normalMode = enums([
@@ -8608,7 +8640,7 @@ module.exports = normalMode;
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(47);
 
 
 var screenAlignment = enums([
@@ -8626,7 +8658,7 @@ module.exports = screenAlignment;
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(47);
 
 
 var side = enums([
@@ -8643,7 +8675,7 @@ module.exports = side;
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(47);
 
 
 var sortMode = enums([
@@ -8661,7 +8693,7 @@ module.exports = sortMode;
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(47);
 
 
 var wrapMode = enums([
@@ -8678,12 +8710,12 @@ module.exports = wrapMode;
 },
 function(require, exports, module, global) {
 
-var isString = require(15),
-    isNumber = require(36),
-    indexOf = require(61),
-    Class = require(10),
+var isString = require(11),
+    isNumber = require(15),
+    indexOf = require(62),
+    Class = require(21),
     Assets = require(100),
-    createLoop = require(28),
+    createLoop = require(32),
     Scene = require(101);
 
 
@@ -8846,8 +8878,8 @@ function BaseApplication_removeScene(_this, scene) {
 },
 function(require, exports, module, global) {
 
-var Class = require(10),
-    indexOf = require(61);
+var Class = require(21),
+    indexOf = require(62);
 
 
 var ClassPrototype = Class.prototype,
@@ -9003,9 +9035,9 @@ AssetsPrototype.load = function(callback) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
+var indexOf = require(62),
     Input = require(102),
-    Class = require(10),
+    Class = require(21),
     Time = require(124),
     Entity = require(125);
 
@@ -9568,8 +9600,8 @@ ScenePrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38),
-    EventEmitter = require(25),
+var vec3 = require(39),
+    EventEmitter = require(29),
     Handler = require(103),
     Mouse = require(116),
     Buttons = require(117),
@@ -9761,11 +9793,11 @@ InputPrototype.update = function(time, frame) {
 },
 function(require, exports, module, global) {
 
-var EventEmitter = require(25),
+var EventEmitter = require(29),
     focusNode = require(104),
     blurNode = require(105),
     getActiveElement = require(106),
-    eventListener = require(2),
+    eventListener = require(16),
     events = require(108);
 
 
@@ -9898,7 +9930,7 @@ HandlerPrototype.detach = function() {
 },
 function(require, exports, module, global) {
 
-var isNode = require(8);
+var isNode = require(19);
 
 
 module.exports = focusNode;
@@ -9916,7 +9948,7 @@ function focusNode(node) {
 },
 function(require, exports, module, global) {
 
-var isNode = require(8);
+var isNode = require(19);
 
 
 module.exports = blurNode;
@@ -9958,7 +9990,7 @@ function getActiveElement(ownerDocument) {
 },
 function(require, exports, module, global) {
 
-var isNode = require(8);
+var isNode = require(19);
 
 
 module.exports = isDocument;
@@ -10062,9 +10094,9 @@ function getButton(e) {
 },
 function(require, exports, module, global) {
 
-var isFunction = require(6),
-    isNumber = require(36),
-    defineProperty = require(24);
+var isFunction = require(7),
+    isNumber = require(15),
+    defineProperty = require(28);
 
 
 var descriptor = {
@@ -10640,7 +10672,7 @@ DeviceMotionEventPrototype.destructor = function() {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(68);
+var vec2 = require(2);
 
 
 var MousePrototype;
@@ -10956,7 +10988,7 @@ ButtonPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
+var indexOf = require(62),
     Touch = require(120);
 
 
@@ -11095,7 +11127,7 @@ TouchesPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(68),
+var vec2 = require(2),
     createPool = require(110);
 
 
@@ -11411,7 +11443,7 @@ AxesPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34);
+var mathf = require(3);
 
 
 var AxisPrototype;
@@ -11634,7 +11666,7 @@ AxisPrototype.toJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34);
+var mathf = require(3);
 
 
 var eventHandlers = exports,
@@ -11766,7 +11798,7 @@ eventHandlers.devicemotion = function(input, e) {
 },
 function(require, exports, module, global) {
 
-var time = require(31);
+var time = require(35);
 
 
 var TimePrototype;
@@ -11901,8 +11933,8 @@ TimePrototype.stampMS = function() {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
-    Class = require(10);
+var indexOf = require(62),
+    Class = require(21);
 
 
 var ClassPrototype = Class.prototype,
@@ -12218,9 +12250,9 @@ EntityPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var isString = require(15),
-    isNumber = require(36),
-    Class = require(10),
+var isString = require(11),
+    isNumber = require(15),
+    Class = require(21),
     BaseApplication = require(99);
 
 
@@ -12305,7 +12337,7 @@ ApplicationPrototype.loop = function() {
 },
 function(require, exports, module, global) {
 
-var Class = require(10);
+var Class = require(21);
 
 
 var ClassPrototype = Class.prototype,
@@ -12367,9 +12399,428 @@ AssetPrototype.load = function(callback) {
 },
 function(require, exports, module, global) {
 
+var isArray = require(59),
+    audio = require(129),
+    forEach = require(48),
+    eventListener = require(16),
+    Asset = require(127);
+
+
+var AssetPrototype = Asset.prototype,
+    AudioAssetPrototype;
+
+
+module.exports = AudioAsset;
+
+
+function AudioAsset() {
+    Asset.call(this);
+}
+Asset.extend(AudioAsset, "odin.AudioAsset");
+AudioAssetPrototype = AudioAsset.prototype;
+
+AudioAssetPrototype.construct = function(name, src) {
+
+    AssetPrototype.construct.call(this, name, null);
+
+    this.setSrc(src);
+
+    return this;
+};
+
+AudioAssetPrototype.destructor = function() {
+
+    AssetPrototype.destructor.call(this);
+
+    return this;
+};
+
+AudioAssetPrototype.setSrc = function(src) {
+
+    AssetPrototype.setSrc.call(this, isArray(src) ? src : [src]);
+
+    return this;
+};
+
+AudioAssetPrototype.load = function(callback) {
+    var _this = this,
+        count = this.src.length,
+        called = false;
+
+    function done() {
+        if (called === false) {
+            count -= 1;
+
+            if (_this.data) {
+                called = true;
+                callback();
+            } else if (count === 0) {
+                called = true;
+                callback(new Error("AudioAsset load(): no valid source for audio asset " + _this.name));
+            }
+        }
+    }
+
+    forEach(this.src, function(src) {
+        var request = new XMLHttpRequest();
+
+        request.open("GET", src, true);
+        request.responseType = "arraybuffer";
+
+        eventListener.on(request, "load", function onLoad() {
+            audioContext.decodeAudioData(
+                request.response,
+                function onDecodeAudioData(buffer) {
+                    _this.raw = buffer;
+                    done();
+                },
+                done
+            );
+        })
+
+        request.send(null);
+    });
+
+    return this;
+};
+
+
+},
+function(require, exports, module, global) {
+
+var audio = exports;
+
+
+audio.audioContext = require(130);
+audio.Clip = require(131);
+audio.Source = require(132);
+
+
+},
+function(require, exports, module, global) {
+
 var environment = require(1),
-    eventListener = require(2),
-    HttpError = require(129),
+    eventListener = require(16);
+
+
+var window = environment.window,
+
+    AudioContext = (
+        window.AudioContext ||
+        window.webkitAudioContext ||
+        window.mozAudioContext ||
+        window.oAudioContext ||
+        window.msAudioContext
+    ),
+
+    audioContext, AudioContextPrototype, OscillatorPrototype, BufferSourceNodePrototype, GainPrototype, onTouchStart;
+
+
+if (AudioContext) {
+    audioContext = new AudioContext();
+
+    AudioContextPrototype = AudioContext.prototype;
+    AudioContextPrototype.UNLOCKED = !environment.mobile;
+    AudioContextPrototype.createGain = AudioContextPrototype.createGain || AudioContextPrototype.createGainNode;
+    AudioContextPrototype.createPanner = AudioContextPrototype.createPanner || AudioContextPrototype.createPannerNode;
+    AudioContextPrototype.createDelay = AudioContextPrototype.createDelay || AudioContextPrototype.createDelayNode;
+    AudioContextPrototype.createScriptProcessor = AudioContextPrototype.createScriptProcessor || AudioContextPrototype.createJavaScriptNode;
+
+    OscillatorPrototype = audioContext.createOscillator().constructor.prototype;
+    OscillatorPrototype.start = OscillatorPrototype.start || OscillatorPrototype.noteOn;
+    OscillatorPrototype.stop = OscillatorPrototype.stop || OscillatorPrototype.stop;
+    OscillatorPrototype.setPeriodicWave = OscillatorPrototype.setPeriodicWave || OscillatorPrototype.setWaveTable;
+
+    BufferSourceNodePrototype = audioContext.createBufferSource().constructor.prototype;
+    BufferSourceNodePrototype.start = BufferSourceNodePrototype.start || BufferSourceNodePrototype.noteOn;
+    BufferSourceNodePrototype.stop = BufferSourceNodePrototype.stop || BufferSourceNodePrototype.stop;
+
+    GainPrototype = audioContext.createGain().gain.constructor.prototype;
+    GainPrototype.setTargetAtTime = GainPrototype.setTargetAtTime || GainPrototype.setTargetValueAtTime;
+
+    onTouchStart = function onTouchStart(e) {
+        var buffer = audioContext.createBuffer(1, 1, 22050),
+            source = audioContext.createBufferSource();
+
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start(0);
+
+        audioContext.UNLOCKED = true;
+
+        eventListener.off(window, "touchstart", onTouchStart);
+        eventListener.emit(window, "audiocontextunlock");
+    };
+
+    eventListener.on(window, "touchstart", onTouchStart);
+}
+
+
+module.exports = audioContext != null ? audioContext : false;
+
+
+},
+function(require, exports, module, global) {
+
+var environment = require(1),
+    eventListener = require(16)
+audioContext = require(130);
+
+
+var document = environment.document,
+    ClipPrototype;
+
+
+module.exports = Clip;
+
+
+function Clip(src) {
+    this.src = src;
+    this.raw = null;
+}
+ClipPrototype = Clip.prototype;
+
+if (audioContext) {
+    ClipPrototype.load = function(callback) {
+        var _this = this,
+            request = new XMLHttpRequest();
+
+        request.open("GET", this.src, true);
+        request.responseType = "arraybuffer";
+
+        eventListener.on(request, "load", function onLoad() {
+            audioContext.decodeAudioData(
+                request.response,
+                function onDecodeAudioData(buffer) {
+                    _this.raw = buffer;
+                    callback();
+                },
+                callback
+            );
+        })
+
+        request.send(null);
+    };
+} else {
+    ClipPrototype.load = function(callback) {
+        var _this = this,
+            audioNode = new Audio();
+
+        eventListener.on(audioNode, "canplaythrough", function onCanPlayThrough() {
+            _this.raw = audioNode;
+            callback();
+        });
+        eventListener.on(audioNode, "error", callback);
+
+        audioNode.src = this.src;
+    };
+}
+
+
+},
+function(require, exports, module, global) {
+
+var EventEmitter = require(29),
+    mathf = require(3),
+    vec3 = require(39),
+    time = require(35),
+    audioContext = require(130);
+
+
+var WebAudioSourcePrototype;
+
+
+module.exports = WebAudioSource;
+
+
+function WebAudioSource() {
+    var _this = this;
+
+    EventEmitter.call(this, -1);
+
+    this.clip = null;
+
+    this.currentTime = 0;
+    this.loop = false;
+    this.volume = 1;
+    this.dopplerLevel = 0;
+
+    this.playing = false;
+    this.paused = false;
+
+    this.__source = null;
+    this.__gain = null;
+    this.__panner = null;
+
+    this.__startTime = 0;
+
+    this.__onEnd = function onEnd() {
+        _this.__source = null;
+        _this.__gain = null;
+        _this.__panner = null;
+        _this.playing = false;
+        _this.paused = false;
+        _this.currentTime = 0;
+        _this.__startTime = 0;
+        _this.emit("end");
+    };
+}
+EventEmitter.extend(WebAudioSource);
+WebAudioSourcePrototype = WebAudioSource.prototype;
+
+WebAudioSourcePrototype.destructor = function() {
+
+    this.clip = null;
+
+    this.ambient = false;
+    this.currentTime = 0;
+    this.loop = false;
+    this.volume = 1;
+    this.dopplerLevel = 0;
+
+    this.playing = false;
+    this.paused = false;
+
+    this.__source = null;
+    this.__gain = null;
+    this.__panner = null;
+
+    this.__startTime = 0;
+
+    return this;
+};
+
+WebAudioSourcePrototype.setClip = function(value) {
+    this.clip = value;
+    return this;
+};
+
+WebAudioSourcePrototype.setAmbient = function(value) {
+    this.ambient = !!value;
+    return this;
+};
+
+WebAudioSourcePrototype.setDopplerLevel = function(value) {
+    this.dopplerLevel = mathf.clampBottom(value, 0);
+    return this;
+};
+
+WebAudioSourcePrototype.setVolume = function(value) {
+    var gain = this.__gain;
+
+    this.volume = mathf.clamp01(value || 0);
+
+    if (gain) {
+        gain.gain.value = this.volume;
+    }
+
+    return this;
+};
+
+WebAudioSourcePrototype.setLoop = function(value) {
+    this.loop = !!value;
+    return this;
+};
+
+WebAudioSourcePrototype.setPosition = function(position) {
+    var panner = this.__panner;
+
+    if (panner) {
+        panner.setPosition(position[0], position[1], position[2]);
+    }
+
+    return this;
+};
+
+WebAudioSource_reset = function(_this) {
+    var source = _this.__source = audioContext.createBufferSource(),
+        gain = _this.__gain = audioContext.createGain(),
+        panner;
+
+    if (_this.ambient === true) {
+        gain.connect(audioContext.destination);
+        source.connect(gain);
+    } else {
+        panner = _this.__panner = audioContext.createPanner();
+        gain.connect(audioContext.destination);
+        panner.connect(gain);
+        source.connect(panner);
+    }
+
+    source.buffer = _this.clip.raw;
+    source.onended = _this.__onEnd;
+
+    gain.gain.value = _this.volume;
+    source.loop = _this.loop;
+};
+
+WebAudioSourcePrototype.play = function(delay, offset, duration) {
+    var _this = this,
+        clip = this.clip,
+        currentTime, clipDuration, maxLength;
+
+    if (clip && clip.raw && (!this.playing || this.paused)) {
+        currentTime = this.currentTime;
+        clipDuration = clip.raw.duration;
+
+        delay = delay || 0;
+        offset = offset || currentTime;
+        duration = duration || clipDuration;
+        duration = duration > clipDuration ? clipDuration : duration;
+
+        WebAudioSource_reset(this);
+
+        this.playing = true;
+        this.paused = false;
+        this.__startTime = time.now();
+        this.currentTime = offset;
+
+        this.__source.start(delay, offset, duration);
+
+        if (delay === 0) {
+            this.emit("play");
+        } else {
+            setTimeout(function() {
+                _this.emit("play");
+            }, delay * 1000);
+        }
+    }
+
+    return this;
+};
+
+WebAudioSourcePrototype.pause = function() {
+    var clip = this.clip;
+
+    if (clip && clip.raw && this.playing && !this.paused) {
+        this.paused = true;
+        this.currentTime = time.now() - this.__startTime;
+        this.__source.stop(this.currentTime);
+        this.emit("pause");
+    }
+
+    return this;
+};
+
+WebAudioSourcePrototype.stop = function() {
+    var clip = this.clip;
+
+    if (this.playing && clip && clip.raw) {
+        this.__source.stop(0);
+        this.emit("stop");
+        this.__onEnd();
+    }
+
+    return this;
+};
+
+
+},
+function(require, exports, module, global) {
+
+var environment = require(1),
+    eventListener = require(16),
+    HttpError = require(134),
     Asset = require(127);
 
 
@@ -12447,9 +12898,9 @@ ImageAssetPrototype.load = function(callback) {
 },
 function(require, exports, module, global) {
 
-var forEach = require(47),
-    create = require(18),
-    STATUS_CODES = require(130);
+var forEach = require(48),
+    create = require(23),
+    STATUS_CODES = require(135);
 
 
 var STATUS_NAMES = {},
@@ -12597,8 +13048,8 @@ module.exports = {
 },
 function(require, exports, module, global) {
 
-var request = require(132),
-    HttpError = require(129),
+var request = require(137),
+    HttpError = require(134),
     Asset = require(127);
 
 
@@ -12643,17 +13094,17 @@ JSONAssetPrototype.load = function(callback) {
 },
 function(require, exports, module, global) {
 
-module.exports = require(133)(require(136));
+module.exports = require(138)(require(141));
 
 
 },
 function(require, exports, module, global) {
 
 module.exports = function createRequest(request) {
-    var methods = require(134),
-        forEach = require(47),
-        EventEmitter = require(25),
-        defaults = require(135);
+    var methods = require(139),
+        forEach = require(48),
+        EventEmitter = require(29),
+        defaults = require(140);
 
 
     forEach(methods, function(method) {
@@ -12727,9 +13178,9 @@ module.exports = [
 },
 function(require, exports, module, global) {
 
-var extend = require(21),
-    isString = require(15),
-    isFunction = require(6);
+var extend = require(26),
+    isString = require(11),
+    isFunction = require(7);
 
 
 function defaults(options) {
@@ -12773,17 +13224,17 @@ module.exports = defaults;
 },
 function(require, exports, module, global) {
 
-var PromisePolyfill = require(137),
-    XMLHttpRequestPolyfill = require(139),
-    isFunction = require(6),
-    isString = require(15),
-    forEach = require(47),
-    trim = require(140),
-    extend = require(21),
-    Response = require(141),
-    defaults = require(135),
-    camelcaseHeader = require(142),
-    parseContentType = require(145);
+var PromisePolyfill = require(142),
+    XMLHttpRequestPolyfill = require(144),
+    isFunction = require(7),
+    isString = require(11),
+    forEach = require(48),
+    trim = require(145),
+    extend = require(26),
+    Response = require(146),
+    defaults = require(140),
+    camelcaseHeader = require(147),
+    parseContentType = require(150);
 
 
 var supportsFormData = typeof(FormData) !== "undefined";
@@ -12970,12 +13421,12 @@ module.exports = request;
 },
 function(require, exports, module, global) {
 
-var process = require(3);
-var isArray = require(58),
-    isObject = require(4),
-    isFunction = require(6),
-    createStore = require(138),
-    fastSlice = require(26);
+var process = require(17);
+var isArray = require(59),
+    isObject = require(13),
+    isFunction = require(7),
+    createStore = require(143),
+    fastSlice = require(30);
 
 
 var PromisePolyfill, PrivatePromise;
@@ -13249,9 +13700,9 @@ module.exports = PromisePolyfill;
 },
 function(require, exports, module, global) {
 
-var has = require(11),
-    defineProperty = require(24),
-    isPrimitive = require(20);
+var has = require(5),
+    defineProperty = require(28),
+    isPrimitive = require(25);
 
 
 var emptyObject = {};
@@ -13327,7 +13778,7 @@ function createStore() {
 },
 function(require, exports, module, global) {
 
-var extend = require(21),
+var extend = require(26),
     environment = require(1);
 
 
@@ -13397,8 +13848,8 @@ module.exports = XMLHttpRequestPolyfill;
 },
 function(require, exports, module, global) {
 
-var isNative = require(12),
-    toString = require(14);
+var isNative = require(6),
+    toString = require(10);
 
 
 var StringPrototype = String.prototype,
@@ -13476,8 +13927,8 @@ function Response() {
 },
 function(require, exports, module, global) {
 
-var map = require(143),
-    capitalizeString = require(144);
+var map = require(148),
+    capitalizeString = require(149);
 
 
 module.exports = function camelcaseHeader(str) {
@@ -13488,10 +13939,10 @@ module.exports = function camelcaseHeader(str) {
 },
 function(require, exports, module, global) {
 
-var keys = require(22),
-    isNullOrUndefined = require(5),
-    fastBindThis = require(48),
-    isArrayLike = require(42);
+var keys = require(4),
+    isNullOrUndefined = require(8),
+    fastBindThis = require(49),
+    isArrayLike = require(43);
 
 
 module.exports = map;
@@ -13566,9 +14017,9 @@ module.exports = function parseContentType(str) {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(68),
-    WebGLContext = require(33),
-    ImageAsset = require(128);
+var vec2 = require(2),
+    WebGLContext = require(37),
+    ImageAsset = require(133);
 
 
 var ImageAssetPrototype = ImageAsset.prototype,
@@ -13752,9 +14203,9 @@ TexturePrototype.setType = function(value) {
 },
 function(require, exports, module, global) {
 
-var JSONAsset = require(131),
-    Shader = require(148),
-    enums = require(32);
+var JSONAsset = require(136),
+    Shader = require(153),
+    enums = require(36);
 
 
 var JSONAssetPrototype = JSONAsset.prototype,
@@ -13839,12 +14290,12 @@ MaterialPrototype.parse = function() {
 },
 function(require, exports, module, global) {
 
-var map = require(143),
-    keys = require(22),
-    template = require(149),
-    pushUnique = require(150),
-    Class = require(10),
-    chunks = require(151);
+var map = require(148),
+    keys = require(4),
+    template = require(154),
+    pushUnique = require(155),
+    Class = require(21),
+    chunks = require(156);
 
 
 var ClassPrototype = Class.prototype,
@@ -14047,7 +14498,7 @@ template.settings = {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61);
+var indexOf = require(62);
 
 
 module.exports = pushUnique;
@@ -14084,7 +14535,7 @@ function basePushUnique(array, value) {
 },
 function(require, exports, module, global) {
 
-var ShaderChunk = require(152);
+var ShaderChunk = require(157);
 
 
 var chunks = exports;
@@ -14358,7 +14809,7 @@ chunks.getUV = ShaderChunk.create({
 },
 function(require, exports, module, global) {
 
-var isArray = require(58);
+var isArray = require(59);
 
 
 var ShaderChunkPrototype;
@@ -14411,15 +14862,15 @@ ShaderChunkPrototype.destructor = function() {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38),
-    quat = require(154),
+var vec3 = require(39),
+    quat = require(159),
     mat4 = require(79),
-    mathf = require(34),
-    aabb3 = require(155),
-    FastHash = require(60),
-    Attribute = require(156),
-    JSONAsset = require(131),
-    GeometryBone = require(157);
+    mathf = require(3),
+    aabb3 = require(160),
+    FastHash = require(61),
+    Attribute = require(161),
+    JSONAsset = require(136),
+    GeometryBone = require(162);
 
 
 var JSONAssetPrototype = JSONAsset.prototype,
@@ -14912,9 +15363,9 @@ GeometryPrototype.calculateTangents = function() {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34),
-    vec3 = require(38),
-    vec4 = require(39);
+var mathf = require(3),
+    vec3 = require(39),
+    vec4 = require(40);
 
 
 var quat = exports;
@@ -15298,7 +15749,7 @@ quat.fromMat4 = function(out, m) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38);
+var vec3 = require(39);
 
 
 var aabb3 = exports;
@@ -15686,8 +16137,8 @@ AttributePrototype.setXYZW = function(index, x, y, z, w) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38),
-    quat = require(154),
+var vec3 = require(39),
+    quat = require(159),
     mat4 = require(79);
 
 
@@ -15741,10 +16192,10 @@ GeometryBonePrototype.destructor = function() {
 },
 function(require, exports, module, global) {
 
-var isNumber = require(36),
+var isNumber = require(15),
     environment = require(1),
-    eventListener = require(2),
-    Class = require(10);
+    eventListener = require(16),
+    Class = require(21);
 
 
 var ClassPrototype = Class.prototype,
@@ -15959,18 +16410,18 @@ function Canvas_update(_this) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
-    WebGLContext = require(33),
+var indexOf = require(62),
+    WebGLContext = require(37),
     mat4 = require(79),
 
-    Class = require(10),
+    Class = require(21),
     side = require(96),
 
-    MeshRenderer = require(160),
-    SpriteRenderer = require(162),
+    MeshRenderer = require(165),
+    SpriteRenderer = require(167),
 
-    RendererGeometry = require(163),
-    RendererMaterial = require(164);
+    RendererGeometry = require(168),
+    RendererMaterial = require(169);
 
 
 var enums = WebGLContext.enums,
@@ -16269,7 +16720,7 @@ function(require, exports, module, global) {
 
 var mat3 = require(77),
     mat4 = require(79),
-    ComponentRenderer = require(161);
+    ComponentRenderer = require(166);
 
 
 var MeshRendererPrototype;
@@ -16330,7 +16781,7 @@ MeshRendererPrototype.render = function(mesh, camera) {
 },
 function(require, exports, module, global) {
 
-var Class = require(10);
+var Class = require(21);
 
 
 var ComponentRendererPrototype;
@@ -16420,11 +16871,11 @@ function(require, exports, module, global) {
 
 var mat3 = require(77),
     mat4 = require(79),
-    vec2 = require(68),
-    vec4 = require(39),
-    WebGLContext = require(33),
-    Geometry = require(153),
-    ComponentRenderer = require(161);
+    vec2 = require(2),
+    vec4 = require(40),
+    WebGLContext = require(37),
+    Geometry = require(158),
+    ComponentRenderer = require(166);
 
 
 var depth = WebGLContext.enums.depth,
@@ -16554,7 +17005,7 @@ SpriteRendererPrototype.render = function(sprite, camera) {
 },
 function(require, exports, module, global) {
 
-var FastHash = require(60);
+var FastHash = require(61);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array,
@@ -16782,7 +17233,7 @@ function DataBuffer(name, offset) {
 },
 function(require, exports, module, global) {
 
-var has = require(11);
+var has = require(5);
 
 
 var RendererMaterialPrototype;
@@ -16947,7 +17398,7 @@ function getOptions(data) {
 },
 function(require, exports, module, global) {
 
-var Class = require(10);
+var Class = require(21);
 
 
 var PluginPrototype;
@@ -17004,8 +17455,8 @@ PluginPrototype.destroy = function(emitEvent) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
-    Class = require(10);
+var indexOf = require(62),
+    Class = require(21);
 
 
 var ClassPrototype = Class.prototype,
@@ -17158,8 +17609,8 @@ ComponentManagerPrototype.removeComponent = function(component) {
 },
 function(require, exports, module, global) {
 
-var Class = require(10),
-    ComponentManager = require(166);
+var Class = require(21),
+    ComponentManager = require(171);
 
 
 var ClassPrototype = Class.prototype,
@@ -17247,12 +17698,185 @@ ComponentPrototype.destroy = function(emitEvent) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38),
-    quat = require(154),
+var audio = require(129),
+    vec2 = require(2),
+    vec3 = require(39),
+    isNumber = require(15),
+    Component = require(172);
+
+
+var ComponentPrototype = Component.prototype,
+    AudioSourcePrototype;
+
+
+module.exports = AudioSource;
+
+
+function AudioSource() {
+    var _this = this;
+
+    Component.call(this);
+
+    this.offset = vec3.create();
+
+    this.__source = new audio.Source();
+
+    this.__source.on("play", function onPlay() {
+        _this.emit("play");
+    });
+    this.__source.on("pause", function onPause() {
+        _this.emit("pause");
+    });
+    this.__source.on("stop", function onStop() {
+        _this.emit("stop");
+    });
+    this.__source.on("end", function onEnd() {
+        _this.emit("end");
+    });
+}
+Component.extend(AudioSource, "odin.AudioSource");
+AudioSourcePrototype = AudioSource.prototype;
+
+AudioSourcePrototype.construct = function(clip, options) {
+
+    ComponentPrototype.construct.call(this, clip);
+
+    this.__source.setClip(clip);
+
+    if (options) {
+        if (options.ambient) {
+            this.setAmbient(options.ambient);
+        }
+        if (isNumber(options.dopplerLevel)) {
+            this.setDopplerLevel(options.dopplerLevel);
+        }
+        if (isNumber(options.volume)) {
+            this.setVolume(options.volume);
+        }
+        if (options.loop) {
+            this.setLoop(options.loop);
+        }
+    }
+
+    return this;
+};
+
+AudioSourcePrototype.destructor = function() {
+
+    ComponentPrototype.destructor.call(this);
+
+    this.__source.destructor();
+
+    return this;
+};
+
+AudioSourcePrototype.setClip = function(value) {
+    this.__source.setClip(value);
+    return this;
+};
+
+AudioSourcePrototype.setAmbient = function(value) {
+    this.__source.setAmbient(value);
+    return this;
+};
+
+AudioSourcePrototype.setDopplerLevel = function(value) {
+    this.__source.setDopplerLevel(value);
+    return this;
+};
+
+AudioSourcePrototype.setVolume = function(value) {
+    this.__source.setVolume(value);
+    return this;
+};
+
+AudioSourcePrototype.setLoop = function(value) {
+    this.__source.setVolume(value);
+    return this;
+};
+
+AudioSourcePrototype.play = function(delay, offset, duration) {
+    this.__source.play(delay, offset, duration);
+    return this;
+};
+
+AudioSourcePrototype.pause = function() {
+    this.__source.pause();
+    return this;
+};
+
+AudioSourcePrototype.stop = function() {
+    this.__source.stop();
+    return this;
+};
+
+var update_position = vec3.create();
+AudioSourcePrototype.update = function() {
+    var source = this.__source,
+        dopplerLevel, entity, scene, camera, transform, transform2d, cameraTransform;
+
+    ComponentPrototype.update.call(this);
+
+    if (source.playing) {
+        dopplerLevel = source.dopplerLevel;
+        entity = this.entity;
+        scene = entity && entity.scene;
+        camera = scene && scene.hasManager("odin.Camera") && scene.getManager("odin.Camera").getActive();
+
+        if (!source.ambient && camera) {
+            transform = entity.components["odin.Transform"];
+            transform2d = entity.components["odin.Transform2D"];
+            cameraTransform = camera.entity.components["odin.Transform"] || camera.entity.components["odin.Transform2D"];
+
+            if (transform2d) {
+                vec2.add(update_position, transform2d.position, this.offset);
+                vec2.sub(update_position, update_position, cameraTransform.position);
+                if (dopplerLevel > 0) {
+                    vec2.smul(update_position, dopplerLevel);
+                }
+            } else if (transform) {
+                vec3.add(update_position, transform.position, this.offset);
+                vec3.sub(update_position, update_position, cameraTransform.position);
+                if (dopplerLevel > 0) {
+                    vec3.smul(update_position, dopplerLevel);
+                }
+            }
+
+            if (camera.orthographic) {
+                update_position[2] = camera.orthographicSize * 0.5;
+            }
+
+            source.setPosition(update_position);
+        }
+    }
+
+    return this;
+};
+
+AudioSourcePrototype.toJSON = function(json) {
+
+    json = ComponentPrototype.toJSON.call(this, json);
+
+    return json;
+};
+
+AudioSourcePrototype.fromJSON = function(json) {
+
+    ComponentPrototype.fromJSON.call(this, json);
+
+    return this;
+};
+
+
+},
+function(require, exports, module, global) {
+
+var vec3 = require(39),
+    quat = require(159),
     mat3 = require(77),
     mat4 = require(79),
-    Component = require(167),
-    TransformManager = require(169);
+    Component = require(172),
+    TransformManager = require(175);
 
 
 var ComponentPrototype = Component.prototype,
@@ -17436,7 +18060,7 @@ TransformPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(166);
+var ComponentManager = require(171);
 
 
 var TransformManagerPrototype;
@@ -17459,12 +18083,12 @@ TransformManagerPrototype.sortFunction = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(68),
+var vec2 = require(2),
     mat3 = require(77),
-    mat32 = require(171),
+    mat32 = require(177),
     mat4 = require(79),
-    Component = require(167),
-    Transform2DManager = require(172);
+    Component = require(172),
+    Transform2DManager = require(178);
 
 
 var ComponentPrototype = Component.prototype,
@@ -17645,8 +18269,8 @@ Transform2DPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34),
-    vec2 = require(68);
+var mathf = require(3),
+    vec2 = require(2);
 
 
 var mat32 = exports;
@@ -18023,7 +18647,7 @@ mat32.notEqual = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(166);
+var ComponentManager = require(171);
 
 
 var Transform2DManagerPrototype;
@@ -18046,14 +18670,14 @@ Transform2DManagerPrototype.sortFunction = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var isNumber = require(36),
-    Component = require(167),
-    CameraManager = require(174),
-    mathf = require(34),
-    vec2 = require(68),
-    vec3 = require(38),
+var isNumber = require(15),
+    Component = require(172),
+    CameraManager = require(180),
+    mathf = require(3),
+    vec2 = require(2),
+    vec3 = require(39),
     mat4 = require(79),
-    color = require(37);
+    color = require(38);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18360,7 +18984,7 @@ CameraPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(166);
+var ComponentManager = require(171);
 
 
 var ComponentManagerPrototype = ComponentManager.prototype,
@@ -18416,9 +19040,9 @@ CameraManagerPrototype.getActive = function() {
     return this.__active;
 };
 
-CameraManagerPrototype.add = function(component) {
+CameraManagerPrototype.addComponent = function(component) {
 
-    ComponentManagerPrototype.add.call(this, component);
+    ComponentManagerPrototype.addComponent.call(this, component);
 
     if (component.__active) {
         this.setActive(component);
@@ -18427,9 +19051,9 @@ CameraManagerPrototype.add = function(component) {
     return this;
 };
 
-CameraManagerPrototype.remove = function(component) {
+CameraManagerPrototype.removeComponent = function(component) {
 
-    ComponentManagerPrototype.remove.call(this, component);
+    ComponentManagerPrototype.removeComponent.call(this, component);
 
     if (component.__active) {
         this.__active = null;
@@ -18442,9 +19066,9 @@ CameraManagerPrototype.remove = function(component) {
 },
 function(require, exports, module, global) {
 
-var isNumber = require(36),
-    Component = require(167),
-    SpriteManager = require(176);
+var isNumber = require(15),
+    Component = require(172),
+    SpriteManager = require(182);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18592,8 +19216,8 @@ SpritePrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
-    ComponentManager = require(166);
+var indexOf = require(62),
+    ComponentManager = require(171);
 
 
 var SpriteManagerPrototype;
@@ -18793,11 +19417,11 @@ SpriteManagerPrototype.removeComponent = function(component) {
 },
 function(require, exports, module, global) {
 
-var Component = require(167),
-    Bone = require(178),
-    Transform = require(168),
+var Component = require(172),
+    Bone = require(184),
+    Transform = require(174),
     Entity = require(125),
-    MeshManager = require(180);
+    MeshManager = require(186);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18898,11 +19522,11 @@ MeshPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38),
-    quat = require(154),
+var vec3 = require(39),
+    quat = require(159),
     mat4 = require(79),
-    Component = require(167),
-    BoneManager = require(179);
+    Component = require(172),
+    BoneManager = require(185);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18986,42 +19610,40 @@ BonePrototype.update = function() {
 
     mat4.copy(uniform, transform.matrix);
 
-    if (this.skinned === false) {
-        return this;
-    }
+    if (this.skinned !== false) {
+        parent = entity.parent;
 
-    parent = entity.parent;
+        if (parent && this.parentIndex !== -1) {
+            mat = MAT;
+            mat4.copy(mat, parent.components["odin.Bone"].uniform);
 
-    if (parent && this.parentIndex !== -1) {
-        mat = MAT;
-        mat4.copy(mat, parent.components["odin.Bone"].uniform);
+            inheritPosition = this.inheritPosition;
+            inheritScale = this.inheritScale;
+            inheritRotation = this.inheritRotation;
 
-        inheritPosition = this.inheritPosition;
-        inheritScale = this.inheritScale;
-        inheritRotation = this.inheritRotation;
+            if (!inheritPosition || !inheritScale || !inheritRotation) {
 
-        if (!inheritPosition || !inheritScale || !inheritRotation) {
+                position = POSITION;
+                scale = SCALE;
+                rotation = ROTATION;
 
-            position = POSITION;
-            scale = SCALE;
-            rotation = ROTATION;
+                mat4.decompose(mat, position, scale, rotation);
 
-            mat4.decompose(mat, position, scale, rotation);
+                if (!inheritPosition) {
+                    vec3.set(position, 0, 0, 0);
+                }
+                if (!inheritScale) {
+                    vec3.set(scale, 1, 1, 1);
+                }
+                if (!inheritRotation) {
+                    quat.set(rotation, 0, 0, 0, 1);
+                }
 
-            if (!inheritPosition) {
-                vec3.set(position, 0, 0, 0);
+                mat4.compose(mat, position, scale, rotation);
             }
-            if (!inheritScale) {
-                vec3.set(scale, 1, 1, 1);
-            }
-            if (!inheritRotation) {
-                quat.set(rotation, 0, 0, 0, 1);
-            }
 
-            mat4.compose(mat, position, scale, rotation);
+            mat4.mul(uniform, mat, uniform);
         }
-
-        mat4.mul(uniform, mat, uniform);
     }
 
     return this;
@@ -19045,7 +19667,7 @@ BonePrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(166);
+var ComponentManager = require(171);
 
 
 var BoneManagerPrototype;
@@ -19068,7 +19690,7 @@ BoneManagerPrototype.sortFunction = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(166);
+var ComponentManager = require(171);
 
 
 var MeshManagerPrototype;
@@ -19091,10 +19713,10 @@ MeshManagerPrototype.sortFunction = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38),
-    quat = require(154),
-    mathf = require(34),
-    Component = require(167),
+var vec3 = require(39),
+    quat = require(159),
+    mathf = require(3),
+    Component = require(172),
     wrapMode = require(98);
 
 
@@ -19367,9 +19989,9 @@ MeshAnimationPrototype.fromJSON = function(json) {
 function(require, exports, module, global) {
 
 var environment = require(1),
-    mathf = require(34),
-    vec3 = require(38),
-    Component = require(167);
+    mathf = require(3),
+    vec3 = require(39),
+    Component = require(172);
 
 
 var ComponentPrototype = Component.prototype,
@@ -19687,9 +20309,9 @@ function OrbitControl_onMouseWheel(_this, e, wheel) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
-    particleState = require(184),
-    Component = require(167);
+var indexOf = require(62),
+    particleState = require(190),
+    Component = require(172);
 
 
 var ComponentPrototype = Component.prototype,
@@ -19711,7 +20333,7 @@ function ParticleSystem() {
 Component.extend(ParticleSystem, "odin.ParticleSystem");
 ParticleSystemPrototype = ParticleSystem.prototype;
 
-ParticleSystem.Emitter = require(185);
+ParticleSystem.Emitter = require(191);
 
 ParticleSystemPrototype.construct = function(options) {
     var emitters, i, il;
@@ -19852,13 +20474,14 @@ ParticleSystemPrototype.eachEmitter = function(fn) {
 
 ParticleSystemPrototype.toJSON = function(json) {
     var emitters = this.emitters,
-        jsonEmitters = json.emitters || (json.emitters = []),
         i = -1,
-        il = emitters.length - 1;
+        il = emitters.length - 1,
+        jsonEmitters;
 
     json = ComponentPrototype.toJSON.call(this, json);
 
-    json = this.playing;
+    jsonEmitters = json.emitters || (json.emitters = [])
+    json.playing = this.playing;
 
     while (i++ < il) {
         jsonEmitters[i] = emitters[i].toJSON(jsonEmitters[i]);
@@ -19885,7 +20508,7 @@ ParticleSystemPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(47);
 
 
 var particleState = enums([
@@ -19902,21 +20525,21 @@ module.exports = particleState;
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
-    isNumber = require(36),
-    mathf = require(34),
-    vec2 = require(68),
-    vec3 = require(38),
-    quat = require(154),
-    particleState = require(184),
+var indexOf = require(62),
+    isNumber = require(15),
+    mathf = require(3),
+    vec2 = require(2),
+    vec3 = require(39),
+    quat = require(159),
+    particleState = require(190),
     normalMode = require(94),
     emitterRenderMode = require(92),
     interpolation = require(93),
     screenAlignment = require(95),
     sortMode = require(97),
-    createSeededRandom = require(186),
-    randFloat = require(187),
-    Class = require(10);
+    createSeededRandom = require(192),
+    randFloat = require(193),
+    Class = require(21);
 
 
 var MAX_SAFE_INTEGER = mathf.pow(2, 53) - 1,
@@ -19934,8 +20557,8 @@ function Emitter() {
 
     this.__state = particleState.NONE;
     this.__currentTime = 0.0;
-    this.__random = createSeededRandom();
 
+    this.random = createSeededRandom();
     this.seed = null;
 
     this.renderMode = null;
@@ -19993,10 +20616,6 @@ function Emitter() {
 
     this.modules = {};
     this.__moduleArray = [];
-
-    this.random = function random() {
-        return _this.__random(_this.__currentTime);
-    };
 }
 Class.extend(Emitter, "odin.ParticleSystem.Emitter");
 EmitterPrototype = Emitter.prototype;
@@ -20012,7 +20631,7 @@ EmitterPrototype.construct = function(options) {
         options.seed > MAX_SAFE_INTEGER ? MAX_SAFE_INTEGER : options.seed
     ) : (mathf.random() * MAX_SAFE_INTEGER));
 
-    this.__random.seed(this.seed);
+    this.random.seed(this.seed);
 
     this.renderMode = options.renderMode || emitterRenderMode.NORMAL;
 
@@ -20258,12 +20877,12 @@ function Emitter_end(_this, time) {
     _this.__currentTime = 0.0;
 
     if (_this.duration > 0.0 && _this.useDurationRange && _this.recalcDurationRangeEachLoop) {
-        _this.__duration = randFloat(_this.random, _this.minDuration, _this.duration);
+        _this.__duration = randFloat(_this.random, _this.minDuration, _this.duration, _this.__currentTime);
     }
 
     if (_this.useDelayRange && !_this.delayFirstLoopOnly) {
         _this.__currentDelayTime = 0.0;
-        _this.__delay = randFloat(_this.random, _this.minDelay, _this.delay);
+        _this.__delay = randFloat(_this.random, _this.minDelay, _this.delay, _this.__currentTime);
     }
 
     if (_this.loopCount > 0) {
@@ -20292,18 +20911,18 @@ EmitterPrototype.eachModule = function(fn) {
 EmitterPrototype.play = function() {
     if (this.__state === particleState.NONE) {
 
-        this.__random.seed(this.seed);
+        this.random.seed(this.seed);
 
         this.__curentTime = 0.0;
         this.__state = particleState.START;
 
         if (this.useDurationRange) {
-            this.__duration = randFloat(this.random, this.minDuration, this.duration);
+            this.__duration = randFloat(this.random, this.minDuration, this.duration, this.__currentTime);
         }
 
         if (this.useDelayRange) {
             this.__currentDelayTime = 0.0;
-            this.__delay = randFloat(this.random, this.minDelay, this.delay);
+            this.__delay = randFloat(this.random, this.minDelay, this.delay, this.__currentTime);
         }
     }
 };
@@ -20352,9 +20971,8 @@ module.exports = createSeededRandom;
 function createSeededRandom() {
     var seed = 0;
 
-    function random(s) {
-        seed = (MULTIPLIER * (seed + (s * 1000)) + OFFSET) % MODULO;
-        return seed / MODULO;
+    function random(t) {
+        return ((MULTIPLIER * (seed + (t * 1000)) + OFFSET) % MODULO) / MODULO;
     }
 
     random.seed = function(value) {
@@ -20371,8 +20989,22 @@ function(require, exports, module, global) {
 module.exports = randFloat;
 
 
-function randFloat(random, min, max) {
-    return min + (random() * (max - min));
+function randFloat(random, min, max, t) {
+    return min + (random(t) * (max - min));
+}
+
+
+},
+function(require, exports, module, global) {
+
+var mathf = require(3);
+
+
+module.exports = randInt;
+
+
+function randInt(random, min, max, t) {
+    return mathf.round(min + (random(t) * (max - min)));
 }
 
 

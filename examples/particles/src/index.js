@@ -52,7 +52,7 @@ eventListener.on(environment.window, "load", function onLoad() {
             })
         })
     );
-
+    
     var scene = global.scene = odin.Scene.create("scene").addEntity(camera, ps),
         cameraComponent = camera.getComponent("odin.Camera");
 

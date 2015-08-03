@@ -10,6 +10,7 @@ module.exports = Particle2D;
 
 
 function Particle2D() {
+
     this.drag = 0.01;
 
     this.currentLife = 0;

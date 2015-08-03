@@ -9,9 +9,8 @@ module.exports = createSeededRandom;
 function createSeededRandom() {
     var seed = 0;
 
-    function random(s) {
-        seed = (MULTIPLIER * (seed + (s * 1000)) + OFFSET) % MODULO;
-        return seed / MODULO;
+    function random(t) {
+        return ((MULTIPLIER * (seed + (t * 1000)) + OFFSET) % MODULO) / MODULO;
     }
 
     random.seed = function(value) {

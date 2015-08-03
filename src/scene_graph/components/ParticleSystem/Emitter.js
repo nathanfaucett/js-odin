@@ -30,8 +30,8 @@ function Emitter() {
 
     this.__state = particleState.NONE;
     this.__currentTime = 0.0;
-    this.__random = createSeededRandom();
 
+    this.random = createSeededRandom();
     this.seed = null;
 
     this.renderMode = null;
@@ -89,10 +89,6 @@ function Emitter() {
 
     this.modules = {};
     this.__moduleArray = [];
-
-    this.random = function random() {
-        return _this.__random(_this.__currentTime);
-    };
 }
 Class.extend(Emitter, "odin.ParticleSystem.Emitter");
 EmitterPrototype = Emitter.prototype;
@@ -108,7 +104,7 @@ EmitterPrototype.construct = function(options) {
         options.seed > MAX_SAFE_INTEGER ? MAX_SAFE_INTEGER : options.seed
     ) : (mathf.random() * MAX_SAFE_INTEGER));
 
-    this.__random.seed(this.seed);
+    this.random.seed(this.seed);
 
     this.renderMode = options.renderMode || emitterRenderMode.NORMAL;
 
@@ -354,12 +350,12 @@ function Emitter_end(_this, time) {
     _this.__currentTime = 0.0;
 
     if (_this.duration > 0.0 && _this.useDurationRange && _this.recalcDurationRangeEachLoop) {
-        _this.__duration = randFloat(_this.random, _this.minDuration, _this.duration);
+        _this.__duration = randFloat(_this.random, _this.minDuration, _this.duration, _this.__currentTime);
     }
 
     if (_this.useDelayRange && !_this.delayFirstLoopOnly) {
         _this.__currentDelayTime = 0.0;
-        _this.__delay = randFloat(_this.random, _this.minDelay, _this.delay);
+        _this.__delay = randFloat(_this.random, _this.minDelay, _this.delay, _this.__currentTime);
     }
 
     if (_this.loopCount > 0) {
@@ -388,18 +384,18 @@ EmitterPrototype.eachModule = function(fn) {
 EmitterPrototype.play = function() {
     if (this.__state === particleState.NONE) {
 
-        this.__random.seed(this.seed);
+        this.random.seed(this.seed);
 
         this.__curentTime = 0.0;
         this.__state = particleState.START;
 
         if (this.useDurationRange) {
-            this.__duration = randFloat(this.random, this.minDuration, this.duration);
+            this.__duration = randFloat(this.random, this.minDuration, this.duration, this.__currentTime);
         }
 
         if (this.useDelayRange) {
             this.__currentDelayTime = 0.0;
-            this.__delay = randFloat(this.random, this.minDelay, this.delay);
+            this.__delay = randFloat(this.random, this.minDelay, this.delay, this.__currentTime);
         }
     }
 };

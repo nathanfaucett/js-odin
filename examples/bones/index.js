@@ -938,38 +938,45 @@ odin.Application = require(126);
 
 odin.Assets = require(100);
 odin.Asset = require(127);
-odin.ImageAsset = require(128);
-odin.JSONAsset = require(131);
-odin.Texture = require(146);
-odin.Material = require(147);
-odin.Geometry = require(153);
+odin.AudioAsset = require(128);
+odin.ImageAsset = require(133);
+odin.JSONAsset = require(136);
+odin.Texture = require(151);
+odin.Material = require(152);
+odin.Geometry = require(158);
 
-odin.Canvas = require(158);
-odin.Renderer = require(159);
-odin.ComponentRenderer = require(161);
+odin.Canvas = require(163);
+odin.Renderer = require(164);
+odin.ComponentRenderer = require(166);
 
-odin.Shader = require(148);
+odin.Shader = require(153);
 
 odin.Scene = require(101);
-odin.Plugin = require(165);
+odin.Plugin = require(170);
 odin.Entity = require(125);
 
-odin.ComponentManager = require(166);
+odin.ComponentManager = require(171);
 
-odin.Component = require(167);
+odin.Component = require(172);
 
-odin.Transform = require(168);
-odin.Transform2D = require(170);
-odin.Camera = require(173);
+odin.AudioSource = require(173);
 
-odin.Sprite = require(175);
+odin.Transform = require(174);
+odin.Transform2D = require(176);
+odin.Camera = require(179);
 
-odin.Mesh = require(177);
-odin.MeshAnimation = require(181);
+odin.Sprite = require(181);
 
-odin.OrbitControl = require(182);
+odin.Mesh = require(183);
+odin.MeshAnimation = require(187);
 
-odin.ParticleSystem = require(183);
+odin.OrbitControl = require(188);
+
+odin.ParticleSystem = require(189);
+
+odin.createSeededRandom = require(192);
+odin.randFloat = require(193);
+odin.randInt = require(194);
 
 
 },
@@ -12350,9 +12357,428 @@ AssetPrototype.load = function(callback) {
 },
 function(require, exports, module, global) {
 
+var isArray = require(58),
+    audio = require(129),
+    forEach = require(47),
+    eventListener = require(2),
+    Asset = require(127);
+
+
+var AssetPrototype = Asset.prototype,
+    AudioAssetPrototype;
+
+
+module.exports = AudioAsset;
+
+
+function AudioAsset() {
+    Asset.call(this);
+}
+Asset.extend(AudioAsset, "odin.AudioAsset");
+AudioAssetPrototype = AudioAsset.prototype;
+
+AudioAssetPrototype.construct = function(name, src) {
+
+    AssetPrototype.construct.call(this, name, null);
+
+    this.setSrc(src);
+
+    return this;
+};
+
+AudioAssetPrototype.destructor = function() {
+
+    AssetPrototype.destructor.call(this);
+
+    return this;
+};
+
+AudioAssetPrototype.setSrc = function(src) {
+
+    AssetPrototype.setSrc.call(this, isArray(src) ? src : [src]);
+
+    return this;
+};
+
+AudioAssetPrototype.load = function(callback) {
+    var _this = this,
+        count = this.src.length,
+        called = false;
+
+    function done() {
+        if (called === false) {
+            count -= 1;
+
+            if (_this.data) {
+                called = true;
+                callback();
+            } else if (count === 0) {
+                called = true;
+                callback(new Error("AudioAsset load(): no valid source for audio asset " + _this.name));
+            }
+        }
+    }
+
+    forEach(this.src, function(src) {
+        var request = new XMLHttpRequest();
+
+        request.open("GET", src, true);
+        request.responseType = "arraybuffer";
+
+        eventListener.on(request, "load", function onLoad() {
+            audioContext.decodeAudioData(
+                request.response,
+                function onDecodeAudioData(buffer) {
+                    _this.raw = buffer;
+                    done();
+                },
+                done
+            );
+        })
+
+        request.send(null);
+    });
+
+    return this;
+};
+
+
+},
+function(require, exports, module, global) {
+
+var audio = exports;
+
+
+audio.audioContext = require(130);
+audio.Clip = require(131);
+audio.Source = require(132);
+
+
+},
+function(require, exports, module, global) {
+
+var environment = require(1),
+    eventListener = require(2);
+
+
+var window = environment.window,
+
+    AudioContext = (
+        window.AudioContext ||
+        window.webkitAudioContext ||
+        window.mozAudioContext ||
+        window.oAudioContext ||
+        window.msAudioContext
+    ),
+
+    audioContext, AudioContextPrototype, OscillatorPrototype, BufferSourceNodePrototype, GainPrototype, onTouchStart;
+
+
+if (AudioContext) {
+    audioContext = new AudioContext();
+
+    AudioContextPrototype = AudioContext.prototype;
+    AudioContextPrototype.UNLOCKED = !environment.mobile;
+    AudioContextPrototype.createGain = AudioContextPrototype.createGain || AudioContextPrototype.createGainNode;
+    AudioContextPrototype.createPanner = AudioContextPrototype.createPanner || AudioContextPrototype.createPannerNode;
+    AudioContextPrototype.createDelay = AudioContextPrototype.createDelay || AudioContextPrototype.createDelayNode;
+    AudioContextPrototype.createScriptProcessor = AudioContextPrototype.createScriptProcessor || AudioContextPrototype.createJavaScriptNode;
+
+    OscillatorPrototype = audioContext.createOscillator().constructor.prototype;
+    OscillatorPrototype.start = OscillatorPrototype.start || OscillatorPrototype.noteOn;
+    OscillatorPrototype.stop = OscillatorPrototype.stop || OscillatorPrototype.stop;
+    OscillatorPrototype.setPeriodicWave = OscillatorPrototype.setPeriodicWave || OscillatorPrototype.setWaveTable;
+
+    BufferSourceNodePrototype = audioContext.createBufferSource().constructor.prototype;
+    BufferSourceNodePrototype.start = BufferSourceNodePrototype.start || BufferSourceNodePrototype.noteOn;
+    BufferSourceNodePrototype.stop = BufferSourceNodePrototype.stop || BufferSourceNodePrototype.stop;
+
+    GainPrototype = audioContext.createGain().gain.constructor.prototype;
+    GainPrototype.setTargetAtTime = GainPrototype.setTargetAtTime || GainPrototype.setTargetValueAtTime;
+
+    onTouchStart = function onTouchStart(e) {
+        var buffer = audioContext.createBuffer(1, 1, 22050),
+            source = audioContext.createBufferSource();
+
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start(0);
+
+        audioContext.UNLOCKED = true;
+
+        eventListener.off(window, "touchstart", onTouchStart);
+        eventListener.emit(window, "audiocontextunlock");
+    };
+
+    eventListener.on(window, "touchstart", onTouchStart);
+}
+
+
+module.exports = audioContext != null ? audioContext : false;
+
+
+},
+function(require, exports, module, global) {
+
+var environment = require(1),
+    eventListener = require(2)
+audioContext = require(130);
+
+
+var document = environment.document,
+    ClipPrototype;
+
+
+module.exports = Clip;
+
+
+function Clip(src) {
+    this.src = src;
+    this.raw = null;
+}
+ClipPrototype = Clip.prototype;
+
+if (audioContext) {
+    ClipPrototype.load = function(callback) {
+        var _this = this,
+            request = new XMLHttpRequest();
+
+        request.open("GET", this.src, true);
+        request.responseType = "arraybuffer";
+
+        eventListener.on(request, "load", function onLoad() {
+            audioContext.decodeAudioData(
+                request.response,
+                function onDecodeAudioData(buffer) {
+                    _this.raw = buffer;
+                    callback();
+                },
+                callback
+            );
+        })
+
+        request.send(null);
+    };
+} else {
+    ClipPrototype.load = function(callback) {
+        var _this = this,
+            audioNode = new Audio();
+
+        eventListener.on(audioNode, "canplaythrough", function onCanPlayThrough() {
+            _this.raw = audioNode;
+            callback();
+        });
+        eventListener.on(audioNode, "error", callback);
+
+        audioNode.src = this.src;
+    };
+}
+
+
+},
+function(require, exports, module, global) {
+
+var EventEmitter = require(25),
+    mathf = require(34),
+    vec3 = require(38),
+    time = require(31),
+    audioContext = require(130);
+
+
+var WebAudioSourcePrototype;
+
+
+module.exports = WebAudioSource;
+
+
+function WebAudioSource() {
+    var _this = this;
+
+    EventEmitter.call(this, -1);
+
+    this.clip = null;
+
+    this.currentTime = 0;
+    this.loop = false;
+    this.volume = 1;
+    this.dopplerLevel = 0;
+
+    this.playing = false;
+    this.paused = false;
+
+    this.__source = null;
+    this.__gain = null;
+    this.__panner = null;
+
+    this.__startTime = 0;
+
+    this.__onEnd = function onEnd() {
+        _this.__source = null;
+        _this.__gain = null;
+        _this.__panner = null;
+        _this.playing = false;
+        _this.paused = false;
+        _this.currentTime = 0;
+        _this.__startTime = 0;
+        _this.emit("end");
+    };
+}
+EventEmitter.extend(WebAudioSource);
+WebAudioSourcePrototype = WebAudioSource.prototype;
+
+WebAudioSourcePrototype.destructor = function() {
+
+    this.clip = null;
+
+    this.ambient = false;
+    this.currentTime = 0;
+    this.loop = false;
+    this.volume = 1;
+    this.dopplerLevel = 0;
+
+    this.playing = false;
+    this.paused = false;
+
+    this.__source = null;
+    this.__gain = null;
+    this.__panner = null;
+
+    this.__startTime = 0;
+
+    return this;
+};
+
+WebAudioSourcePrototype.setClip = function(value) {
+    this.clip = value;
+    return this;
+};
+
+WebAudioSourcePrototype.setAmbient = function(value) {
+    this.ambient = !!value;
+    return this;
+};
+
+WebAudioSourcePrototype.setDopplerLevel = function(value) {
+    this.dopplerLevel = mathf.clampBottom(value, 0);
+    return this;
+};
+
+WebAudioSourcePrototype.setVolume = function(value) {
+    var gain = this.__gain;
+
+    this.volume = mathf.clamp01(value || 0);
+
+    if (gain) {
+        gain.gain.value = this.volume;
+    }
+
+    return this;
+};
+
+WebAudioSourcePrototype.setLoop = function(value) {
+    this.loop = !!value;
+    return this;
+};
+
+WebAudioSourcePrototype.setPosition = function(position) {
+    var panner = this.__panner;
+
+    if (panner) {
+        panner.setPosition(position[0], position[1], position[2]);
+    }
+
+    return this;
+};
+
+WebAudioSource_reset = function(_this) {
+    var source = _this.__source = audioContext.createBufferSource(),
+        gain = _this.__gain = audioContext.createGain(),
+        panner;
+
+    if (_this.ambient === true) {
+        gain.connect(audioContext.destination);
+        source.connect(gain);
+    } else {
+        panner = _this.__panner = audioContext.createPanner();
+        gain.connect(audioContext.destination);
+        panner.connect(gain);
+        source.connect(panner);
+    }
+
+    source.buffer = _this.clip.raw;
+    source.onended = _this.__onEnd;
+
+    gain.gain.value = _this.volume;
+    source.loop = _this.loop;
+};
+
+WebAudioSourcePrototype.play = function(delay, offset, duration) {
+    var _this = this,
+        clip = this.clip,
+        currentTime, clipDuration, maxLength;
+
+    if (clip && clip.raw && (!this.playing || this.paused)) {
+        currentTime = this.currentTime;
+        clipDuration = clip.raw.duration;
+
+        delay = delay || 0;
+        offset = offset || currentTime;
+        duration = duration || clipDuration;
+        duration = duration > clipDuration ? clipDuration : duration;
+
+        WebAudioSource_reset(this);
+
+        this.playing = true;
+        this.paused = false;
+        this.__startTime = time.now();
+        this.currentTime = offset;
+
+        this.__source.start(delay, offset, duration);
+
+        if (delay === 0) {
+            this.emit("play");
+        } else {
+            setTimeout(function() {
+                _this.emit("play");
+            }, delay * 1000);
+        }
+    }
+
+    return this;
+};
+
+WebAudioSourcePrototype.pause = function() {
+    var clip = this.clip;
+
+    if (clip && clip.raw && this.playing && !this.paused) {
+        this.paused = true;
+        this.currentTime = time.now() - this.__startTime;
+        this.__source.stop(this.currentTime);
+        this.emit("pause");
+    }
+
+    return this;
+};
+
+WebAudioSourcePrototype.stop = function() {
+    var clip = this.clip;
+
+    if (this.playing && clip && clip.raw) {
+        this.__source.stop(0);
+        this.emit("stop");
+        this.__onEnd();
+    }
+
+    return this;
+};
+
+
+},
+function(require, exports, module, global) {
+
 var environment = require(1),
     eventListener = require(2),
-    HttpError = require(129),
+    HttpError = require(134),
     Asset = require(127);
 
 
@@ -12432,7 +12858,7 @@ function(require, exports, module, global) {
 
 var forEach = require(47),
     create = require(18),
-    STATUS_CODES = require(130);
+    STATUS_CODES = require(135);
 
 
 var STATUS_NAMES = {},
@@ -12580,8 +13006,8 @@ module.exports = {
 },
 function(require, exports, module, global) {
 
-var request = require(132),
-    HttpError = require(129),
+var request = require(137),
+    HttpError = require(134),
     Asset = require(127);
 
 
@@ -12626,17 +13052,17 @@ JSONAssetPrototype.load = function(callback) {
 },
 function(require, exports, module, global) {
 
-module.exports = require(133)(require(136));
+module.exports = require(138)(require(141));
 
 
 },
 function(require, exports, module, global) {
 
 module.exports = function createRequest(request) {
-    var methods = require(134),
+    var methods = require(139),
         forEach = require(47),
         EventEmitter = require(25),
-        defaults = require(135);
+        defaults = require(140);
 
 
     forEach(methods, function(method) {
@@ -12756,17 +13182,17 @@ module.exports = defaults;
 },
 function(require, exports, module, global) {
 
-var PromisePolyfill = require(137),
-    XMLHttpRequestPolyfill = require(139),
+var PromisePolyfill = require(142),
+    XMLHttpRequestPolyfill = require(144),
     isFunction = require(6),
     isString = require(15),
     forEach = require(47),
-    trim = require(140),
+    trim = require(145),
     extend = require(21),
-    Response = require(141),
-    defaults = require(135),
-    camelcaseHeader = require(142),
-    parseContentType = require(145);
+    Response = require(146),
+    defaults = require(140),
+    camelcaseHeader = require(147),
+    parseContentType = require(150);
 
 
 var supportsFormData = typeof(FormData) !== "undefined";
@@ -12957,7 +13383,7 @@ var process = require(3);
 var isArray = require(58),
     isObject = require(4),
     isFunction = require(6),
-    createStore = require(138),
+    createStore = require(143),
     fastSlice = require(26);
 
 
@@ -13459,8 +13885,8 @@ function Response() {
 },
 function(require, exports, module, global) {
 
-var map = require(143),
-    capitalizeString = require(144);
+var map = require(148),
+    capitalizeString = require(149);
 
 
 module.exports = function camelcaseHeader(str) {
@@ -13551,7 +13977,7 @@ function(require, exports, module, global) {
 
 var vec2 = require(68),
     WebGLContext = require(33),
-    ImageAsset = require(128);
+    ImageAsset = require(133);
 
 
 var ImageAssetPrototype = ImageAsset.prototype,
@@ -13735,8 +14161,8 @@ TexturePrototype.setType = function(value) {
 },
 function(require, exports, module, global) {
 
-var JSONAsset = require(131),
-    Shader = require(148),
+var JSONAsset = require(136),
+    Shader = require(153),
     enums = require(32);
 
 
@@ -13822,12 +14248,12 @@ MaterialPrototype.parse = function() {
 },
 function(require, exports, module, global) {
 
-var map = require(143),
+var map = require(148),
     keys = require(22),
-    template = require(149),
-    pushUnique = require(150),
+    template = require(154),
+    pushUnique = require(155),
     Class = require(10),
-    chunks = require(151);
+    chunks = require(156);
 
 
 var ClassPrototype = Class.prototype,
@@ -14067,7 +14493,7 @@ function basePushUnique(array, value) {
 },
 function(require, exports, module, global) {
 
-var ShaderChunk = require(152);
+var ShaderChunk = require(157);
 
 
 var chunks = exports;
@@ -14395,14 +14821,14 @@ ShaderChunkPrototype.destructor = function() {
 function(require, exports, module, global) {
 
 var vec3 = require(38),
-    quat = require(154),
+    quat = require(159),
     mat4 = require(79),
     mathf = require(34),
-    aabb3 = require(155),
+    aabb3 = require(160),
     FastHash = require(60),
-    Attribute = require(156),
-    JSONAsset = require(131),
-    GeometryBone = require(157);
+    Attribute = require(161),
+    JSONAsset = require(136),
+    GeometryBone = require(162);
 
 
 var JSONAssetPrototype = JSONAsset.prototype,
@@ -15670,7 +16096,7 @@ AttributePrototype.setXYZW = function(index, x, y, z, w) {
 function(require, exports, module, global) {
 
 var vec3 = require(38),
-    quat = require(154),
+    quat = require(159),
     mat4 = require(79);
 
 
@@ -15949,11 +16375,11 @@ var indexOf = require(61),
     Class = require(10),
     side = require(96),
 
-    MeshRenderer = require(160),
-    SpriteRenderer = require(162),
+    MeshRenderer = require(165),
+    SpriteRenderer = require(167),
 
-    RendererGeometry = require(163),
-    RendererMaterial = require(164);
+    RendererGeometry = require(168),
+    RendererMaterial = require(169);
 
 
 var enums = WebGLContext.enums,
@@ -16252,7 +16678,7 @@ function(require, exports, module, global) {
 
 var mat3 = require(77),
     mat4 = require(79),
-    ComponentRenderer = require(161);
+    ComponentRenderer = require(166);
 
 
 var MeshRendererPrototype;
@@ -16406,8 +16832,8 @@ var mat3 = require(77),
     vec2 = require(68),
     vec4 = require(39),
     WebGLContext = require(33),
-    Geometry = require(153),
-    ComponentRenderer = require(161);
+    Geometry = require(158),
+    ComponentRenderer = require(166);
 
 
 var depth = WebGLContext.enums.depth,
@@ -17142,7 +17568,7 @@ ComponentManagerPrototype.removeComponent = function(component) {
 function(require, exports, module, global) {
 
 var Class = require(10),
-    ComponentManager = require(166);
+    ComponentManager = require(171);
 
 
 var ClassPrototype = Class.prototype,
@@ -17230,12 +17656,185 @@ ComponentPrototype.destroy = function(emitEvent) {
 },
 function(require, exports, module, global) {
 
+var audio = require(129),
+    vec2 = require(68),
+    vec3 = require(38),
+    isNumber = require(36),
+    Component = require(172);
+
+
+var ComponentPrototype = Component.prototype,
+    AudioSourcePrototype;
+
+
+module.exports = AudioSource;
+
+
+function AudioSource() {
+    var _this = this;
+
+    Component.call(this);
+
+    this.offset = vec3.create();
+
+    this.__source = new audio.Source();
+
+    this.__source.on("play", function onPlay() {
+        _this.emit("play");
+    });
+    this.__source.on("pause", function onPause() {
+        _this.emit("pause");
+    });
+    this.__source.on("stop", function onStop() {
+        _this.emit("stop");
+    });
+    this.__source.on("end", function onEnd() {
+        _this.emit("end");
+    });
+}
+Component.extend(AudioSource, "odin.AudioSource");
+AudioSourcePrototype = AudioSource.prototype;
+
+AudioSourcePrototype.construct = function(clip, options) {
+
+    ComponentPrototype.construct.call(this, clip);
+
+    this.__source.setClip(clip);
+
+    if (options) {
+        if (options.ambient) {
+            this.setAmbient(options.ambient);
+        }
+        if (isNumber(options.dopplerLevel)) {
+            this.setDopplerLevel(options.dopplerLevel);
+        }
+        if (isNumber(options.volume)) {
+            this.setVolume(options.volume);
+        }
+        if (options.loop) {
+            this.setLoop(options.loop);
+        }
+    }
+
+    return this;
+};
+
+AudioSourcePrototype.destructor = function() {
+
+    ComponentPrototype.destructor.call(this);
+
+    this.__source.destructor();
+
+    return this;
+};
+
+AudioSourcePrototype.setClip = function(value) {
+    this.__source.setClip(value);
+    return this;
+};
+
+AudioSourcePrototype.setAmbient = function(value) {
+    this.__source.setAmbient(value);
+    return this;
+};
+
+AudioSourcePrototype.setDopplerLevel = function(value) {
+    this.__source.setDopplerLevel(value);
+    return this;
+};
+
+AudioSourcePrototype.setVolume = function(value) {
+    this.__source.setVolume(value);
+    return this;
+};
+
+AudioSourcePrototype.setLoop = function(value) {
+    this.__source.setVolume(value);
+    return this;
+};
+
+AudioSourcePrototype.play = function(delay, offset, duration) {
+    this.__source.play(delay, offset, duration);
+    return this;
+};
+
+AudioSourcePrototype.pause = function() {
+    this.__source.pause();
+    return this;
+};
+
+AudioSourcePrototype.stop = function() {
+    this.__source.stop();
+    return this;
+};
+
+var update_position = vec3.create();
+AudioSourcePrototype.update = function() {
+    var source = this.__source,
+        dopplerLevel, entity, scene, camera, transform, transform2d, cameraTransform;
+
+    ComponentPrototype.update.call(this);
+
+    if (source.playing) {
+        dopplerLevel = source.dopplerLevel;
+        entity = this.entity;
+        scene = entity && entity.scene;
+        camera = scene && scene.hasManager("odin.Camera") && scene.getManager("odin.Camera").getActive();
+
+        if (!source.ambient && camera) {
+            transform = entity.components["odin.Transform"];
+            transform2d = entity.components["odin.Transform2D"];
+            cameraTransform = camera.entity.components["odin.Transform"] || camera.entity.components["odin.Transform2D"];
+
+            if (transform2d) {
+                vec2.add(update_position, transform2d.position, this.offset);
+                vec2.sub(update_position, update_position, cameraTransform.position);
+                if (dopplerLevel > 0) {
+                    vec2.smul(update_position, dopplerLevel);
+                }
+            } else if (transform) {
+                vec3.add(update_position, transform.position, this.offset);
+                vec3.sub(update_position, update_position, cameraTransform.position);
+                if (dopplerLevel > 0) {
+                    vec3.smul(update_position, dopplerLevel);
+                }
+            }
+
+            if (camera.orthographic) {
+                update_position[2] = camera.orthographicSize * 0.5;
+            }
+
+            source.setPosition(update_position);
+        }
+    }
+
+    return this;
+};
+
+AudioSourcePrototype.toJSON = function(json) {
+
+    json = ComponentPrototype.toJSON.call(this, json);
+
+    return json;
+};
+
+AudioSourcePrototype.fromJSON = function(json) {
+
+    ComponentPrototype.fromJSON.call(this, json);
+
+    return this;
+};
+
+
+},
+function(require, exports, module, global) {
+
 var vec3 = require(38),
-    quat = require(154),
+    quat = require(159),
     mat3 = require(77),
     mat4 = require(79),
-    Component = require(167),
-    TransformManager = require(169);
+    Component = require(172),
+    TransformManager = require(175);
 
 
 var ComponentPrototype = Component.prototype,
@@ -17419,7 +18018,7 @@ TransformPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(166);
+var ComponentManager = require(171);
 
 
 var TransformManagerPrototype;
@@ -17444,10 +18043,10 @@ function(require, exports, module, global) {
 
 var vec2 = require(68),
     mat3 = require(77),
-    mat32 = require(171),
+    mat32 = require(177),
     mat4 = require(79),
-    Component = require(167),
-    Transform2DManager = require(172);
+    Component = require(172),
+    Transform2DManager = require(178);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18006,7 +18605,7 @@ mat32.notEqual = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(166);
+var ComponentManager = require(171);
 
 
 var Transform2DManagerPrototype;
@@ -18030,8 +18629,8 @@ Transform2DManagerPrototype.sortFunction = function(a, b) {
 function(require, exports, module, global) {
 
 var isNumber = require(36),
-    Component = require(167),
-    CameraManager = require(174),
+    Component = require(172),
+    CameraManager = require(180),
     mathf = require(34),
     vec2 = require(68),
     vec3 = require(38),
@@ -18343,7 +18942,7 @@ CameraPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(166);
+var ComponentManager = require(171);
 
 
 var ComponentManagerPrototype = ComponentManager.prototype,
@@ -18399,9 +18998,9 @@ CameraManagerPrototype.getActive = function() {
     return this.__active;
 };
 
-CameraManagerPrototype.add = function(component) {
+CameraManagerPrototype.addComponent = function(component) {
 
-    ComponentManagerPrototype.add.call(this, component);
+    ComponentManagerPrototype.addComponent.call(this, component);
 
     if (component.__active) {
         this.setActive(component);
@@ -18410,9 +19009,9 @@ CameraManagerPrototype.add = function(component) {
     return this;
 };
 
-CameraManagerPrototype.remove = function(component) {
+CameraManagerPrototype.removeComponent = function(component) {
 
-    ComponentManagerPrototype.remove.call(this, component);
+    ComponentManagerPrototype.removeComponent.call(this, component);
 
     if (component.__active) {
         this.__active = null;
@@ -18426,8 +19025,8 @@ CameraManagerPrototype.remove = function(component) {
 function(require, exports, module, global) {
 
 var isNumber = require(36),
-    Component = require(167),
-    SpriteManager = require(176);
+    Component = require(172),
+    SpriteManager = require(182);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18576,7 +19175,7 @@ SpritePrototype.fromJSON = function(json) {
 function(require, exports, module, global) {
 
 var indexOf = require(61),
-    ComponentManager = require(166);
+    ComponentManager = require(171);
 
 
 var SpriteManagerPrototype;
@@ -18776,11 +19375,11 @@ SpriteManagerPrototype.removeComponent = function(component) {
 },
 function(require, exports, module, global) {
 
-var Component = require(167),
-    Bone = require(178),
-    Transform = require(168),
+var Component = require(172),
+    Bone = require(184),
+    Transform = require(174),
     Entity = require(125),
-    MeshManager = require(180);
+    MeshManager = require(186);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18882,10 +19481,10 @@ MeshPrototype.fromJSON = function(json) {
 function(require, exports, module, global) {
 
 var vec3 = require(38),
-    quat = require(154),
+    quat = require(159),
     mat4 = require(79),
-    Component = require(167),
-    BoneManager = require(179);
+    Component = require(172),
+    BoneManager = require(185);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18969,42 +19568,40 @@ BonePrototype.update = function() {
 
     mat4.copy(uniform, transform.matrix);
 
-    if (this.skinned === false) {
-        return this;
-    }
+    if (this.skinned !== false) {
+        parent = entity.parent;
 
-    parent = entity.parent;
+        if (parent && this.parentIndex !== -1) {
+            mat = MAT;
+            mat4.copy(mat, parent.components["odin.Bone"].uniform);
 
-    if (parent && this.parentIndex !== -1) {
-        mat = MAT;
-        mat4.copy(mat, parent.components["odin.Bone"].uniform);
+            inheritPosition = this.inheritPosition;
+            inheritScale = this.inheritScale;
+            inheritRotation = this.inheritRotation;
 
-        inheritPosition = this.inheritPosition;
-        inheritScale = this.inheritScale;
-        inheritRotation = this.inheritRotation;
+            if (!inheritPosition || !inheritScale || !inheritRotation) {
 
-        if (!inheritPosition || !inheritScale || !inheritRotation) {
+                position = POSITION;
+                scale = SCALE;
+                rotation = ROTATION;
 
-            position = POSITION;
-            scale = SCALE;
-            rotation = ROTATION;
+                mat4.decompose(mat, position, scale, rotation);
 
-            mat4.decompose(mat, position, scale, rotation);
+                if (!inheritPosition) {
+                    vec3.set(position, 0, 0, 0);
+                }
+                if (!inheritScale) {
+                    vec3.set(scale, 1, 1, 1);
+                }
+                if (!inheritRotation) {
+                    quat.set(rotation, 0, 0, 0, 1);
+                }
 
-            if (!inheritPosition) {
-                vec3.set(position, 0, 0, 0);
+                mat4.compose(mat, position, scale, rotation);
             }
-            if (!inheritScale) {
-                vec3.set(scale, 1, 1, 1);
-            }
-            if (!inheritRotation) {
-                quat.set(rotation, 0, 0, 0, 1);
-            }
 
-            mat4.compose(mat, position, scale, rotation);
+            mat4.mul(uniform, mat, uniform);
         }
-
-        mat4.mul(uniform, mat, uniform);
     }
 
     return this;
@@ -19028,7 +19625,7 @@ BonePrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(166);
+var ComponentManager = require(171);
 
 
 var BoneManagerPrototype;
@@ -19051,7 +19648,7 @@ BoneManagerPrototype.sortFunction = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(166);
+var ComponentManager = require(171);
 
 
 var MeshManagerPrototype;
@@ -19075,9 +19672,9 @@ MeshManagerPrototype.sortFunction = function(a, b) {
 function(require, exports, module, global) {
 
 var vec3 = require(38),
-    quat = require(154),
+    quat = require(159),
     mathf = require(34),
-    Component = require(167),
+    Component = require(172),
     wrapMode = require(98);
 
 
@@ -19352,7 +19949,7 @@ function(require, exports, module, global) {
 var environment = require(1),
     mathf = require(34),
     vec3 = require(38),
-    Component = require(167);
+    Component = require(172);
 
 
 var ComponentPrototype = Component.prototype,
@@ -19671,8 +20268,8 @@ function OrbitControl_onMouseWheel(_this, e, wheel) {
 function(require, exports, module, global) {
 
 var indexOf = require(61),
-    particleState = require(184),
-    Component = require(167);
+    particleState = require(190),
+    Component = require(172);
 
 
 var ComponentPrototype = Component.prototype,
@@ -19694,7 +20291,7 @@ function ParticleSystem() {
 Component.extend(ParticleSystem, "odin.ParticleSystem");
 ParticleSystemPrototype = ParticleSystem.prototype;
 
-ParticleSystem.Emitter = require(185);
+ParticleSystem.Emitter = require(191);
 
 ParticleSystemPrototype.construct = function(options) {
     var emitters, i, il;
@@ -19835,13 +20432,14 @@ ParticleSystemPrototype.eachEmitter = function(fn) {
 
 ParticleSystemPrototype.toJSON = function(json) {
     var emitters = this.emitters,
-        jsonEmitters = json.emitters || (json.emitters = []),
         i = -1,
-        il = emitters.length - 1;
+        il = emitters.length - 1,
+        jsonEmitters;
 
     json = ComponentPrototype.toJSON.call(this, json);
 
-    json = this.playing;
+    jsonEmitters = json.emitters || (json.emitters = [])
+    json.playing = this.playing;
 
     while (i++ < il) {
         jsonEmitters[i] = emitters[i].toJSON(jsonEmitters[i]);
@@ -19890,15 +20488,15 @@ var indexOf = require(61),
     mathf = require(34),
     vec2 = require(68),
     vec3 = require(38),
-    quat = require(154),
-    particleState = require(184),
+    quat = require(159),
+    particleState = require(190),
     normalMode = require(94),
     emitterRenderMode = require(92),
     interpolation = require(93),
     screenAlignment = require(95),
     sortMode = require(97),
-    createSeededRandom = require(186),
-    randFloat = require(187),
+    createSeededRandom = require(192),
+    randFloat = require(193),
     Class = require(10);
 
 
@@ -19917,8 +20515,8 @@ function Emitter() {
 
     this.__state = particleState.NONE;
     this.__currentTime = 0.0;
-    this.__random = createSeededRandom();
 
+    this.random = createSeededRandom();
     this.seed = null;
 
     this.renderMode = null;
@@ -19976,10 +20574,6 @@ function Emitter() {
 
     this.modules = {};
     this.__moduleArray = [];
-
-    this.random = function random() {
-        return _this.__random(_this.__currentTime);
-    };
 }
 Class.extend(Emitter, "odin.ParticleSystem.Emitter");
 EmitterPrototype = Emitter.prototype;
@@ -19995,7 +20589,7 @@ EmitterPrototype.construct = function(options) {
         options.seed > MAX_SAFE_INTEGER ? MAX_SAFE_INTEGER : options.seed
     ) : (mathf.random() * MAX_SAFE_INTEGER));
 
-    this.__random.seed(this.seed);
+    this.random.seed(this.seed);
 
     this.renderMode = options.renderMode || emitterRenderMode.NORMAL;
 
@@ -20241,12 +20835,12 @@ function Emitter_end(_this, time) {
     _this.__currentTime = 0.0;
 
     if (_this.duration > 0.0 && _this.useDurationRange && _this.recalcDurationRangeEachLoop) {
-        _this.__duration = randFloat(_this.random, _this.minDuration, _this.duration);
+        _this.__duration = randFloat(_this.random, _this.minDuration, _this.duration, _this.__currentTime);
     }
 
     if (_this.useDelayRange && !_this.delayFirstLoopOnly) {
         _this.__currentDelayTime = 0.0;
-        _this.__delay = randFloat(_this.random, _this.minDelay, _this.delay);
+        _this.__delay = randFloat(_this.random, _this.minDelay, _this.delay, _this.__currentTime);
     }
 
     if (_this.loopCount > 0) {
@@ -20275,18 +20869,18 @@ EmitterPrototype.eachModule = function(fn) {
 EmitterPrototype.play = function() {
     if (this.__state === particleState.NONE) {
 
-        this.__random.seed(this.seed);
+        this.random.seed(this.seed);
 
         this.__curentTime = 0.0;
         this.__state = particleState.START;
 
         if (this.useDurationRange) {
-            this.__duration = randFloat(this.random, this.minDuration, this.duration);
+            this.__duration = randFloat(this.random, this.minDuration, this.duration, this.__currentTime);
         }
 
         if (this.useDelayRange) {
             this.__currentDelayTime = 0.0;
-            this.__delay = randFloat(this.random, this.minDelay, this.delay);
+            this.__delay = randFloat(this.random, this.minDelay, this.delay, this.__currentTime);
         }
     }
 };
@@ -20335,9 +20929,8 @@ module.exports = createSeededRandom;
 function createSeededRandom() {
     var seed = 0;
 
-    function random(s) {
-        seed = (MULTIPLIER * (seed + (s * 1000)) + OFFSET) % MODULO;
-        return seed / MODULO;
+    function random(t) {
+        return ((MULTIPLIER * (seed + (t * 1000)) + OFFSET) % MODULO) / MODULO;
     }
 
     random.seed = function(value) {
@@ -20354,8 +20947,22 @@ function(require, exports, module, global) {
 module.exports = randFloat;
 
 
-function randFloat(random, min, max) {
-    return min + (random() * (max - min));
+function randFloat(random, min, max, t) {
+    return min + (random(t) * (max - min));
+}
+
+
+},
+function(require, exports, module, global) {
+
+var mathf = require(34);
+
+
+module.exports = randInt;
+
+
+function randInt(random, min, max, t) {
+    return mathf.round(min + (random(t) * (max - min)));
 }
 
 
