@@ -27,7 +27,7 @@
     "grunt-jsbeautifier": "^0.2.7"
   },
   "dependencies": {
-    "for_each": "git://github.com/nathanfaucett/for_each.git",
+    "array-for_each": "git://github.com/nathanfaucett/array-for_each.git",
     "audio": "git://github.com/nathanfaucett/audio.git",
     "aabb3": "git://github.com/nathanfaucett/aabb3.git",
     "blur_node": "git://github.com/nathanfaucett/blur_node.git",
@@ -51,7 +51,7 @@
     "is_number": "git://github.com/nathanfaucett/is_number.git",
     "is_string": "git://github.com/nathanfaucett/is_string.git",
     "keys": "git://github.com/nathanfaucett/keys.git",
-    "map": "git://github.com/nathanfaucett/map.git",
+    "array-map": "git://github.com/nathanfaucett/array-map.git",
     "mat3": "git://github.com/nathanfaucett/mat3.git",
     "mat32": "git://github.com/nathanfaucett/mat32.git",
     "mat4": "git://github.com/nathanfaucett/mat4.git",

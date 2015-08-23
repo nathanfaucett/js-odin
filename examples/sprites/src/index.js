@@ -1,5 +1,6 @@
 var environment = require("environment"),
     vec2 = require("vec2"),
+    quat = require("quat"),
     eventListener = require("event_listener");
 
 
@@ -13,6 +14,7 @@ function PlayerControl() {
     odin.Component.call(this);
     
     this.velocity = vec2.create();
+    this.paused = true;
 }
 odin.Component.extend(PlayerControl, "PlayerControl");
 
@@ -35,8 +37,11 @@ PlayerControl.prototype.update = function update() {
     if (velLength > 0) {
         audioSource.play();
         audioSource.setVolume(velLength);
-    } else {
+        this.paused = false;
+    } else if (!this.paused) {
+        audioSource.setVolume(0);
         audioSource.pause();
+        this.paused = true;
     }
 };
 
@@ -95,9 +100,9 @@ eventListener.on(environment.window, "load", function load() {
 
     var camera = odin.Entity.create("main_camera").addComponent(
         odin.Transform.create()
-            .setPosition([-5, -5, 5]),
+            .setPosition([0, -5, 5]),
         odin.Camera.create()
-            .setOrthographic(true)
+            .setOrthographic(false)
             .setActive(),
         odin.OrbitControl.create()
     );
@@ -126,7 +131,7 @@ eventListener.on(environment.window, "load", function load() {
             material: material
         })
     );
-
+    
     var scene = global.scene = odin.Scene.create("scene").addEntity(camera, sprite2, sprite),
         cameraComponent = camera.getComponent("odin.Camera");
     

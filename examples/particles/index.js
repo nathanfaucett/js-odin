@@ -41,7 +41,7 @@ function(require, exports, module, global) {
 
 var environment = require(1),
     eventListener = require(2),
-    odin = require(9);
+    odin = require(11);
 
 
 eventListener.on(environment.window, "load", function onLoad() {
@@ -156,9 +156,9 @@ function(require, exports, module, global) {
 
 var process = require(3);
 var isObject = require(4),
-    isFunction = require(6),
+    isFunction = require(8),
     environment = require(1),
-    eventTable = require(7);
+    eventTable = require(9);
 
 
 var eventListener = module.exports,
@@ -408,6 +408,10 @@ function isObject(value) {
 },
 function(require, exports, module, global) {
 
+var isNull = require(6),
+    isUndefined = require(7);
+
+
 module.exports = isNullOrUndefined;
 
 /**
@@ -423,8 +427,30 @@ module.exports = isNullOrUndefined;
     isNullOrUndefined(undefined);   // returns true
     isNullOrUndefined("string");    // returns false
 **/
-function isNullOrUndefined(obj) {
-    return (obj === null || obj === void 0);
+function isNullOrUndefined(value) {
+    return isNull(value) || isUndefined(value);
+}
+
+
+},
+function(require, exports, module, global) {
+
+module.exports = isNull;
+
+
+function isNull(value) {
+    return value === null;
+}
+
+
+},
+function(require, exports, module, global) {
+
+module.exports = isUndefined;
+
+
+function isUndefined(value) {
+    return value === void(0);
 }
 
 
@@ -456,7 +482,7 @@ module.exports = isFunction;
 },
 function(require, exports, module, global) {
 
-var isNode = require(8),
+var isNode = require(10),
     environment = require(1);
 
 
@@ -866,7 +892,7 @@ module.exports = {
 },
 function(require, exports, module, global) {
 
-var isFunction = require(6);
+var isFunction = require(8);
 
 
 var isNode;
@@ -896,65 +922,65 @@ function(require, exports, module, global) {
 var odin = exports;
 
 
-odin.Class = require(10);
-odin.createLoop = require(28);
+odin.Class = require(12);
+odin.createLoop = require(30);
 
-odin.enums = require(32);
+odin.enums = require(34);
 
-odin.BaseApplication = require(99);
-odin.Application = require(126);
+odin.BaseApplication = require(103);
+odin.Application = require(130);
 
-odin.Assets = require(100);
-odin.Asset = require(127);
-odin.AudioAsset = require(128);
-odin.ImageAsset = require(133);
-odin.JSONAsset = require(136);
-odin.Texture = require(151);
-odin.Material = require(152);
-odin.Geometry = require(158);
+odin.Assets = require(104);
+odin.Asset = require(131);
+odin.AudioAsset = require(132);
+odin.ImageAsset = require(141);
+odin.JSONAsset = require(144);
+odin.Texture = require(160);
+odin.Material = require(161);
+odin.Geometry = require(167);
 
-odin.Canvas = require(163);
-odin.Renderer = require(164);
-odin.ComponentRenderer = require(166);
+odin.Canvas = require(172);
+odin.Renderer = require(173);
+odin.ComponentRenderer = require(175);
 
-odin.Shader = require(153);
+odin.Shader = require(162);
 
-odin.Scene = require(101);
-odin.Plugin = require(170);
-odin.Entity = require(125);
+odin.Scene = require(105);
+odin.Plugin = require(179);
+odin.Entity = require(129);
 
-odin.ComponentManager = require(171);
+odin.ComponentManager = require(180);
 
-odin.Component = require(172);
+odin.Component = require(181);
 
-odin.AudioSource = require(173);
+odin.AudioSource = require(182);
 
-odin.Transform = require(174);
-odin.Transform2D = require(176);
-odin.Camera = require(179);
+odin.Transform = require(183);
+odin.Transform2D = require(185);
+odin.Camera = require(188);
 
-odin.Sprite = require(181);
+odin.Sprite = require(190);
 
-odin.Mesh = require(183);
-odin.MeshAnimation = require(187);
+odin.Mesh = require(192);
+odin.MeshAnimation = require(196);
 
-odin.OrbitControl = require(188);
+odin.OrbitControl = require(197);
 
-odin.ParticleSystem = require(189);
+odin.ParticleSystem = require(198);
 
-odin.createSeededRandom = require(192);
-odin.randFloat = require(193);
-odin.randInt = require(194);
+odin.createSeededRandom = require(201);
+odin.randFloat = require(202);
+odin.randInt = require(203);
 
 
 },
 function(require, exports, module, global) {
 
-var has = require(11),
-    isFunction = require(6),
-    inherits = require(17),
-    EventEmitter = require(25),
-    uuid = require(27);
+var has = require(13),
+    isFunction = require(8),
+    inherits = require(19),
+    EventEmitter = require(26),
+    uuid = require(29);
 
 
 var ClassPrototype;
@@ -1047,8 +1073,8 @@ ClassPrototype.fromJSON = function( /* json */ ) {
 },
 function(require, exports, module, global) {
 
-var isNative = require(12),
-    getPrototypeOf = require(16),
+var isNative = require(14),
+    getPrototypeOf = require(18),
     isNullOrUndefined = require(5);
 
 
@@ -1087,9 +1113,9 @@ if (isNative(nativeHasOwnProp)) {
 },
 function(require, exports, module, global) {
 
-var isFunction = require(6),
+var isFunction = require(8),
     isNullOrUndefined = require(5),
-    escapeRegExp = require(13);
+    escapeRegExp = require(15);
 
 
 var reHostCtor = /^\[object .+?Constructor\]$/,
@@ -1136,7 +1162,7 @@ isHostObject = function isHostObject(value) {
 },
 function(require, exports, module, global) {
 
-var toString = require(14);
+var toString = require(16);
 
 
 var reRegExpChars = /[.*+?\^${}()|\[\]\/\\]/g,
@@ -1159,7 +1185,7 @@ function escapeRegExp(string) {
 },
 function(require, exports, module, global) {
 
-var isString = require(15),
+var isString = require(17),
     isNullOrUndefined = require(5);
 
 
@@ -1183,8 +1209,8 @@ function(require, exports, module, global) {
 module.exports = isString;
 
 
-function isString(obj) {
-    return typeof(obj) === "string" || false;
+function isString(value) {
+    return typeof(value) === "string" || false;
 }
 
 
@@ -1192,7 +1218,7 @@ function isString(obj) {
 function(require, exports, module, global) {
 
 var isObject = require(4),
-    isNative = require(12),
+    isNative = require(14),
     isNullOrUndefined = require(5);
 
 
@@ -1231,10 +1257,10 @@ if (isNative(nativeGetPrototypeOf)) {
 },
 function(require, exports, module, global) {
 
-var create = require(18),
-    extend = require(21),
-    mixin = require(23),
-    defineProperty = require(24);
+var create = require(20),
+    extend = require(22),
+    mixin = require(24),
+    defineProperty = require(25);
 
 
 var descriptor = {
@@ -1282,9 +1308,9 @@ function defineStatic(name, value) {
 },
 function(require, exports, module, global) {
 
-var isNull = require(19),
-    isNative = require(12),
-    isPrimitive = require(20);
+var isNull = require(6),
+    isNative = require(14),
+    isPrimitive = require(21);
 
 
 var nativeCreate = Object.create;
@@ -1324,17 +1350,6 @@ module.exports = create;
 },
 function(require, exports, module, global) {
 
-module.exports = isNull;
-
-
-function isNull(obj) {
-    return obj === null;
-}
-
-
-},
-function(require, exports, module, global) {
-
 var isNullOrUndefined = require(5);
 
 
@@ -1350,7 +1365,7 @@ function isPrimitive(obj) {
 },
 function(require, exports, module, global) {
 
-var keys = require(22);
+var keys = require(23);
 
 
 module.exports = extend;
@@ -1383,8 +1398,8 @@ function baseExtend(a, b) {
 },
 function(require, exports, module, global) {
 
-var has = require(11),
-    isNative = require(12),
+var has = require(13),
+    isNative = require(14),
     isNullOrUndefined = require(5),
     isObject = require(4);
 
@@ -1424,7 +1439,7 @@ if (!isNative(nativeKeys)) {
 },
 function(require, exports, module, global) {
 
-var keys = require(22),
+var keys = require(23),
     isNullOrUndefined = require(5);
 
 
@@ -1462,10 +1477,10 @@ function baseMixin(a, b) {
 function(require, exports, module, global) {
 
 var isObject = require(4),
-    isFunction = require(6),
-    isPrimitive = require(20),
-    isNative = require(12),
-    has = require(11);
+    isFunction = require(8),
+    isPrimitive = require(21),
+    isNative = require(14),
+    has = require(13);
 
 
 var nativeDefineProperty = Object.defineProperty;
@@ -1511,18 +1526,25 @@ if (!isNative(nativeDefineProperty) || !(function() {
 },
 function(require, exports, module, global) {
 
-var isFunction = require(6),
-    inherits = require(17),
-    fastSlice = require(26),
-    keys = require(22);
+var isFunction = require(8),
+    inherits = require(19),
+    fastSlice = require(27),
+    keys = require(23);
+
+
+var EventEmitterPrototype;
+
+
+module.exports = EventEmitter;
 
 
 function EventEmitter(maxListeners) {
     this.__events = {};
     this.__maxListeners = maxListeners != null ? maxListeners : EventEmitter.defaultMaxListeners;
 }
+EventEmitterPrototype = EventEmitter.prototype;
 
-EventEmitter.prototype.on = function(name, listener) {
+EventEmitterPrototype.on = function(name, listener) {
     var events, eventList, maxListeners;
 
     if (!isFunction(listener)) {
@@ -1544,9 +1566,9 @@ EventEmitter.prototype.on = function(name, listener) {
     return this;
 };
 
-EventEmitter.prototype.addListener = EventEmitter.prototype.on;
+EventEmitterPrototype.addEventListener = EventEmitterPrototype.addListener = EventEmitterPrototype.on;
 
-EventEmitter.prototype.once = function(name, listener) {
+EventEmitterPrototype.once = function(name, listener) {
     var _this = this;
 
     function once() {
@@ -1574,23 +1596,23 @@ EventEmitter.prototype.once = function(name, listener) {
     return once;
 };
 
-EventEmitter.prototype.listenTo = function(obj, name) {
+EventEmitterPrototype.listenTo = function(value, name) {
     var _this = this;
 
-    if (!obj || !(isFunction(obj.on) || isFunction(obj.addListener))) {
-        throw new TypeError("EventEmitter.listenTo(obj, name) obj must have a on function taking (name, listener[, ctx])");
+    if (!value || !(isFunction(value.on) || isFunction(value.addListener))) {
+        throw new TypeError("EventEmitter.listenTo(value, name) value must have a on function taking (name, listener[, ctx])");
     }
 
     function handler() {
         _this.emitArgs(name, arguments);
     }
 
-    obj.on(name, handler);
+    value.on(name, handler);
 
     return handler;
 };
 
-EventEmitter.prototype.off = function(name, listener) {
+EventEmitterPrototype.off = function(name, listener) {
     var events = this.__events || (this.__events = {}),
         eventList, event, i;
 
@@ -1627,9 +1649,9 @@ EventEmitter.prototype.off = function(name, listener) {
     return this;
 };
 
-EventEmitter.prototype.removeListener = EventEmitter.prototype.off;
+EventEmitterPrototype.removeEventListener = EventEmitterPrototype.removeListener = EventEmitterPrototype.off;
 
-EventEmitter.prototype.removeAllListeners = function() {
+EventEmitterPrototype.removeAllListeners = function() {
     var events = this.__events || (this.__events = {}),
         objectKeys = keys(events),
         i = -1,
@@ -1729,7 +1751,7 @@ function emit(eventList, args) {
     }
 }
 
-EventEmitter.prototype.emitArgs = function(name, args) {
+EventEmitterPrototype.emitArgs = function(name, args) {
     var eventList = (this.__events || (this.__events = {}))[name];
 
     if (!eventList || !eventList.length) {
@@ -1741,7 +1763,7 @@ EventEmitter.prototype.emitArgs = function(name, args) {
     return this;
 };
 
-EventEmitter.prototype.emit = function(name) {
+EventEmitterPrototype.emit = function(name) {
     return this.emitArgs(name, fastSlice(arguments, 1));
 };
 
@@ -1800,7 +1822,7 @@ function emitAsync(eventList, args, callback) {
     next();
 }
 
-EventEmitter.prototype.emitAsync = function(name, args, callback) {
+EventEmitterPrototype.emitAsync = function(name, args, callback) {
     var eventList = (this.__events || (this.__events = {}))[name];
 
     args = fastSlice(arguments, 1);
@@ -1819,19 +1841,19 @@ EventEmitter.prototype.emitAsync = function(name, args, callback) {
     return this;
 };
 
-EventEmitter.prototype.listeners = function(name) {
+EventEmitterPrototype.listeners = function(name) {
     var eventList = (this.__events || (this.__events = {}))[name];
 
     return eventList ? eventList.slice() : [];
 };
 
-EventEmitter.prototype.listenerCount = function(name) {
+EventEmitterPrototype.listenerCount = function(name) {
     var eventList = (this.__events || (this.__events = {}))[name];
 
     return eventList ? eventList.length : 0;
 };
 
-EventEmitter.prototype.setMaxListeners = function(value) {
+EventEmitterPrototype.setMaxListeners = function(value) {
     if ((value = +value) !== value) {
         throw new TypeError("EventEmitter.setMaxListeners(value) value must be a number");
     }
@@ -1840,28 +1862,26 @@ EventEmitter.prototype.setMaxListeners = function(value) {
     return this;
 };
 
-
 inherits.defineProperty(EventEmitter, "defaultMaxListeners", 10);
 
-
-inherits.defineProperty(EventEmitter, "listeners", function(obj, name) {
+inherits.defineProperty(EventEmitter, "listeners", function(value, name) {
     var eventList;
 
-    if (obj == null) {
-        throw new TypeError("EventEmitter.listeners(obj, name) obj required");
+    if (value == null) {
+        throw new TypeError("EventEmitter.listeners(value, name) value required");
     }
-    eventList = obj.__events && obj.__events[name];
+    eventList = value.__events && value.__events[name];
 
     return eventList ? eventList.slice() : [];
 });
 
-inherits.defineProperty(EventEmitter, "listenerCount", function(obj, name) {
+inherits.defineProperty(EventEmitter, "listenerCount", function(value, name) {
     var eventList;
 
-    if (obj == null) {
-        throw new TypeError("EventEmitter.listenerCount(obj, name) obj required");
+    if (value == null) {
+        throw new TypeError("EventEmitter.listenerCount(value, name) value required");
     }
-    eventList = obj.__events && obj.__events[name];
+    eventList = value.__events && value.__events[name];
 
     return eventList ? eventList.length : 0;
 });
@@ -1881,11 +1901,11 @@ EventEmitter.extend = function(child) {
 };
 
 
-module.exports = EventEmitter;
-
-
 },
 function(require, exports, module, global) {
+
+var isNumber = require(28);
+
 
 module.exports = fastSlice;
 
@@ -1893,13 +1913,13 @@ module.exports = fastSlice;
 function fastSlice(array, offset) {
     var length, newLength, i, il, result, j;
 
-    offset = offset || 0;
+    offset = isNumber(offset) ? (offset <= 0 ? 0 : offset) : 0;
 
     length = array.length;
     i = offset - 1;
     il = length - 1;
     newLength = length - offset;
-    result = new Array(newLength <= 0 ? 0 : newLength);
+    result = new Array(newLength);
     j = 0;
 
     while (i++ < il) {
@@ -1907,6 +1927,17 @@ function fastSlice(array, offset) {
     }
 
     return result;
+}
+
+
+},
+function(require, exports, module, global) {
+
+module.exports = isNumber;
+
+
+function isNumber(value) {
+    return typeof(value) === "number" || false;
 }
 
 
@@ -1940,7 +1971,8 @@ function uuid() {
 },
 function(require, exports, module, global) {
 
-var requestAnimationFrame = require(29);
+var isNull = require(6),
+    requestAnimationFrame = require(31);
 
 
 module.exports = function createLoop(callback, element) {
@@ -1970,8 +2002,9 @@ module.exports = function createLoop(callback, element) {
         pause: function() {
             running = false;
 
-            if (id) {
+            if (!isNull(id)) {
                 requestAnimationFrame.cancel(id);
+                id = null;
             }
         },
         setCallback: function(value) {
@@ -1994,8 +2027,8 @@ module.exports = function createLoop(callback, element) {
 function(require, exports, module, global) {
 
 var environment = require(1),
-    emptyFunction = require(30),
-    time = require(31);
+    emptyFunction = require(32),
+    time = require(33);
 
 
 var window = environment.window,
@@ -2152,36 +2185,36 @@ time.stamp = function stamp() {
 },
 function(require, exports, module, global) {
 
-var extend = require(21),
-    WebGLContext = require(33);
+var extend = require(22),
+    WebGLContext = require(35);
 
 
 var enums = extend(exports, WebGLContext.enums);
 
 
-enums.emitterRenderMode = require(92);
-enums.interpolation = require(93);
-enums.normalMode = require(94);
-enums.screenAlignment = require(95);
-enums.side = require(96);
-enums.sortMode = require(97);
-enums.wrapMode = require(98);
+enums.emitterRenderMode = require(96);
+enums.interpolation = require(97);
+enums.normalMode = require(98);
+enums.screenAlignment = require(99);
+enums.side = require(100);
+enums.sortMode = require(101);
+enums.wrapMode = require(102);
 
 
 },
 function(require, exports, module, global) {
 
-var mathf = require(34),
+var mathf = require(36),
 
     environment = require(1),
-    EventEmitter = require(25),
+    EventEmitter = require(26),
     eventListener = require(2),
-    color = require(37),
+    color = require(38),
 
-    enums = require(40),
-    WebGLBuffer = require(56),
-    WebGLTexture = require(57),
-    WebGLProgram = require(59);
+    enums = require(41),
+    WebGLBuffer = require(58),
+    WebGLTexture = require(59),
+    WebGLProgram = require(61);
 
 
 var NativeUint8Array = typeof(Uint8Array) !== "undefined" ? Uint8Array : Array,
@@ -3012,13 +3045,13 @@ function getWebGLContext(canvas, attributes) {
 },
 function(require, exports, module, global) {
 
-var keys = require(22),
-    isNaN = require(35);
+var keys = require(23),
+    isNaN = require(37);
 
 
 var mathf = exports,
 
-    NativeMath = Math,
+    NativeMath = global.Math,
 
     NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
 
@@ -3411,32 +3444,21 @@ mathf.direction = function(x, y) {
 },
 function(require, exports, module, global) {
 
-var isNumber = require(36);
+var isNumber = require(28);
 
 
-module.exports = Number.isNaN || function isNaN(obj) {
-    return isNumber(obj) && obj !== obj;
+module.exports = Number.isNaN || function isNaN(value) {
+    return isNumber(value) && value !== value;
 };
 
 
 },
 function(require, exports, module, global) {
 
-module.exports = isNumber;
-
-
-function isNumber(obj) {
-    return typeof(obj) === "number" || false;
-}
-
-
-},
-function(require, exports, module, global) {
-
-var mathf = require(34),
-    vec3 = require(38),
-    vec4 = require(39),
-    isNumber = require(36);
+var mathf = require(36),
+    vec3 = require(39),
+    vec4 = require(40),
+    isNumber = require(28);
 
 
 var color = exports;
@@ -3800,7 +3822,7 @@ var colorNames = color.colorNames = {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34);
+var mathf = require(36);
 
 
 var vec3 = exports;
@@ -4121,6 +4143,21 @@ vec3.transformProjection = function(out, a, m) {
     return out;
 };
 
+vec3.transformProjectionNoPosition = function(out, a, m) {
+    var x = a[0],
+        y = a[1],
+        z = a[2],
+        d = x * m[3] + y * m[7] + z * m[11] + m[15];
+
+    d = d !== 0 ? 1 / d : d;
+
+    out[0] = (x * m[0] + y * m[4] + z * m[8]) * d;
+    out[1] = (x * m[1] + y * m[5] + z * m[9]) * d;
+    out[2] = (x * m[2] + y * m[6] + z * m[10]) * d;
+
+    return out;
+};
+
 vec3.transformQuat = function(out, a, q) {
     var x = a[0],
         y = a[1],
@@ -4194,7 +4231,7 @@ vec3.str = function(out) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34);
+var mathf = require(36);
 
 
 var vec4 = exports;
@@ -4556,118 +4593,53 @@ vec4.str = function(out) {
 },
 function(require, exports, module, global) {
 
-var reverse = require(41);
+var objectReverse = require(42);
 
 
 var enums = exports;
 
 
-enums.blending = require(45);
-enums.cullFace = require(49);
-enums.depth = require(51);
-enums.filterMode = require(52);
+enums.blending = require(43);
+enums.cullFace = require(51);
+enums.depth = require(53);
+enums.filterMode = require(54);
 
-enums.gl = require(50);
-enums.glValues = reverse(enums.gl);
+enums.gl = require(52);
+enums.glValues = objectReverse(enums.gl);
 
-enums.textureFormat = require(53);
-enums.textureType = require(54);
-enums.textureWrap = require(55);
+enums.textureFormat = require(55);
+enums.textureType = require(56);
+enums.textureWrap = require(57);
 
 
 },
 function(require, exports, module, global) {
 
-var keys = require(22),
-    isArrayLike = require(42);
+var has = require(13);
 
 
-module.exports = reverse;
+module.exports = objectReverse;
 
 
-function reverse(object) {
-    return isArrayLike(object) ? reverseArray(object) : reverseObject(Object(object));
-}
-
-function reverseArray(array) {
-    var i = array.length,
-        results = new Array(i),
-        j = 0;
-
-    while (i--) {
-        results[j++] = array[i];
-    }
-
-    return results;
-}
-
-function reverseObject(object) {
-    var objectKeys = keys(object),
-        i = -1,
-        il = objectKeys.length - 1,
-        results = {},
+function objectReverse(object) {
+    var localHas = has,
+        out = {},
         key;
 
-    while (i++ < il) {
-        key = objectKeys[i];
-        results[object[key]] = key;
+    for (key in object) {
+        if (localHas(object, key)) {
+            out[object[key]] = key;
+        }
     }
 
-    return results;
+    return out;
 }
 
 
 },
 function(require, exports, module, global) {
 
-var isLength = require(43),
-    isFunction = require(6),
-    isObjectLike = require(44);
-
-
-module.exports = isArrayLike;
-
-
-function isArrayLike(value) {
-    return isObjectLike(value) && isLength(value.length) && !isFunction(value);
-}
-
-
-},
-function(require, exports, module, global) {
-
-var isNumber = require(36);
-
-
-var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
-
-
-module.exports = isLength;
-
-
-function isLength(value) {
-    return isNumber(value) && value > -1 && value % 1 === 0 && value <= MAX_SAFE_INTEGER;
-}
-
-
-},
-function(require, exports, module, global) {
-
-var isNullOrUndefined = require(5);
-
-
-module.exports = isObjectLike;
-
-
-function isObjectLike(value) {
-    return (!isNullOrUndefined(value) && typeof(value) === "object") || false;
-}
-
-
-},
-function(require, exports, module, global) {
-
-var enums = require(46);
+var enums = require(44);
 
 
 module.exports = enums([
@@ -4682,12 +4654,12 @@ module.exports = enums([
 },
 function(require, exports, module, global) {
 
-var create = require(18),
-    defineProperty = require(24),
-    forEach = require(47),
-    isString = require(15),
-    isNumber = require(36),
-    emptyFunction = require(30);
+var create = require(20),
+    defineProperty = require(25),
+    forEach = require(45),
+    isString = require(17),
+    isNumber = require(28),
+    emptyFunction = require(32);
 
 
 var reSpliter = /[\s\, ]+/,
@@ -4733,8 +4705,8 @@ function createEnum(value, key) {
 }
 
 createEnum.set = function(object) {
-    this.object = object;
-    return this;
+    createEnum.object = object;
+    return createEnum;
 };
 
 function stringToHash(value) {
@@ -4753,62 +4725,68 @@ function stringToHash(value) {
 },
 function(require, exports, module, global) {
 
-var keys = require(22),
+var isArrayLike = require(46),
     isNullOrUndefined = require(5),
     fastBindThis = require(48),
-    isArrayLike = require(42);
+    arrayForEach = require(49),
+    objectForEach = require(50);
 
 
 module.exports = forEach;
 
 
-function forEach(object, callback, thisArg) {
-    callback = isNullOrUndefined(thisArg) ? callback : fastBindThis(callback, thisArg, 2);
-    return isArrayLike(object) ? forEachArray(object, callback) : forEachObject(object, callback);
-}
-
-function forEachArray(array, callback) {
-    var i = -1,
-        il = array.length - 1;
-
-    while (i++ < il) {
-        if (callback(array[i], i) === false) {
-            return false;
-        }
-    }
-
-    return array;
-}
-
-function forEachObject(object, callback) {
-    var objectKeys = keys(object),
-        i = -1,
-        il = objectKeys.length - 1,
-        key;
-
-    while (i++ < il) {
-        key = objectKeys[i];
-
-        if (callback(object[key], key) === false) {
-            return false;
-        }
-    }
-
-    return object;
+function forEach(value, callback, thisArg) {
+    callback = isNullOrUndefined(thisArg) ? callback : fastBindThis(callback, thisArg, 3);
+    return isArrayLike(value) ?
+        arrayForEach(value, callback) :
+        objectForEach(value, callback);
 }
 
 
 },
 function(require, exports, module, global) {
 
-var isNumber = require(36);
+var isLength = require(47),
+    isFunction = require(8),
+    isObject = require(4);
+
+
+module.exports = isArrayLike;
+
+
+function isArrayLike(value) {
+    return !isFunction(value) && isObject(value) && isLength(value.length);
+}
+
+
+},
+function(require, exports, module, global) {
+
+var isNumber = require(28);
+
+
+var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
+
+
+module.exports = isLength;
+
+
+function isLength(value) {
+    return isNumber(value) && value > -1 && value % 1 === 0 && value <= MAX_SAFE_INTEGER;
+}
+
+
+},
+function(require, exports, module, global) {
+
+var isNumber = require(28);
 
 
 module.exports = fastBindThis;
 
 
 function fastBindThis(callback, thisArg, length) {
-    switch ((isNumber(length) ? length : callback.length) || 0) {
+    switch (isNumber(length) ? length : (callback.length || -1)) {
         case 0:
             return function bound() {
                 return callback.call(thisArg);
@@ -4840,8 +4818,55 @@ function fastBindThis(callback, thisArg, length) {
 },
 function(require, exports, module, global) {
 
-var enums = require(46),
-    gl = require(50);
+module.exports = arrayForEach;
+
+
+function arrayForEach(array, callback) {
+    var i = -1,
+        il = array.length - 1;
+
+    while (i++ < il) {
+        if (callback(array[i], i, array) === false) {
+            break;
+        }
+    }
+
+    return array;
+}
+
+
+},
+function(require, exports, module, global) {
+
+var keys = require(23);
+
+
+module.exports = objectForEach;
+
+
+function objectForEach(object, callback) {
+    var objectKeys = keys(object),
+        i = -1,
+        il = objectKeys.length - 1,
+        key;
+
+    while (i++ < il) {
+        key = objectKeys[i];
+
+        if (callback(object[key], key, object) === false) {
+            break;
+        }
+    }
+
+    return object;
+}
+
+
+},
+function(require, exports, module, global) {
+
+var enums = require(44),
+    gl = require(52);
 
 
 module.exports = enums({
@@ -4855,7 +4880,7 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(44);
 
 
 module.exports = enums({
@@ -5162,8 +5187,8 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(46),
-    gl = require(50);
+var enums = require(44),
+    gl = require(52);
 
 
 module.exports = enums({
@@ -5182,7 +5207,7 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(44);
 
 
 module.exports = enums({
@@ -5194,8 +5219,8 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(46),
-    gl = require(50);
+var enums = require(44),
+    gl = require(52);
 
 
 module.exports = enums({
@@ -5210,8 +5235,8 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(46),
-    gl = require(50);
+var enums = require(44),
+    gl = require(52);
 
 
 module.exports = enums({
@@ -5228,8 +5253,8 @@ module.exports = enums({
 },
 function(require, exports, module, global) {
 
-var enums = require(46),
-    gl = require(50);
+var enums = require(44),
+    gl = require(52);
 
 
 module.exports = enums({
@@ -5278,9 +5303,9 @@ WebGLBuffer.prototype.compile = function(type, array, stride, draw) {
 },
 function(require, exports, module, global) {
 
-var isArray = require(58),
-    mathf = require(34),
-    enums = require(40);
+var isArray = require(60),
+    mathf = require(36),
+    enums = require(41);
 
 
 var textureType = enums.textureType,
@@ -5474,8 +5499,8 @@ function getWrap(gl, wrap) {
 },
 function(require, exports, module, global) {
 
-var isNative = require(12),
-    isLength = require(43),
+var isNative = require(14),
+    isLength = require(47),
     isObject = require(4);
 
 
@@ -5503,12 +5528,12 @@ module.exports = isArray;
 },
 function(require, exports, module, global) {
 
-var isArray = require(58),
-    FastHash = require(60),
+var isArray = require(60),
+    FastHash = require(62),
 
-    enums = require(40),
-    uniforms = require(62),
-    attributes = require(82);
+    enums = require(41),
+    uniforms = require(66),
+    attributes = require(86);
 
 
 var reUniformName = /[^\[]+/;
@@ -5650,9 +5675,14 @@ function createShader(gl, source, type) {
 },
 function(require, exports, module, global) {
 
-var has = require(11),
-    indexOf = require(61),
-    forEach = require(47);
+var has = require(13),
+    indexOf = require(63),
+    isNullOrUndefined = require(5),
+    arrayForEach = require(49),
+    fastBindThis = require(48);
+
+
+var FastHashPrototype;
 
 
 module.exports = FastHash;
@@ -5663,25 +5693,29 @@ function FastHash(key) {
     this.__array = [];
     this.__hash = {};
 }
+FastHashPrototype = FastHash.prototype;
 
-FastHash.prototype.get = function(key) {
+FastHashPrototype.get = function(key) {
     return this.__hash[key];
 };
 
-FastHash.prototype.has = function(key) {
+FastHashPrototype.has = function(key) {
     return has(this.__hash, key);
 };
 
-FastHash.prototype.count = function() {
+FastHashPrototype.size = function() {
     return this.__array.length;
 };
 
-FastHash.prototype.clear = function() {
-    var hash = this.__hash,
+FastHashPrototype.count = FastHashPrototype.size;
+
+FastHashPrototype.clear = function() {
+    var localHas = has,
+        hash = this.__hash,
         key;
 
     for (key in hash) {
-        if (has(hash, key)) {
+        if (localHas(hash, key)) {
             delete hash[key];
         }
     }
@@ -5690,7 +5724,7 @@ FastHash.prototype.clear = function() {
     return this;
 };
 
-FastHash.prototype.add = function() {
+FastHashPrototype.add = function() {
     var i = -1,
         il = arguments.length - 1;
 
@@ -5712,7 +5746,7 @@ function FastHash_add(_this, value) {
     }
 }
 
-FastHash.prototype.remove = function() {
+FastHashPrototype.remove = function() {
     var i = -1,
         il = arguments.length - 1;
 
@@ -5734,16 +5768,17 @@ function FastHash_remove(_this, value) {
     }
 }
 
-FastHash.prototype.forEach = function(callback, thisArg) {
-    return forEach(this.__array, callback, thisArg);
+FastHashPrototype.forEach = function(callback, thisArg) {
+    return arrayForEach(this.__array, isNullOrUndefined(thisArg) ? callback : fastBindThis(callback, thisArg, 3));
 };
 
 
 },
 function(require, exports, module, global) {
 
-var isLength = require(43),
-    isObjectLike = require(44);
+var isEqual = require(64),
+    isLength = require(47),
+    isObjectLike = require(65);
 
 
 module.exports = indexOf;
@@ -5758,7 +5793,7 @@ function arrayIndexOf(array, value, fromIndex) {
         il = array.length - 1;
 
     while (i++ < il) {
-        if (array[i] === value) {
+        if (isEqual(array[i], value)) {
             return i;
         }
     }
@@ -5770,36 +5805,61 @@ function arrayIndexOf(array, value, fromIndex) {
 },
 function(require, exports, module, global) {
 
+module.exports = isEqual;
+
+
+function isEqual(a, b) {
+    return !(a !== b && !(a !== a && b !== b));
+}
+
+
+},
+function(require, exports, module, global) {
+
+var isNullOrUndefined = require(5);
+
+
+module.exports = isObjectLike;
+
+
+function isObjectLike(value) {
+    return (!isNullOrUndefined(value) && typeof(value) === "object") || false;
+}
+
+
+},
+function(require, exports, module, global) {
+
 module.exports = {
-    BOOL: require(63),
-    INT: require(65),
-    FLOAT: require(66),
+    BOOL: require(67),
+    INT: require(69),
+    FLOAT: require(70),
 
-    BOOL_VEC2: require(67),
-    BOOL_VEC3: require(69),
-    BOOL_VEC4: require(70),
+    BOOL_VEC2: require(71),
+    BOOL_VEC3: require(73),
+    BOOL_VEC4: require(74),
 
-    INT_VEC2: require(67),
-    INT_VEC3: require(69),
-    INT_VEC4: require(70),
+    INT_VEC2: require(71),
+    INT_VEC3: require(73),
+    INT_VEC4: require(74),
 
-    FLOAT_VEC2: require(71),
-    FLOAT_VEC3: require(72),
-    FLOAT_VEC4: require(73),
+    FLOAT_VEC2: require(75),
+    FLOAT_VEC3: require(76),
+    FLOAT_VEC4: require(77),
 
-    FLOAT_MAT2: require(74),
-    FLOAT_MAT3: require(76),
-    FLOAT_MAT4: require(78),
+    FLOAT_MAT2: require(78),
+    FLOAT_MAT3: require(80),
+    FLOAT_MAT4: require(82),
 
-    SAMPLER_2D: require(80),
-    SAMPLER_CUBE: require(81)
+    SAMPLER_2D: require(84),
+    SAMPLER_CUBE: require(85)
 };
 
 
 },
 function(require, exports, module, global) {
 
-var Uniform = require(64);
+var Uniform = require(68);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -5833,7 +5893,7 @@ Uniform1b.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var inherits = require(17);
+var inherits = require(19);
 
 
 module.exports = Uniform;
@@ -5859,7 +5919,7 @@ Uniform.prototype.set = function( /* value, force */ ) {
 },
 function(require, exports, module, global) {
 
-var Uniform = require(64);
+var Uniform = require(68);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -5893,7 +5953,7 @@ Uniform1i.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var Uniform = require(64);
+var Uniform = require(68);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -5927,8 +5987,8 @@ Uniform1f.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(68),
-    Uniform = require(64);
+var vec2 = require(72),
+    Uniform = require(68);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -5962,7 +6022,7 @@ Uniform2i.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34);
+var mathf = require(36);
 
 
 var vec2 = exports;
@@ -6339,8 +6399,8 @@ vec2.str = function(out) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38),
-    Uniform = require(64);
+var vec3 = require(39),
+    Uniform = require(68);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -6374,8 +6434,8 @@ Uniform3i.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var vec4 = require(39),
-    Uniform = require(64);
+var vec4 = require(40),
+    Uniform = require(68);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -6409,8 +6469,8 @@ Uniform4i.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(68),
-    Uniform = require(64);
+var vec2 = require(72),
+    Uniform = require(68);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -6444,8 +6504,8 @@ Uniform2f.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38),
-    Uniform = require(64);
+var vec3 = require(39),
+    Uniform = require(68);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -6479,8 +6539,8 @@ Uniform3f.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var vec4 = require(39),
-    Uniform = require(64);
+var vec4 = require(40),
+    Uniform = require(68);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -6514,8 +6574,8 @@ Uniform4f.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var mat2 = require(75),
-    Uniform = require(64);
+var mat2 = require(79),
+    Uniform = require(68);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -6549,7 +6609,7 @@ UniformMatrix2fv.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34);
+var mathf = require(36);
 
 
 var mat2 = exports;
@@ -6767,8 +6827,8 @@ mat2.str = function(out) {
 },
 function(require, exports, module, global) {
 
-var mat3 = require(77),
-    Uniform = require(64);
+var mat3 = require(81),
+    Uniform = require(68);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -6806,7 +6866,7 @@ UniformMatrix3fv.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34);
+var mathf = require(36);
 
 
 var mat3 = exports;
@@ -7197,8 +7257,8 @@ mat3.str = function(out) {
 },
 function(require, exports, module, global) {
 
-var mat4 = require(79),
-    Uniform = require(64);
+var mat4 = require(83),
+    Uniform = require(68);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -7237,8 +7297,8 @@ UniformMatrix4fv.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34),
-    vec3 = require(38);
+var mathf = require(36),
+    vec3 = require(39);
 
 
 var mat4 = exports;
@@ -8250,7 +8310,7 @@ mat4.str = function(out) {
 },
 function(require, exports, module, global) {
 
-var Uniform = require(64);
+var Uniform = require(68);
 
 
 module.exports = UniformTexture;
@@ -8270,7 +8330,7 @@ UniformTexture.prototype.set = function(value, force) {
 },
 function(require, exports, module, global) {
 
-var Uniform = require(64);
+var Uniform = require(68);
 
 
 module.exports = UniformTextureCube;
@@ -8291,23 +8351,23 @@ UniformTextureCube.prototype.set = function(value, force) {
 function(require, exports, module, global) {
 
 module.exports = {
-    INT: require(83),
-    FLOAT: require(85),
+    INT: require(87),
+    FLOAT: require(89),
 
-    INT_VEC2: require(86),
-    INT_VEC3: require(87),
-    INT_VEC4: require(88),
+    INT_VEC2: require(90),
+    INT_VEC3: require(91),
+    INT_VEC4: require(92),
 
-    FLOAT_VEC2: require(89),
-    FLOAT_VEC3: require(90),
-    FLOAT_VEC4: require(91)
+    FLOAT_VEC2: require(93),
+    FLOAT_VEC3: require(94),
+    FLOAT_VEC4: require(95)
 };
 
 
 },
 function(require, exports, module, global) {
 
-var Attribute = require(84);
+var Attribute = require(88);
 
 
 module.exports = Attribute1i;
@@ -8330,7 +8390,7 @@ Attribute1i.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var inherits = require(17);
+var inherits = require(19);
 
 
 module.exports = Attribute;
@@ -8354,7 +8414,7 @@ Attribute.prototype.set = function( /* buffer, offset, force */ ) {
 },
 function(require, exports, module, global) {
 
-var Attribute = require(84);
+var Attribute = require(88);
 
 
 module.exports = Attribute1f;
@@ -8377,7 +8437,7 @@ Attribute1f.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var Attribute = require(84);
+var Attribute = require(88);
 
 
 module.exports = Attribute2i;
@@ -8400,7 +8460,7 @@ Attribute2i.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var Attribute = require(84);
+var Attribute = require(88);
 
 
 module.exports = Attribute3i;
@@ -8423,7 +8483,7 @@ Attribute3i.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var Attribute = require(84);
+var Attribute = require(88);
 
 
 module.exports = Attribute4i;
@@ -8446,7 +8506,7 @@ Attribute4i.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var Attribute = require(84);
+var Attribute = require(88);
 
 
 module.exports = Attribute2f;
@@ -8469,7 +8529,7 @@ Attribute2f.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var Attribute = require(84);
+var Attribute = require(88);
 
 
 module.exports = Attribute3f;
@@ -8492,7 +8552,7 @@ Attribute3f.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var Attribute = require(84);
+var Attribute = require(88);
 
 
 module.exports = Attribute4f;
@@ -8515,7 +8575,7 @@ Attribute4f.prototype.set = function(buffer, offset, force) {
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(44);
 
 
 var emitterRenderMode = enums([
@@ -8532,7 +8592,7 @@ module.exports = emitterRenderMode;
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(44);
 
 
 var interpolation = enums([
@@ -8550,7 +8610,7 @@ module.exports = interpolation;
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(44);
 
 
 var normalMode = enums([
@@ -8566,7 +8626,7 @@ module.exports = normalMode;
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(44);
 
 
 var screenAlignment = enums([
@@ -8584,7 +8644,7 @@ module.exports = screenAlignment;
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(44);
 
 
 var side = enums([
@@ -8601,7 +8661,7 @@ module.exports = side;
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(44);
 
 
 var sortMode = enums([
@@ -8619,7 +8679,7 @@ module.exports = sortMode;
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(44);
 
 
 var wrapMode = enums([
@@ -8636,13 +8696,13 @@ module.exports = wrapMode;
 },
 function(require, exports, module, global) {
 
-var isString = require(15),
-    isNumber = require(36),
-    indexOf = require(61),
-    Class = require(10),
-    Assets = require(100),
-    createLoop = require(28),
-    Scene = require(101);
+var isString = require(17),
+    isNumber = require(28),
+    indexOf = require(63),
+    Class = require(12),
+    Assets = require(104),
+    createLoop = require(30),
+    Scene = require(105);
 
 
 var ClassPrototype = Class.prototype,
@@ -8804,8 +8864,8 @@ function BaseApplication_removeScene(_this, scene) {
 },
 function(require, exports, module, global) {
 
-var Class = require(10),
-    indexOf = require(61);
+var Class = require(12),
+    indexOf = require(63);
 
 
 var ClassPrototype = Class.prototype,
@@ -8961,11 +9021,11 @@ AssetsPrototype.load = function(callback) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
-    Input = require(102),
-    Class = require(10),
-    Time = require(124),
-    Entity = require(125);
+var indexOf = require(63),
+    Input = require(106),
+    Class = require(12),
+    Time = require(128),
+    Entity = require(129);
 
 
 var ClassPrototype = Class.prototype,
@@ -9526,14 +9586,14 @@ ScenePrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38),
-    EventEmitter = require(25),
-    Handler = require(103),
-    Mouse = require(116),
-    Buttons = require(117),
-    Touches = require(119),
-    Axes = require(121),
-    eventHandlers = require(123);
+var vec3 = require(39),
+    EventEmitter = require(26),
+    Handler = require(107),
+    Mouse = require(120),
+    Buttons = require(121),
+    Touches = require(123),
+    Axes = require(125),
+    eventHandlers = require(127);
 
 
 var MOUSE_BUTTONS = [
@@ -9719,12 +9779,12 @@ InputPrototype.update = function(time, frame) {
 },
 function(require, exports, module, global) {
 
-var EventEmitter = require(25),
-    focusNode = require(104),
-    blurNode = require(105),
-    getActiveElement = require(106),
+var EventEmitter = require(26),
+    focusNode = require(108),
+    blurNode = require(109),
+    getActiveElement = require(110),
     eventListener = require(2),
-    events = require(108);
+    events = require(112);
 
 
 var HandlerPrototype;
@@ -9856,7 +9916,7 @@ HandlerPrototype.detach = function() {
 },
 function(require, exports, module, global) {
 
-var isNode = require(8);
+var isNode = require(10);
 
 
 module.exports = focusNode;
@@ -9874,7 +9934,7 @@ function focusNode(node) {
 },
 function(require, exports, module, global) {
 
-var isNode = require(8);
+var isNode = require(10);
 
 
 module.exports = blurNode;
@@ -9892,7 +9952,7 @@ function blurNode(node) {
 },
 function(require, exports, module, global) {
 
-var isDocument = require(107),
+var isDocument = require(111),
     environment = require(1);
 
 
@@ -9916,25 +9976,25 @@ function getActiveElement(ownerDocument) {
 },
 function(require, exports, module, global) {
 
-var isNode = require(8);
+var isNode = require(10);
 
 
 module.exports = isDocument;
 
 
-function isDocument(obj) {
-    return isNode(obj) && obj.nodeType === 9;
+function isDocument(value) {
+    return isNode(value) && value.nodeType === 9;
 }
 
 
 },
 function(require, exports, module, global) {
 
-var MouseEvent = require(109),
-    WheelEvent = require(111),
-    KeyEvent = require(112),
-    TouchEvent = require(114),
-    DeviceMotionEvent = require(115);
+var MouseEvent = require(113),
+    WheelEvent = require(115),
+    KeyEvent = require(116),
+    TouchEvent = require(118),
+    DeviceMotionEvent = require(119);
 
 
 module.exports = {
@@ -9960,7 +10020,7 @@ module.exports = {
 },
 function(require, exports, module, global) {
 
-var createPool = require(110),
+var createPool = require(114),
     environment = require(1);
 
 
@@ -10020,9 +10080,9 @@ function getButton(e) {
 },
 function(require, exports, module, global) {
 
-var isFunction = require(6),
-    isNumber = require(36),
-    defineProperty = require(24);
+var isFunction = require(8),
+    isNumber = require(28),
+    defineProperty = require(25);
 
 
 var descriptor = {
@@ -10037,13 +10097,13 @@ module.exports = createPool;
 
 
 function createPool(Constructor, poolSize) {
+
     addProperty(Constructor, "instancePool", []);
     addProperty(Constructor, "getPooled", createPooler(Constructor));
     addProperty(Constructor, "release", createReleaser(Constructor));
 
-    if (!Constructor.poolSize) {
-        Constructor.poolSize = isNumber(poolSize) ? (poolSize < -1 ? -1 : poolSize) : -1;
-    }
+    poolSize = poolSize || Constructor.poolSize;
+    Constructor.poolSize = isNumber(poolSize) ? (poolSize < -1 ? -1 : poolSize) : -1;
 
     return Constructor;
 }
@@ -10207,7 +10267,7 @@ function createReleaser(Constructor) {
 },
 function(require, exports, module, global) {
 
-var createPool = require(110);
+var createPool = require(114);
 
 
 var WheelEventPrototype;
@@ -10258,8 +10318,8 @@ function getDeltaY(e) {
 },
 function(require, exports, module, global) {
 
-var createPool = require(110),
-    keyCodes = require(113);
+var createPool = require(114),
+    keyCodes = require(117);
 
 
 var KeyEventPrototype;
@@ -10415,7 +10475,7 @@ module.exports = {
 },
 function(require, exports, module, global) {
 
-var createPool = require(110);
+var createPool = require(114);
 
 
 var TouchEventPrototype,
@@ -10565,7 +10625,7 @@ function getForce(nativeTouch) {
 },
 function(require, exports, module, global) {
 
-var createPool = require(110);
+var createPool = require(114);
 
 
 var DeviceMotionEventPrototype;
@@ -10598,7 +10658,7 @@ DeviceMotionEventPrototype.destructor = function() {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(68);
+var vec2 = require(72);
 
 
 var MousePrototype;
@@ -10678,7 +10738,7 @@ MousePrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var Button = require(118);
+var Button = require(122);
 
 
 var ButtonsPrototype;
@@ -10914,8 +10974,8 @@ ButtonPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
-    Touch = require(120);
+var indexOf = require(63),
+    Touch = require(124);
 
 
 var TouchesPrototype;
@@ -11053,8 +11113,8 @@ TouchesPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(68),
-    createPool = require(110);
+var vec2 = require(72),
+    createPool = require(114);
 
 
 var TouchPrototype;
@@ -11176,7 +11236,7 @@ TouchPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var Axis = require(122);
+var Axis = require(126);
 
 
 var AxesPrototype;
@@ -11369,7 +11429,7 @@ AxesPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34);
+var mathf = require(36);
 
 
 var AxisPrototype;
@@ -11592,7 +11652,7 @@ AxisPrototype.toJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34);
+var mathf = require(36);
 
 
 var eventHandlers = exports,
@@ -11724,7 +11784,7 @@ eventHandlers.devicemotion = function(input, e) {
 },
 function(require, exports, module, global) {
 
-var time = require(31);
+var time = require(33);
 
 
 var TimePrototype;
@@ -11859,8 +11919,8 @@ TimePrototype.stampMS = function() {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
-    Class = require(10);
+var indexOf = require(63),
+    Class = require(12);
 
 
 var ClassPrototype = Class.prototype,
@@ -12176,10 +12236,10 @@ EntityPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var isString = require(15),
-    isNumber = require(36),
-    Class = require(10),
-    BaseApplication = require(99);
+var isString = require(17),
+    isNumber = require(28),
+    Class = require(12),
+    BaseApplication = require(103);
 
 
 var BaseApplicationPrototype = BaseApplication.prototype,
@@ -12263,7 +12323,7 @@ ApplicationPrototype.loop = function() {
 },
 function(require, exports, module, global) {
 
-var Class = require(10);
+var Class = require(12);
 
 
 var ClassPrototype = Class.prototype,
@@ -12325,11 +12385,10 @@ AssetPrototype.load = function(callback) {
 },
 function(require, exports, module, global) {
 
-var isArray = require(58),
-    audio = require(129),
-    forEach = require(47),
-    eventListener = require(2),
-    Asset = require(127);
+var isArray = require(60),
+    audio = require(133),
+    arrayForEach = require(49),
+    Asset = require(131);
 
 
 var AssetPrototype = Asset.prototype,
@@ -12340,7 +12399,10 @@ module.exports = AudioAsset;
 
 
 function AudioAsset() {
+
     Asset.call(this);
+
+    this.clip = new audio.Clip();
 }
 Asset.extend(AudioAsset, "odin.AudioAsset");
 AudioAssetPrototype = AudioAsset.prototype;
@@ -12355,56 +12417,57 @@ AudioAssetPrototype.construct = function(name, src) {
 };
 
 AudioAssetPrototype.destructor = function() {
+    var clip = this.clip;
 
     AssetPrototype.destructor.call(this);
+
+    clip.src = null;
+    clip.raw = null;
 
     return this;
 };
 
 AudioAssetPrototype.setSrc = function(src) {
-
     AssetPrototype.setSrc.call(this, isArray(src) ? src : [src]);
-
     return this;
 };
 
+function abort(queue) {
+    var i = -1,
+        il = queue.length - 1;
+
+    while (i++ < il) {
+        queue[i]();
+    }
+}
+
 AudioAssetPrototype.load = function(callback) {
     var _this = this,
-        count = this.src.length,
+        clip = this.clip,
+        srcs = this.src,
+        count = srcs.length,
+        queue = [],
         called = false;
 
-    function done() {
+    function done(error, data) {
         if (called === false) {
             count -= 1;
 
-            if (_this.data) {
+            if (data) {
                 called = true;
+                _this.data = clip.raw = data;
+                abort(queue);
                 callback();
             } else if (count === 0) {
                 called = true;
-                callback(new Error("AudioAsset load(): no valid source for audio asset " + _this.name));
+                abort(queue);
+                callback(new Error("AudioAsset load(): no valid source for audio asset " + _this.name + " using srcs " + srcs.join(", ")));
             }
         }
     }
 
-    forEach(this.src, function(src) {
-        var request = new XMLHttpRequest();
-
-        request.open("GET", src, true);
-        request.responseType = "arraybuffer";
-
-        eventListener.on(request, "load", function onLoad() {
-            audioContext.decodeAudioData(
-                request.response,
-                function onDecodeAudioData(buffer) {
-                    _this.raw = buffer;
-                    done();
-                },
-                done
-            );
-        })
-
-        request.send(null);
+    arrayForEach(srcs, function eachSrc(src) {
+        queue[queue.length] = audio.load(src, done);
     });
 
     return this;
@@ -12417,9 +12480,10 @@ function(require, exports, module, global) {
 var audio = exports;
 
 
-audio.audioContext = require(130);
-audio.Clip = require(131);
-audio.Source = require(132);
+audio.context = require(134);
+audio.load = require(135);
+audio.Clip = require(139);
+audio.Source = require(140);
 
 
 },
@@ -12439,11 +12503,11 @@ var window = environment.window,
         window.msAudioContext
     ),
 
-    audioContext, AudioContextPrototype, OscillatorPrototype, BufferSourceNodePrototype, GainPrototype, onTouchStart;
+    context, AudioContextPrototype, OscillatorPrototype, BufferSourceNodePrototype, GainPrototype, onTouchStart;
 
 
 if (AudioContext) {
-    audioContext = new AudioContext();
+    context = new AudioContext();
 
     AudioContextPrototype = AudioContext.prototype;
     AudioContextPrototype.UNLOCKED = !environment.mobile;
@@ -12452,27 +12516,27 @@ if (AudioContext) {
     AudioContextPrototype.createDelay = AudioContextPrototype.createDelay || AudioContextPrototype.createDelayNode;
     AudioContextPrototype.createScriptProcessor = AudioContextPrototype.createScriptProcessor || AudioContextPrototype.createJavaScriptNode;
 
-    OscillatorPrototype = audioContext.createOscillator().constructor.prototype;
+    OscillatorPrototype = context.createOscillator().constructor.prototype;
     OscillatorPrototype.start = OscillatorPrototype.start || OscillatorPrototype.noteOn;
     OscillatorPrototype.stop = OscillatorPrototype.stop || OscillatorPrototype.stop;
     OscillatorPrototype.setPeriodicWave = OscillatorPrototype.setPeriodicWave || OscillatorPrototype.setWaveTable;
 
-    BufferSourceNodePrototype = audioContext.createBufferSource().constructor.prototype;
+    BufferSourceNodePrototype = context.createBufferSource().constructor.prototype;
     BufferSourceNodePrototype.start = BufferSourceNodePrototype.start || BufferSourceNodePrototype.noteOn;
     BufferSourceNodePrototype.stop = BufferSourceNodePrototype.stop || BufferSourceNodePrototype.stop;
 
-    GainPrototype = audioContext.createGain().gain.constructor.prototype;
+    GainPrototype = context.createGain().gain.constructor.prototype;
     GainPrototype.setTargetAtTime = GainPrototype.setTargetAtTime || GainPrototype.setTargetValueAtTime;
 
-    onTouchStart = function onTouchStart(e) {
-        var buffer = audioContext.createBuffer(1, 1, 22050),
-            source = audioContext.createBufferSource();
+    onTouchStart = function onTouchStart() {
+        var buffer = context.createBuffer(1, 1, 22050),
+            source = context.createBufferSource();
 
         source.buffer = buffer;
-        source.connect(audioContext.destination);
+        source.connect(context.destination);
         source.start(0);
 
-        audioContext.UNLOCKED = true;
+        context.UNLOCKED = true;
 
         eventListener.off(window, "touchstart", onTouchStart);
         eventListener.emit(window, "audiocontextunlock");
@@ -12482,19 +12546,377 @@ if (AudioContext) {
 }
 
 
-module.exports = audioContext != null ? audioContext : false;
+module.exports = context != null ? context : false;
 
 
 },
 function(require, exports, module, global) {
 
-var environment = require(1),
-    eventListener = require(2)
-audioContext = require(130);
+var eventListener = require(2),
+    XMLHttpRequestPolyfill = require(136),
+    context = require(134);
 
 
-var document = environment.document,
-    ClipPrototype;
+module.exports = load;
+
+
+function load(src, callback) {
+    var request = new XMLHttpRequestPolyfill();
+
+    request.open("GET", src, true);
+    request.responseType = "arraybuffer";
+
+    eventListener.on(request, "load", function onLoad() {
+        context.decodeAudioData(
+            request.response,
+            function onDecodeAudioData(buffer) {
+                callback(undefined, buffer);
+            },
+            callback
+        );
+    });
+
+    request.send(null);
+
+    return function abort() {
+        request.abort();
+    };
+}
+
+
+},
+function(require, exports, module, global) {
+
+var extend = require(22),
+    environment = require(1),
+    emptyFunction = require(32),
+    createXMLHttpRequest = require(137),
+    toUint8Array = require(138);
+
+
+var window = environment.window,
+
+    NativeXMLHttpRequest = window.XMLHttpRequest,
+    NativeActiveXObject = window.ActiveXObject,
+
+    XMLHttpRequestPolyfill = (
+        NativeXMLHttpRequest ||
+        (function getRequestObject(types) {
+            var i = -1,
+                il = types.length - 1,
+                instance, type;
+
+            while (i++ < il) {
+                try {
+                    type = types[i];
+                    instance = new NativeActiveXObject(type);
+                    break;
+                } catch (e) {}
+                type = null;
+            }
+
+            if (!type) {
+                throw new Error("XMLHttpRequest not supported by this browser");
+            }
+
+            return createXMLHttpRequest(function createNativeObject() {
+                return new NativeActiveXObject(type);
+            });
+        }([
+            "Msxml2.XMLHTTP",
+            "Msxml3.XMLHTTP",
+            "Microsoft.XMLHTTP"
+        ]))
+    ),
+
+    XMLHttpRequestPolyfillPrototype = XMLHttpRequestPolyfill.prototype;
+
+
+if (!(XMLHttpRequestPolyfillPrototype.addEventListener || XMLHttpRequestPolyfillPrototype.attachEvent)) {
+    XMLHttpRequestPolyfill = createXMLHttpRequest(function createNativeObject() {
+        return new NativeXMLHttpRequest();
+    });
+    XMLHttpRequestPolyfillPrototype = XMLHttpRequestPolyfill.prototype;
+}
+
+XMLHttpRequestPolyfillPrototype.nativeSetRequestHeader = XMLHttpRequestPolyfillPrototype.setRequestHeader || emptyFunction;
+
+XMLHttpRequestPolyfillPrototype.setRequestHeader = function(key, value) {
+    (this.__requestHeaders || (this.__requestHeaders = {}))[key] = value;
+    this.nativeSetRequestHeader(key, value);
+};
+
+XMLHttpRequestPolyfillPrototype.getRequestHeader = function(key) {
+    return (this.__requestHeaders || (this.__requestHeaders = {}))[key];
+};
+
+XMLHttpRequestPolyfillPrototype.getRequestHeaders = function() {
+    return extend({}, this.__requestHeaders);
+};
+
+if (!XMLHttpRequestPolyfillPrototype.setTimeout) {
+    XMLHttpRequestPolyfillPrototype.setTimeout = function(ms) {
+        this.timeout = ms;
+    };
+}
+
+if (!XMLHttpRequestPolyfillPrototype.setWithCredentials) {
+    XMLHttpRequestPolyfillPrototype.setWithCredentials = function(value) {
+        this.withCredentials = !!value;
+    };
+}
+
+if (!XMLHttpRequestPolyfillPrototype.sendAsBinary) {
+    XMLHttpRequestPolyfillPrototype.sendAsBinary = function(str) {
+        return this.send(toUint8Array(str));
+    };
+}
+
+
+module.exports = XMLHttpRequestPolyfill;
+
+
+},
+function(require, exports, module, global) {
+
+var EventEmitter = require(26),
+    toUint8Array = require(138);
+
+
+module.exports = createXMLHttpRequest;
+
+
+function createXMLHttpRequest(createNativeObject) {
+    var XMLHttpRequestPrototype;
+
+
+    function XMLHttpRequest() {
+        var _this = this,
+            nativeObject = createNativeObject();
+
+        EventEmitter.call(this, -1);
+
+        this.__requestHeaders = {};
+        this.__nativeObject = nativeObject;
+
+        this.onabort = null;
+        this.onerror = null;
+        this.onload = null;
+        this.onloadend = null;
+        this.onloadstart = null;
+        this.onprogress = null;
+        this.onreadystatechange = null;
+        this.ontimeout = null;
+        this.readyState = 0;
+        this.response = "";
+        this.responseText = "";
+        this.responseType = "";
+        this.responseURL = "";
+        this.responseXML = null;
+        this.status = 0;
+        this.statusText = "";
+        this.timeout = 0;
+        this.withCredentials = false;
+
+        nativeObject.onreadystatechange = function(e) {
+            return XMLHttpRequest_onReadyStateChange(_this, e);
+        };
+
+        nativeObject.ontimeout = function(e) {
+            if (_this.ontimeout) {
+                _this.ontimeout(e);
+            }
+            _this.emit("timeout");
+        };
+
+        nativeObject.onerror = function(e) {
+            if (_this.onerror) {
+                _this.onerror(e);
+            }
+            _this.emit("error");
+        };
+    }
+    EventEmitter.extend(XMLHttpRequest);
+    XMLHttpRequestPrototype = XMLHttpRequest.prototype;
+
+    function XMLHttpRequest_onReadyStateChange(_this, e) {
+        var nativeObject = _this.__nativeObject,
+            response;
+
+        _this.readyState = nativeObject.readyState;
+
+        if (_this.onreadystatechange) {
+            _this.onreadystatechange(e);
+        }
+        _this.emit("readystatechange", e);
+
+        switch (nativeObject.readyState) {
+            case 3:
+                if (_this.onprogress) {
+                    _this.onprogress();
+                }
+                _this.emit("progress", e);
+                break;
+            case 4:
+                response = nativeObject.response || "";
+
+                if (_this.responseType === "arraybuffer") {
+                    response = toUint8Array(response);
+                }
+
+                _this.response = response;
+                _this.responseText = nativeObject.responseText || _this.response;
+                _this.responseType = nativeObject.responseType || "";
+                _this.responseURL = nativeObject.responseURL || "";
+                _this.responseXML = nativeObject.responseXML || _this.response;
+                _this.status = nativeObject.status || 0;
+                _this.statusText = nativeObject.statusText || "";
+
+                if (_this.onload) {
+                    _this.onload();
+                }
+                _this.emit("load", e);
+                if (_this.onloadend) {
+                    _this.onloadend();
+                }
+                _this.emit("loadend", e);
+                break;
+        }
+
+        return _this;
+    }
+
+    XMLHttpRequestPrototype.attachEvent = function(type, fn) {
+        return this.on(type.slice(2), fn);
+    };
+    XMLHttpRequestPrototype.detachEvent = function(type, fn) {
+        return this.off(type.slice(2), fn);
+    };
+
+    XMLHttpRequestPrototype.addEventListener = XMLHttpRequestPrototype.on;
+    XMLHttpRequestPrototype.removeEventListener = XMLHttpRequestPrototype.off;
+
+    XMLHttpRequestPrototype.dispatchEvent = function(event) {
+        return this.emit(event.type, event);
+    };
+
+    XMLHttpRequestPrototype.fireEvent = function(type, event) {
+        return this.emit("on" + type, event);
+    };
+
+    XMLHttpRequestPrototype.abort = function() {
+        try {
+            if (this.onabort) {
+                this.onabort();
+            }
+            _this.emit("abort", {});
+            this.__nativeObject.abort();
+        } catch (e) {}
+    };
+
+    XMLHttpRequestPrototype.setTimeout = function(ms) {
+        this.timeout = ms;
+        try {
+            this.__nativeObject.timeout = ms;
+        } catch (e) {}
+    };
+
+    XMLHttpRequestPrototype.setWithCredentials = function(value) {
+        value = !!value;
+        this.withCredentials = value;
+        try {
+            this.__nativeObject.withCredentials = value;
+        } catch (e) {}
+    };
+
+    XMLHttpRequestPrototype.getAllResponseHeaders = function() {
+        try {
+            return this.__nativeObject.getAllResponseHeaders();
+        } catch (e) {
+            return null;
+        }
+    };
+
+    XMLHttpRequestPrototype.getResponseHeader = function(header) {
+        try {
+            return this.__nativeObject.getResponseHeader(header);
+        } catch (e) {
+            return null;
+        }
+    };
+
+    XMLHttpRequestPrototype.getResponseHeader = function(header) {
+        try {
+            return this.__nativeObject.getResponseHeader(header);
+        } catch (e) {
+            return null;
+        }
+    };
+
+    XMLHttpRequestPrototype.open = function(method, url, async, user, password) {
+        if (this.readyState === 0) {
+            this.readyState = 1;
+            return this.__nativeObject.open(method, url, async, user, password);
+        } else {
+            return undefined;
+        }
+    };
+
+    XMLHttpRequestPrototype.overrideMimeType = function(mimetype) {
+        try {
+            return this.__nativeObject.overrideMimeType(mimetype);
+        } catch (e) {}
+    };
+
+    XMLHttpRequestPrototype.send = function(data) {
+        try {
+            return this.__nativeObject.send(data);
+        } catch (e) {}
+    };
+
+    XMLHttpRequestPrototype.setRequestHeader = function(key, value) {
+        try {
+            return this.__nativeObject.setRequestHeader(key, value);
+        } catch (e) {}
+    };
+
+    return XMLHttpRequest;
+}
+
+
+},
+function(require, exports, module, global) {
+
+var environment = require(1);
+
+
+var Uint8Array = environment.window.Uint8Array || Array;
+
+
+module.exports = toUint8Array;
+
+
+function toUint8Array(str) {
+    var length = str.length,
+        ui8 = new Uint8Array(length),
+        i = -1,
+        il = length - 1;
+
+    while (i++ < il) {
+        ui8[i] = str.charCodeAt(i) & 0xff;
+    }
+
+    return ui8;
+}
+
+
+},
+function(require, exports, module, global) {
+
+var load = require(135);
+
+
+var ClipPrototype;
 
 
 module.exports = Clip;
@@ -12506,51 +12928,29 @@ function Clip(src) {
 }
 ClipPrototype = Clip.prototype;
 
-if (audioContext) {
-    ClipPrototype.load = function(callback) {
-        var _this = this,
-            request = new XMLHttpRequest();
+ClipPrototype.load = function(callback) {
+    var _this = this;
 
-        request.open("GET", this.src, true);
-        request.responseType = "arraybuffer";
-
-        eventListener.on(request, "load", function onLoad() {
-            audioContext.decodeAudioData(
-                request.response,
-                function onDecodeAudioData(buffer) {
-                    _this.raw = buffer;
-                    callback();
-                },
-                callback
-            );
-        })
-
-        request.send(null);
-    };
-} else {
-    ClipPrototype.load = function(callback) {
-        var _this = this,
-            audioNode = new Audio();
-
-        eventListener.on(audioNode, "canplaythrough", function onCanPlayThrough() {
-            _this.raw = audioNode;
+    load(this.src, function onLoad(error, raw) {
+        if (error) {
+            callback(error);
+        } else {
+            _this.raw = raw;
             callback();
-        });
-        eventListener.on(audioNode, "error", callback);
+        }
+    });
 
-        audioNode.src = this.src;
-    };
-}
+    return this;
+};
 
 
 },
 function(require, exports, module, global) {
 
-var EventEmitter = require(25),
-    mathf = require(34),
-    vec3 = require(38),
-    time = require(31),
-    audioContext = require(130);
+var EventEmitter = require(26),
+    mathf = require(36),
+    time = require(33),
+    context = require(134);
 
 
 var WebAudioSourcePrototype;
@@ -12658,18 +13058,47 @@ WebAudioSourcePrototype.setPosition = function(position) {
     return this;
 };
 
+WebAudioSourcePrototype.setVelocity = function(velocity) {
+    var panner = this.__panner;
+
+    if (panner) {
+        panner.setVelocity(velocity[0], velocity[1], velocity[2]);
+    }
+
+    return this;
+};
+
+WebAudioSourcePrototype.setOrientation = function(orientation) {
+    var panner = this.__panner;
+
+    if (panner) {
+        panner.setOrientation(orientation[0], orientation[1], orientation[2]);
+    }
+
+    return this;
+};
+
 WebAudioSource_reset = function(_this) {
-    var source = _this.__source = audioContext.createBufferSource(),
-        gain = _this.__gain = audioContext.createGain(),
+    var source = _this.__source = context.createBufferSource(),
+        gain = _this.__gain = context.createGain(),
         panner;
 
     if (_this.ambient === true) {
-        gain.connect(audioContext.destination);
+        gain.connect(context.destination);
         source.connect(gain);
     } else {
-        panner = _this.__panner = audioContext.createPanner();
-        gain.connect(audioContext.destination);
-        panner.connect(gain);
+        panner = _this.__panner = context.createPanner();
+        
+        panner.panningModel = "HRTF";
+        panner.distanceModel = "inverse";
+        
+        panner.rolloffFactor = 1;
+        panner.coneInnerAngle = 360;
+        panner.coneOuterAngle = 0;
+        panner.coneOuterGain = 0;
+        
+        gain.connect(panner);
+        panner.connect(context.destination);
         source.connect(panner);
     }
 
@@ -12683,8 +13112,8 @@ WebAudioSource_reset = function(_this) {
 WebAudioSourcePrototype.play = function(delay, offset, duration) {
     var _this = this,
         clip = this.clip,
-        currentTime, clipDuration, maxLength;
-
+        currentTime, clipDuration;
+    
     if (clip && clip.raw && (!this.playing || this.paused)) {
         currentTime = this.currentTime;
         clipDuration = clip.raw.duration;
@@ -12746,8 +13175,8 @@ function(require, exports, module, global) {
 
 var environment = require(1),
     eventListener = require(2),
-    HttpError = require(134),
-    Asset = require(127);
+    HttpError = require(142),
+    Asset = require(131);
 
 
 var AssetPrototype = Asset.prototype,
@@ -12824,19 +13253,23 @@ ImageAssetPrototype.load = function(callback) {
 },
 function(require, exports, module, global) {
 
-var forEach = require(47),
-    create = require(18),
-    STATUS_CODES = require(135);
+var objectForEach = require(50),
+    inherits = require(19),
+    STATUS_CODES = require(143);
 
 
 var STATUS_NAMES = {},
-    STATUS_STRINGS = {};
+    STATUS_STRINGS = {},
+    HttpErrorPrototype;
 
 
-forEach(STATUS_CODES, function(status, code) {
+module.exports = HttpError;
+
+
+objectForEach(STATUS_CODES, function eachStatus(status, statusCode) {
     var name;
 
-    if (code < 400) {
+    if (statusCode < 400) {
         return;
     }
 
@@ -12846,65 +13279,61 @@ forEach(STATUS_CODES, function(status, code) {
         name += "Error";
     }
 
-    STATUS_NAMES[code] = name;
-    STATUS_STRINGS[code] = status;
+    STATUS_NAMES[statusCode] = name;
+    STATUS_STRINGS[statusCode] = status;
 });
 
 
-function HttpError(code, message) {
+function HttpError(statusCode, message, fileName, lineNumber) {
     if (message instanceof Error) {
         message = message.message;
     }
 
-    if (code instanceof Error) {
-        message = code.message;
-        code = 500;
-    } else if (typeof(code) === "string") {
-        message = code;
-        code = 500;
+    if (statusCode instanceof Error) {
+        message = statusCode.message;
+        statusCode = 500;
+    } else if (typeof(statusCode) === "string") {
+        message = statusCode;
+        statusCode = 500;
     } else {
-        code = code || 500;
+        statusCode = statusCode || 500;
     }
 
-    Error.call(this);
+    Error.call(this, message, fileName, lineNumber);
 
     if (Error.captureStackTrace) {
         Error.captureStackTrace(this, this.constructor);
     }
 
-    this.name = STATUS_NAMES[code] || "UnknownHttpError";
-    this.code = code;
-    this.message = this.name + ": " + code + " " + (message || STATUS_STRINGS[code]);
+    this.name = STATUS_NAMES[statusCode] || "UnknownHttpError";
+    this.statusCode = statusCode;
+    this.message = this.name + ": " + statusCode + " " + (message || STATUS_STRINGS[statusCode]);
 }
-HttpError.prototype = create(Error.prototype);
-HttpError.prototype.constructor = HttpError;
+inherits(HttpError, Error);
+HttpErrorPrototype = HttpError.prototype;
 
-HttpError.prototype.toString = function() {
-
+HttpErrorPrototype.toString = function() {
     return this.message;
 };
 
-HttpError.prototype.toJSON = function(json) {
+HttpErrorPrototype.toJSON = function(json) {
     json = json || {};
 
     json.name = this.name;
-    json.code = this.code;
+    json.statusCode = this.statusCode;
     json.message = this.message;
 
     return json;
 };
 
-HttpError.prototype.fromJSON = function(json) {
+HttpErrorPrototype.fromJSON = function(json) {
 
     this.name = json.name;
-    this.code = json.code;
+    this.statusCode = json.statusCode;
     this.message = json.message;
 
     return this;
 };
-
-
-module.exports = HttpError;
 
 
 },
@@ -12974,9 +13403,9 @@ module.exports = {
 },
 function(require, exports, module, global) {
 
-var request = require(137),
-    HttpError = require(134),
-    Asset = require(127);
+var request = require(145),
+    HttpError = require(142),
+    Asset = require(131);
 
 
 var JSONAssetPrototype;
@@ -13020,17 +13449,17 @@ JSONAssetPrototype.load = function(callback) {
 },
 function(require, exports, module, global) {
 
-module.exports = require(138)(require(141));
+module.exports = require(146)(require(149));
 
 
 },
 function(require, exports, module, global) {
 
 module.exports = function createRequest(request) {
-    var methods = require(139),
-        forEach = require(47),
-        EventEmitter = require(25),
-        defaults = require(140);
+    var methods = require(147),
+        forEach = require(45),
+        EventEmitter = require(26),
+        defaults = require(148);
 
 
     forEach(methods, function(method) {
@@ -13104,9 +13533,9 @@ module.exports = [
 },
 function(require, exports, module, global) {
 
-var extend = require(21),
-    isString = require(15),
-    isFunction = require(6);
+var extend = require(22),
+    isString = require(17),
+    isFunction = require(8);
 
 
 function defaults(options) {
@@ -13150,17 +13579,17 @@ module.exports = defaults;
 },
 function(require, exports, module, global) {
 
-var PromisePolyfill = require(142),
-    XMLHttpRequestPolyfill = require(144),
-    isFunction = require(6),
-    isString = require(15),
-    forEach = require(47),
-    trim = require(145),
-    extend = require(21),
-    Response = require(146),
-    defaults = require(140),
-    camelcaseHeader = require(147),
-    parseContentType = require(150);
+var PromisePolyfill = require(150),
+    XMLHttpRequestPolyfill = require(136),
+    isFunction = require(8),
+    isString = require(17),
+    forEach = require(45),
+    trim = require(152),
+    extend = require(22),
+    Response = require(153),
+    defaults = require(148),
+    camelcaseHeader = require(154),
+    parseContentType = require(159);
 
 
 var supportsFormData = typeof(FormData) !== "undefined";
@@ -13348,11 +13777,11 @@ module.exports = request;
 function(require, exports, module, global) {
 
 var process = require(3);
-var isArray = require(58),
+var isArray = require(60),
     isObject = require(4),
-    isFunction = require(6),
-    createStore = require(143),
-    fastSlice = require(26);
+    isFunction = require(8),
+    createStore = require(151),
+    fastSlice = require(27);
 
 
 var PromisePolyfill, PrivatePromise;
@@ -13626,9 +14055,9 @@ module.exports = PromisePolyfill;
 },
 function(require, exports, module, global) {
 
-var has = require(11),
-    defineProperty = require(24),
-    isPrimitive = require(20);
+var has = require(13),
+    defineProperty = require(25),
+    isPrimitive = require(21);
 
 
 var emptyObject = {};
@@ -13704,78 +14133,8 @@ function createStore() {
 },
 function(require, exports, module, global) {
 
-var extend = require(21),
-    environment = require(1);
-
-
-var window = environment.window,
-
-    ActiveXObject = window.ActiveXObject,
-
-    XMLHttpRequestPolyfill = (
-        window.XMLHttpRequest ||
-        (function getRequestObjectType(types) {
-            var i = -1,
-                il = types.length - 1,
-                instance, createType;
-
-            while (i++ < il) {
-                try {
-                    createType = types[i];
-                    instance = createType();
-                    break;
-                } catch (e) {}
-            }
-
-            if (!createType) {
-                throw new Error("XMLHttpRequest not supported by this browser");
-            }
-
-            return function XMLHttpRequest() {
-                return createType();
-            };
-        }([
-            function createActiveObject() {
-                return new ActiveXObject("Msxml2.XMLHTTP");
-            },
-            function createActiveObject() {
-                return new ActiveXObject("Msxml3.XMLHTTP");
-            },
-            function createActiveObject() {
-                return new ActiveXObject("Microsoft.XMLHTTP");
-            }
-        ]))
-    ),
-
-    XMLHttpRequestPolyfillPrototype = XMLHttpRequestPolyfill.prototype;
-
-
-if (XMLHttpRequestPolyfillPrototype.setRequestHeader) {
-    XMLHttpRequestPolyfillPrototype.nativeSetRequestHeader = XMLHttpRequestPolyfillPrototype.setRequestHeader;
-
-    XMLHttpRequestPolyfillPrototype.setRequestHeader = function setRequestHeader(key, value) {
-        (this.__requestHeaders__ || (this.__requestHeaders__ = {}))[key] = value;
-        return this.nativeSetRequestHeader(key, value);
-    };
-}
-
-XMLHttpRequestPolyfillPrototype.getRequestHeader = function getRequestHeader(key) {
-    return (this.__requestHeaders__ || (this.__requestHeaders__ = {}))[key];
-};
-
-XMLHttpRequestPolyfillPrototype.getRequestHeaders = function getRequestHeaders() {
-    return extend({}, this.__requestHeaders__);
-};
-
-
-module.exports = XMLHttpRequestPolyfill;
-
-
-},
-function(require, exports, module, global) {
-
-var isNative = require(12),
-    toString = require(14);
+var isNative = require(14),
+    toString = require(16);
 
 
 var StringPrototype = String.prototype,
@@ -13853,8 +14212,8 @@ function Response() {
 },
 function(require, exports, module, global) {
 
-var map = require(148),
-    capitalizeString = require(149);
+var map = require(155),
+    capitalizeString = require(158);
 
 
 module.exports = function camelcaseHeader(str) {
@@ -13865,46 +14224,67 @@ module.exports = function camelcaseHeader(str) {
 },
 function(require, exports, module, global) {
 
-var keys = require(22),
+var isArrayLike = require(46),
     isNullOrUndefined = require(5),
     fastBindThis = require(48),
-    isArrayLike = require(42);
+    arrayMap = require(156),
+    objectMap = require(157);
 
 
 module.exports = map;
 
 
-function map(object, callback, thisArg) {
-    callback = isNullOrUndefined(thisArg) ? callback : fastBindThis(callback, thisArg, 2);
-    return isArrayLike(object) ? mapArray(object, callback) : mapObject(object, callback);
+function map(value, callback, thisArg) {
+    callback = isNullOrUndefined(thisArg) ? callback : fastBindThis(callback, thisArg, 3);
+    return isArrayLike(value) ?
+        arrayMap(value, callback) :
+        objectMap(value, callback);
 }
 
-function mapArray(array, callback) {
+
+},
+function(require, exports, module, global) {
+
+module.exports = arrayMap;
+
+
+function arrayMap(array, callback) {
     var length = array.length,
         i = -1,
         il = length - 1,
-        result = new Array(length);
+        results = new Array(length);
 
     while (i++ < il) {
-        result[i] = callback(array[i], i);
+        results[i] = callback(array[i], i, array);
     }
 
-    return result;
+    return results;
 }
 
-function mapObject(object, callback) {
+
+},
+function(require, exports, module, global) {
+
+var keys = require(23);
+
+
+module.exports = objectMap;
+
+
+function objectMap(object, callback) {
     var objectKeys = keys(object),
+        length = objectKeys.length,
         i = -1,
-        il = objectKeys.length - 1,
-        result = {},
+        il = length - 1,
+        results = {},
         key;
 
     while (i++ < il) {
         key = objectKeys[i];
-        result[key] = callback(object[key], key);
+        results[key] = callback(object[key], key, object);
     }
 
-    return result;
+    return results;
 }
 
 
@@ -13943,9 +14323,9 @@ module.exports = function parseContentType(str) {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(68),
-    WebGLContext = require(33),
-    ImageAsset = require(133);
+var vec2 = require(72),
+    WebGLContext = require(35),
+    ImageAsset = require(141);
 
 
 var ImageAssetPrototype = ImageAsset.prototype,
@@ -14129,9 +14509,9 @@ TexturePrototype.setType = function(value) {
 },
 function(require, exports, module, global) {
 
-var JSONAsset = require(136),
-    Shader = require(153),
-    enums = require(32);
+var JSONAsset = require(144),
+    Shader = require(162),
+    enums = require(34);
 
 
 var JSONAssetPrototype = JSONAsset.prototype,
@@ -14216,12 +14596,12 @@ MaterialPrototype.parse = function() {
 },
 function(require, exports, module, global) {
 
-var map = require(148),
-    keys = require(22),
-    template = require(154),
-    pushUnique = require(155),
-    Class = require(10),
-    chunks = require(156);
+var arrayMap = require(156),
+    keys = require(23),
+    template = require(163),
+    pushUnique = require(164),
+    Class = require(12),
+    chunks = require(165);
 
 
 var ClassPrototype = Class.prototype,
@@ -14229,7 +14609,7 @@ var ClassPrototype = Class.prototype,
     VERTEX = "vertex",
     FRAGMENT = "fragment",
 
-    chunkRegExps = map(keys(chunks), function(key) {
+    chunkRegExps = arrayMap(keys(chunks), function(key) {
         return {
             key: key,
             regexp: new RegExp("\\b" + key + "\\b")
@@ -14360,10 +14740,12 @@ function template(text, data, settings) {
 
         render, start, end, evaluate, interpolate, escape;
 
-    settings || (settings = {});
+    settings = settings || {};
 
     for (var key in templateSettings) {
-        if (settings[key] == null) settings[key] = templateSettings[key];
+        if (settings[key] == null) {
+            settings[key] = templateSettings[key];
+        }
     }
 
     start = settings.start;
@@ -14398,7 +14780,9 @@ function template(text, data, settings) {
     );
     source += "';\n";
 
-    if (!settings.variable) source = 'with(obj||{}){\n' + source + '}\n';
+    if (!settings.variable) {
+        source = 'with(obj||{}){\n' + source + '}\n';
+    }
     source = "var __t,__p='',__j=Array.prototype.join;\n" + source + "return __p;\n";
 
     try {
@@ -14424,10 +14808,11 @@ template.settings = {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61);
+var indexOf = require(63);
 
 
 module.exports = pushUnique;
+
 
 function pushUnique(array) {
     var i = 0,
@@ -14461,7 +14846,7 @@ function basePushUnique(array, value) {
 },
 function(require, exports, module, global) {
 
-var ShaderChunk = require(157);
+var ShaderChunk = require(166);
 
 
 var chunks = exports;
@@ -14735,7 +15120,7 @@ chunks.getUV = ShaderChunk.create({
 },
 function(require, exports, module, global) {
 
-var isArray = require(58);
+var isArray = require(60);
 
 
 var ShaderChunkPrototype;
@@ -14788,15 +15173,15 @@ ShaderChunkPrototype.destructor = function() {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38),
-    quat = require(159),
-    mat4 = require(79),
-    mathf = require(34),
-    aabb3 = require(160),
-    FastHash = require(60),
-    Attribute = require(161),
-    JSONAsset = require(136),
-    GeometryBone = require(162);
+var vec3 = require(39),
+    quat = require(168),
+    mat4 = require(83),
+    mathf = require(36),
+    aabb3 = require(169),
+    FastHash = require(62),
+    Attribute = require(170),
+    JSONAsset = require(144),
+    GeometryBone = require(171);
 
 
 var JSONAssetPrototype = JSONAsset.prototype,
@@ -15289,9 +15674,9 @@ GeometryPrototype.calculateTangents = function() {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34),
-    vec3 = require(38),
-    vec4 = require(39);
+var mathf = require(36),
+    vec3 = require(39),
+    vec4 = require(40);
 
 
 var quat = exports;
@@ -15675,7 +16060,7 @@ quat.fromMat4 = function(out, m) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38);
+var vec3 = require(39);
 
 
 var aabb3 = exports;
@@ -16063,9 +16448,9 @@ AttributePrototype.setXYZW = function(index, x, y, z, w) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38),
-    quat = require(159),
-    mat4 = require(79);
+var vec3 = require(39),
+    quat = require(168),
+    mat4 = require(83);
 
 
 var UNKNOWN_BONE_COUNT = 1,
@@ -16118,10 +16503,10 @@ GeometryBonePrototype.destructor = function() {
 },
 function(require, exports, module, global) {
 
-var isNumber = require(36),
+var isNumber = require(28),
     environment = require(1),
     eventListener = require(2),
-    Class = require(10);
+    Class = require(12);
 
 
 var ClassPrototype = Class.prototype,
@@ -16336,18 +16721,18 @@ function Canvas_update(_this) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
-    WebGLContext = require(33),
-    mat4 = require(79),
+var indexOf = require(63),
+    WebGLContext = require(35),
+    mat4 = require(83),
 
-    Class = require(10),
-    side = require(96),
+    Class = require(12),
+    side = require(100),
 
-    MeshRenderer = require(165),
-    SpriteRenderer = require(167),
+    MeshRenderer = require(174),
+    SpriteRenderer = require(176),
 
-    RendererGeometry = require(168),
-    RendererMaterial = require(169);
+    RendererGeometry = require(177),
+    RendererMaterial = require(178);
 
 
 var enums = WebGLContext.enums,
@@ -16644,9 +17029,9 @@ RendererPrototype.render = function(scene, camera) {
 },
 function(require, exports, module, global) {
 
-var mat3 = require(77),
-    mat4 = require(79),
-    ComponentRenderer = require(166);
+var mat3 = require(81),
+    mat4 = require(83),
+    ComponentRenderer = require(175);
 
 
 var MeshRendererPrototype;
@@ -16707,7 +17092,7 @@ MeshRendererPrototype.render = function(mesh, camera) {
 },
 function(require, exports, module, global) {
 
-var Class = require(10);
+var Class = require(12);
 
 
 var ComponentRendererPrototype;
@@ -16795,13 +17180,15 @@ ComponentRendererPrototype.render = function( /* component, camera, scene, manag
 },
 function(require, exports, module, global) {
 
-var mat3 = require(77),
-    mat4 = require(79),
-    vec2 = require(68),
-    vec4 = require(39),
-    WebGLContext = require(33),
-    Geometry = require(158),
-    ComponentRenderer = require(166);
+var mat3 = require(81),
+    mat4 = require(83),
+    vec2 = require(72),
+    vec3 = require(39),
+    vec4 = require(40),
+    quat = require(168),
+    WebGLContext = require(35),
+    Geometry = require(167),
+    ComponentRenderer = require(175);
 
 
 var depth = WebGLContext.enums.depth,
@@ -16884,7 +17271,6 @@ SpriteRendererPrototype.render = function(sprite, camera) {
         gl = context.gl,
 
         components = sprite.entity.components,
-        transform = components["odin.Transform"] || components["odin.Transform2D"],
 
         spriteMaterial = sprite.material,
         spriteGeometry = this.geometry,
@@ -16894,6 +17280,8 @@ SpriteRendererPrototype.render = function(sprite, camera) {
 
         glUniforms = program.uniforms,
         glUniformHash = glUniforms.__hash,
+
+        transform = components["odin.Transform"] || components["odin.Transform2D"],
 
         indexBuffer;
 
@@ -16931,7 +17319,7 @@ SpriteRendererPrototype.render = function(sprite, camera) {
 },
 function(require, exports, module, global) {
 
-var FastHash = require(60);
+var FastHash = require(62);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array,
@@ -17159,7 +17547,7 @@ function DataBuffer(name, offset) {
 },
 function(require, exports, module, global) {
 
-var has = require(11);
+var has = require(13);
 
 
 var RendererMaterialPrototype;
@@ -17324,7 +17712,7 @@ function getOptions(data) {
 },
 function(require, exports, module, global) {
 
-var Class = require(10);
+var Class = require(12);
 
 
 var PluginPrototype;
@@ -17381,8 +17769,8 @@ PluginPrototype.destroy = function(emitEvent) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
-    Class = require(10);
+var indexOf = require(63),
+    Class = require(12);
 
 
 var ClassPrototype = Class.prototype,
@@ -17535,8 +17923,8 @@ ComponentManagerPrototype.removeComponent = function(component) {
 },
 function(require, exports, module, global) {
 
-var Class = require(10),
-    ComponentManager = require(171);
+var Class = require(12),
+    ComponentManager = require(180);
 
 
 var ClassPrototype = Class.prototype,
@@ -17624,11 +18012,11 @@ ComponentPrototype.destroy = function(emitEvent) {
 },
 function(require, exports, module, global) {
 
-var audio = require(129),
-    vec2 = require(68),
-    vec3 = require(38),
-    isNumber = require(36),
-    Component = require(172);
+var audio = require(133),
+    vec2 = require(72),
+    vec3 = require(39),
+    isNumber = require(28),
+    Component = require(181);
 
 
 var ComponentPrototype = Component.prototype,
@@ -17663,11 +18051,11 @@ function AudioSource() {
 Component.extend(AudioSource, "odin.AudioSource");
 AudioSourcePrototype = AudioSource.prototype;
 
-AudioSourcePrototype.construct = function(clip, options) {
+AudioSourcePrototype.construct = function(audioAsset, options) {
 
-    ComponentPrototype.construct.call(this, clip);
+    ComponentPrototype.construct.call(this, audioAsset);
 
-    this.__source.setClip(clip);
+    this.__source.setClip(audioAsset.clip);
 
     if (options) {
         if (options.ambient) {
@@ -17717,7 +18105,7 @@ AudioSourcePrototype.setVolume = function(value) {
 };
 
 AudioSourcePrototype.setLoop = function(value) {
-    this.__source.setVolume(value);
+    this.__source.setLoop(value);
     return this;
 };
 
@@ -17736,10 +18124,11 @@ AudioSourcePrototype.stop = function() {
     return this;
 };
 
-var update_position = vec3.create();
+var update_position = vec3.create(),
+    update_orientation = vec3.create();
 AudioSourcePrototype.update = function() {
     var source = this.__source,
-        dopplerLevel, entity, scene, camera, transform, transform2d, cameraTransform;
+        dopplerLevel, entity, scene, camera, transform, transform2d, position, orientation;
 
     ComponentPrototype.update.call(this);
 
@@ -17749,30 +18138,29 @@ AudioSourcePrototype.update = function() {
         scene = entity && entity.scene;
         camera = scene && scene.hasManager("odin.Camera") && scene.getManager("odin.Camera").getActive();
 
-        if (!source.ambient && camera) {
+        if (!source.ambient) {
             transform = entity.components["odin.Transform"];
             transform2d = entity.components["odin.Transform2D"];
-            cameraTransform = camera.entity.components["odin.Transform"] || camera.entity.components["odin.Transform2D"];
+            position = update_position;
+            orientation = update_orientation;
 
-            if (transform2d) {
-                vec2.add(update_position, transform2d.position, this.offset);
-                vec2.sub(update_position, update_position, cameraTransform.position);
-                if (dopplerLevel > 0) {
-                    vec2.smul(update_position, dopplerLevel);
-                }
-            } else if (transform) {
-                vec3.add(update_position, transform.position, this.offset);
-                vec3.sub(update_position, update_position, cameraTransform.position);
-                if (dopplerLevel > 0) {
-                    vec3.smul(update_position, dopplerLevel);
-                }
+            if (transform) {
+                vec3.add(position, transform.position, this.offset);
+                vec3.transformProjectionNoPosition(orientation, position, transform.getMatrixWorld());
+                vec3.normalize(orientation, orientation);
+            } else if (transform2d) {
+                position[2] = 0.0;
+                vec2.add(position, transform2d.position, this.offset);
+                vec3.transformProjectionNoPosition(orientation, position, transform2d.getMatrixWorld());
+                vec3.normalize(orientation, orientation);
             }
 
-            if (camera.orthographic) {
-                update_position[2] = camera.orthographicSize * 0.5;
+            if (camera && camera.orthographic) {
+                position[2] = camera.orthographicSize * 0.5;
             }
 
-            source.setPosition(update_position);
+            source.setPosition(position);
+            source.setOrientation(orientation);
         }
     }
 
@@ -17797,12 +18185,12 @@ AudioSourcePrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38),
-    quat = require(159),
-    mat3 = require(77),
-    mat4 = require(79),
-    Component = require(172),
-    TransformManager = require(175);
+var vec3 = require(39),
+    quat = require(168),
+    mat3 = require(81),
+    mat4 = require(83),
+    Component = require(181),
+    TransformManager = require(184);
 
 
 var ComponentPrototype = Component.prototype,
@@ -17926,9 +18314,31 @@ TransformPrototype.localToWorld = function(out, v) {
     return vec3.transformMat4(out, v, this.matrixWorld);
 };
 
+TransformPrototype.getWorldPosition = function(out) {
+    var entity = this.entity,
+        parent = entity && entity.parent,
+        parentTransform = parent && parent.components["odin.Transform"];
+
+    if (parentTransform) {
+        return parentTransform.localToWorld(out, this.position);
+    } else {
+        return vec3.copy(out, this.position);
+    }
+};
+
 var worldToLocal_mat = mat4.create();
 TransformPrototype.worldToLocal = function(out, v) {
     return vec3.transformMat4(out, v, mat4.inverse(worldToLocal_mat, this.matrixWorld));
+};
+
+TransformPrototype.getLocalPosition = function(out) {
+    return vec3.copy(out, this.position);
+};
+
+var getDistanceTo_a = vec3.create(),
+    getDistanceTo_b = vec3.create();
+TransformPrototype.getDistanceTo = function(out, transform) {
+    return vec3.sub(out, transform.getWorldPosition(getDistanceTo_a), this.getWorldPosition(getDistanceTo_b));
 };
 
 TransformPrototype.update = function() {
@@ -17986,7 +18396,7 @@ TransformPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(171);
+var ComponentManager = require(180);
 
 
 var TransformManagerPrototype;
@@ -18009,12 +18419,12 @@ TransformManagerPrototype.sortFunction = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var vec2 = require(68),
-    mat3 = require(77),
-    mat32 = require(177),
-    mat4 = require(79),
-    Component = require(172),
-    Transform2DManager = require(178);
+var vec2 = require(72),
+    mat3 = require(81),
+    mat32 = require(186),
+    mat4 = require(83),
+    Component = require(181),
+    Transform2DManager = require(187);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18124,9 +18534,25 @@ Transform2DPrototype.localToWorld = function(out, v) {
     return vec2.transformMat32(out, v, this.matrixWorld);
 };
 
+Transform2DPrototype.getWorldPosition = function(out) {
+    var entity = this.entity,
+        parent = entity && entity.parent,
+        parentTransform = parent && parent.components["odin.Transform2D"];
+
+    if (parentTransform) {
+        return parentTransform.localToWorld(out, this.position);
+    } else {
+        return vec2.copy(out, this.position);
+    }
+};
+
 var worldToLocal_mat = mat32.create();
 Transform2DPrototype.worldToLocal = function(out, v) {
     return vec2.transformMat32(out, v, mat32.inverse(worldToLocal_mat, this.matrixWorld));
+};
+
+Transform2DPrototype.getLocalPosition = function(out) {
+    return vec2.copy(out, this.position);
 };
 
 Transform2DPrototype.update = function() {
@@ -18195,8 +18621,8 @@ Transform2DPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34),
-    vec2 = require(68);
+var mathf = require(36),
+    vec2 = require(72);
 
 
 var mat32 = exports;
@@ -18573,7 +18999,7 @@ mat32.notEqual = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(171);
+var ComponentManager = require(180);
 
 
 var Transform2DManagerPrototype;
@@ -18596,14 +19022,15 @@ Transform2DManagerPrototype.sortFunction = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var isNumber = require(36),
-    Component = require(172),
-    CameraManager = require(180),
-    mathf = require(34),
-    vec2 = require(68),
-    vec3 = require(38),
-    mat4 = require(79),
-    color = require(37);
+var audio = require(133),
+    isNumber = require(28),
+    mathf = require(36),
+    vec2 = require(72),
+    vec3 = require(39),
+    mat4 = require(83),
+    color = require(38),
+    Component = require(181),
+    CameraManager = require(189);
 
 
 var ComponentPrototype = Component.prototype,
@@ -18822,10 +19249,13 @@ CameraPrototype.toScreen = function(v, out) {
     return out;
 };
 
+var update_position = vec3.create(),
+    update_orientation = vec3.create(),
+    update_up = vec3.create(0, 0, 1);
 CameraPrototype.update = function(force) {
     var entity = this.entity,
         transform = entity && (entity.components["odin.Transform"] || entity.components["odin.Transform2D"]),
-        orthographicSize, right, left, top, bottom;
+        matrixWorld, orthographicSize, right, left, top, bottom, listener, position, orientation, up;
 
     if (force || this.__active) {
         if (this.needsUpdate) {
@@ -18847,7 +19277,25 @@ CameraPrototype.update = function(force) {
         }
 
         if (transform) {
-            mat4.inverse(this.view, transform.getMatrixWorld());
+            listener = audio.context.listener;
+
+            position = update_position;
+            orientation = update_orientation;
+            up = update_up;
+            matrixWorld = transform.getMatrixWorld();
+
+            mat4.inverse(this.view, matrixWorld);
+
+            vec3.transformProjectionNoPosition(orientation, transform.getWorldPosition(position), matrixWorld);
+            vec3.normalize(orientation, orientation);
+
+            vec3.transformProjectionNoPosition(up, position, matrixWorld);
+            vec3.normalize(up, up);
+
+            listener.setOrientation(orientation[0], orientation[1], orientation[2], up[0], up[1], up[2]);
+
+            transform.getWorldPosition(position);
+            listener.setPosition(position[0], position[1], position[2]);
         }
     }
 
@@ -18910,7 +19358,7 @@ CameraPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(171);
+var ComponentManager = require(180);
 
 
 var ComponentManagerPrototype = ComponentManager.prototype,
@@ -18992,9 +19440,10 @@ CameraManagerPrototype.removeComponent = function(component) {
 },
 function(require, exports, module, global) {
 
-var isNumber = require(36),
-    Component = require(172),
-    SpriteManager = require(182);
+var vec3 = require(39),
+    isNumber = require(28),
+    Component = require(181),
+    SpriteManager = require(191);
 
 
 var ComponentPrototype = Component.prototype,
@@ -19142,8 +19591,8 @@ SpritePrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
-    ComponentManager = require(171);
+var indexOf = require(63),
+    ComponentManager = require(180);
 
 
 var SpriteManagerPrototype;
@@ -19343,11 +19792,11 @@ SpriteManagerPrototype.removeComponent = function(component) {
 },
 function(require, exports, module, global) {
 
-var Component = require(172),
-    Bone = require(184),
-    Transform = require(174),
-    Entity = require(125),
-    MeshManager = require(186);
+var Component = require(181),
+    Bone = require(193),
+    Transform = require(183),
+    Entity = require(129),
+    MeshManager = require(195);
 
 
 var ComponentPrototype = Component.prototype,
@@ -19448,11 +19897,11 @@ MeshPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38),
-    quat = require(159),
-    mat4 = require(79),
-    Component = require(172),
-    BoneManager = require(185);
+var vec3 = require(39),
+    quat = require(168),
+    mat4 = require(83),
+    Component = require(181),
+    BoneManager = require(194);
 
 
 var ComponentPrototype = Component.prototype,
@@ -19593,7 +20042,7 @@ BonePrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(171);
+var ComponentManager = require(180);
 
 
 var BoneManagerPrototype;
@@ -19616,7 +20065,7 @@ BoneManagerPrototype.sortFunction = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var ComponentManager = require(171);
+var ComponentManager = require(180);
 
 
 var MeshManagerPrototype;
@@ -19639,11 +20088,11 @@ MeshManagerPrototype.sortFunction = function(a, b) {
 },
 function(require, exports, module, global) {
 
-var vec3 = require(38),
-    quat = require(159),
-    mathf = require(34),
-    Component = require(172),
-    wrapMode = require(98);
+var vec3 = require(39),
+    quat = require(168),
+    mathf = require(36),
+    Component = require(181),
+    wrapMode = require(102);
 
 
 var ComponentPrototype = Component.prototype,
@@ -19915,9 +20364,9 @@ MeshAnimationPrototype.fromJSON = function(json) {
 function(require, exports, module, global) {
 
 var environment = require(1),
-    mathf = require(34),
-    vec3 = require(38),
-    Component = require(172);
+    mathf = require(36),
+    vec3 = require(39),
+    Component = require(181);
 
 
 var ComponentPrototype = Component.prototype,
@@ -20235,9 +20684,9 @@ function OrbitControl_onMouseWheel(_this, e, wheel) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
-    particleState = require(190),
-    Component = require(172);
+var indexOf = require(63),
+    particleState = require(199),
+    Component = require(181);
 
 
 var ComponentPrototype = Component.prototype,
@@ -20259,7 +20708,7 @@ function ParticleSystem() {
 Component.extend(ParticleSystem, "odin.ParticleSystem");
 ParticleSystemPrototype = ParticleSystem.prototype;
 
-ParticleSystem.Emitter = require(191);
+ParticleSystem.Emitter = require(200);
 
 ParticleSystemPrototype.construct = function(options) {
     var emitters, i, il;
@@ -20434,7 +20883,7 @@ ParticleSystemPrototype.fromJSON = function(json) {
 },
 function(require, exports, module, global) {
 
-var enums = require(46);
+var enums = require(44);
 
 
 var particleState = enums([
@@ -20451,21 +20900,21 @@ module.exports = particleState;
 },
 function(require, exports, module, global) {
 
-var indexOf = require(61),
-    isNumber = require(36),
-    mathf = require(34),
-    vec2 = require(68),
-    vec3 = require(38),
-    quat = require(159),
-    particleState = require(190),
-    normalMode = require(94),
-    emitterRenderMode = require(92),
-    interpolation = require(93),
-    screenAlignment = require(95),
-    sortMode = require(97),
-    createSeededRandom = require(192),
-    randFloat = require(193),
-    Class = require(10);
+var indexOf = require(63),
+    isNumber = require(28),
+    mathf = require(36),
+    vec2 = require(72),
+    vec3 = require(39),
+    quat = require(168),
+    particleState = require(199),
+    normalMode = require(98),
+    emitterRenderMode = require(96),
+    interpolation = require(97),
+    screenAlignment = require(99),
+    sortMode = require(101),
+    createSeededRandom = require(201),
+    randFloat = require(202),
+    Class = require(12);
 
 
 var MAX_SAFE_INTEGER = mathf.pow(2, 53) - 1,
@@ -20923,7 +21372,7 @@ function randFloat(random, min, max, t) {
 },
 function(require, exports, module, global) {
 
-var mathf = require(34);
+var mathf = require(36);
 
 
 module.exports = randInt;

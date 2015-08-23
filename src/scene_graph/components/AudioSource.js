@@ -37,11 +37,11 @@ function AudioSource() {
 Component.extend(AudioSource, "odin.AudioSource");
 AudioSourcePrototype = AudioSource.prototype;
 
-AudioSourcePrototype.construct = function(clip, options) {
+AudioSourcePrototype.construct = function(audioAsset, options) {
 
-    ComponentPrototype.construct.call(this, clip);
+    ComponentPrototype.construct.call(this, audioAsset);
 
-    this.__source.setClip(clip);
+    this.__source.setClip(audioAsset.clip);
 
     if (options) {
         if (options.ambient) {
@@ -91,7 +91,7 @@ AudioSourcePrototype.setVolume = function(value) {
 };
 
 AudioSourcePrototype.setLoop = function(value) {
-    this.__source.setVolume(value);
+    this.__source.setLoop(value);
     return this;
 };
 
@@ -110,10 +110,11 @@ AudioSourcePrototype.stop = function() {
     return this;
 };
 
-var update_position = vec3.create();
+var update_position = vec3.create(),
+    update_orientation = vec3.create();
 AudioSourcePrototype.update = function() {
     var source = this.__source,
-        dopplerLevel, entity, scene, camera, transform, transform2d, cameraTransform;
+        dopplerLevel, entity, scene, camera, transform, transform2d, position, orientation;
 
     ComponentPrototype.update.call(this);
 
@@ -123,30 +124,29 @@ AudioSourcePrototype.update = function() {
         scene = entity && entity.scene;
         camera = scene && scene.hasManager("odin.Camera") && scene.getManager("odin.Camera").getActive();
 
-        if (!source.ambient && camera) {
+        if (!source.ambient) {
             transform = entity.components["odin.Transform"];
             transform2d = entity.components["odin.Transform2D"];
-            cameraTransform = camera.entity.components["odin.Transform"] || camera.entity.components["odin.Transform2D"];
+            position = update_position;
+            orientation = update_orientation;
 
-            if (transform2d) {
-                vec2.add(update_position, transform2d.position, this.offset);
-                vec2.sub(update_position, update_position, cameraTransform.position);
-                if (dopplerLevel > 0) {
-                    vec2.smul(update_position, dopplerLevel);
-                }
-            } else if (transform) {
-                vec3.add(update_position, transform.position, this.offset);
-                vec3.sub(update_position, update_position, cameraTransform.position);
-                if (dopplerLevel > 0) {
-                    vec3.smul(update_position, dopplerLevel);
-                }
+            if (transform) {
+                vec3.add(position, transform.position, this.offset);
+                vec3.transformProjectionNoPosition(orientation, position, transform.getMatrixWorld());
+                vec3.normalize(orientation, orientation);
+            } else if (transform2d) {
+                position[2] = 0.0;
+                vec2.add(position, transform2d.position, this.offset);
+                vec3.transformProjectionNoPosition(orientation, position, transform2d.getMatrixWorld());
+                vec3.normalize(orientation, orientation);
             }
 
-            if (camera.orthographic) {
-                update_position[2] = camera.orthographicSize * 0.5;
+            if (camera && camera.orthographic) {
+                position[2] = camera.orthographicSize * 0.5;
             }
 
-            source.setPosition(update_position);
+            source.setPosition(position);
+            source.setOrientation(orientation);
         }
     }
 

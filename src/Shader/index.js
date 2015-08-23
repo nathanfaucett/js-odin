@@ -1,4 +1,4 @@
-var map = require("map"),
+var arrayMap = require("array-map"),
     keys = require("keys"),
     template = require("template"),
     pushUnique = require("push_unique"),
@@ -11,7 +11,7 @@ var ClassPrototype = Class.prototype,
     VERTEX = "vertex",
     FRAGMENT = "fragment",
 
-    chunkRegExps = map(keys(chunks), function(key) {
+    chunkRegExps = arrayMap(keys(chunks), function(key) {
         return {
             key: key,
             regexp: new RegExp("\\b" + key + "\\b")

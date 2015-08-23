@@ -127,9 +127,31 @@ TransformPrototype.localToWorld = function(out, v) {
     return vec3.transformMat4(out, v, this.matrixWorld);
 };
 
+TransformPrototype.getWorldPosition = function(out) {
+    var entity = this.entity,
+        parent = entity && entity.parent,
+        parentTransform = parent && parent.components["odin.Transform"];
+
+    if (parentTransform) {
+        return parentTransform.localToWorld(out, this.position);
+    } else {
+        return vec3.copy(out, this.position);
+    }
+};
+
 var worldToLocal_mat = mat4.create();
 TransformPrototype.worldToLocal = function(out, v) {
     return vec3.transformMat4(out, v, mat4.inverse(worldToLocal_mat, this.matrixWorld));
+};
+
+TransformPrototype.getLocalPosition = function(out) {
+    return vec3.copy(out, this.position);
+};
+
+var getDistanceTo_a = vec3.create(),
+    getDistanceTo_b = vec3.create();
+TransformPrototype.getDistanceTo = function(out, transform) {
+    return vec3.sub(out, transform.getWorldPosition(getDistanceTo_a), this.getWorldPosition(getDistanceTo_b));
 };
 
 TransformPrototype.update = function() {

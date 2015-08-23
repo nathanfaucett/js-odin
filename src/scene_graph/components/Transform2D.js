@@ -113,9 +113,25 @@ Transform2DPrototype.localToWorld = function(out, v) {
     return vec2.transformMat32(out, v, this.matrixWorld);
 };
 
+Transform2DPrototype.getWorldPosition = function(out) {
+    var entity = this.entity,
+        parent = entity && entity.parent,
+        parentTransform = parent && parent.components["odin.Transform2D"];
+
+    if (parentTransform) {
+        return parentTransform.localToWorld(out, this.position);
+    } else {
+        return vec2.copy(out, this.position);
+    }
+};
+
 var worldToLocal_mat = mat32.create();
 Transform2DPrototype.worldToLocal = function(out, v) {
     return vec2.transformMat32(out, v, mat32.inverse(worldToLocal_mat, this.matrixWorld));
+};
+
+Transform2DPrototype.getLocalPosition = function(out) {
+    return vec2.copy(out, this.position);
 };
 
 Transform2DPrototype.update = function() {

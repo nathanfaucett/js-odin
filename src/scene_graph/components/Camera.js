@@ -1,11 +1,12 @@
-var isNumber = require("is_number"),
-    Component = require("./Component"),
-    CameraManager = require("../component_managers/CameraManager"),
+var audio = require("audio"),
+    isNumber = require("is_number"),
     mathf = require("mathf"),
     vec2 = require("vec2"),
     vec3 = require("vec3"),
     mat4 = require("mat4"),
-    color = require("color");
+    color = require("color"),
+    Component = require("./Component"),
+    CameraManager = require("../component_managers/CameraManager");
 
 
 var ComponentPrototype = Component.prototype,
@@ -224,10 +225,13 @@ CameraPrototype.toScreen = function(v, out) {
     return out;
 };
 
+var update_position = vec3.create(),
+    update_orientation = vec3.create(),
+    update_up = vec3.create(0, 0, 1);
 CameraPrototype.update = function(force) {
     var entity = this.entity,
         transform = entity && (entity.components["odin.Transform"] || entity.components["odin.Transform2D"]),
-        orthographicSize, right, left, top, bottom;
+        matrixWorld, orthographicSize, right, left, top, bottom, listener, position, orientation, up;
 
     if (force || this.__active) {
         if (this.needsUpdate) {
@@ -249,7 +253,25 @@ CameraPrototype.update = function(force) {
         }
 
         if (transform) {
-            mat4.inverse(this.view, transform.getMatrixWorld());
+            listener = audio.context.listener;
+
+            position = update_position;
+            orientation = update_orientation;
+            up = update_up;
+            matrixWorld = transform.getMatrixWorld();
+
+            mat4.inverse(this.view, matrixWorld);
+
+            vec3.transformProjectionNoPosition(orientation, transform.getWorldPosition(position), matrixWorld);
+            vec3.normalize(orientation, orientation);
+
+            vec3.transformProjectionNoPosition(up, position, matrixWorld);
+            vec3.normalize(up, up);
+
+            listener.setOrientation(orientation[0], orientation[1], orientation[2], up[0], up[1], up[2]);
+
+            transform.getWorldPosition(position);
+            listener.setPosition(position[0], position[1], position[2]);
         }
     }
 
