@@ -1,4 +1,4 @@
-var Class = require("../../Class"),
+var Class = require("class"),
     ComponentManager = require("../component_managers/ComponentManager");
 
 

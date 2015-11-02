@@ -1,7 +1,8 @@
-var time = require("time");
+var now = require("now");
 
 
-var TimePrototype;
+var START_TIME = now.getStartTime(),
+    TimePrototype;
 
 
 module.exports = Time;
@@ -9,7 +10,7 @@ module.exports = Time;
 
 function Time() {
     var _this = this,
-        START = time.now() * 0.001,
+        LOCAL_START_TIME = now() * 0.001,
         scale = 1,
 
         globalFixed = 1 / 60,
@@ -31,14 +32,18 @@ function Time() {
     this.frameCount = 0;
 
     this.start = function() {
-        return START;
+        return LOCAL_START_TIME;
+    };
+
+    this.now = function() {
+        return (now() * 0.001) - LOCAL_START_TIME;
     };
 
     this.update = function() {
         _this.frameCount = frameCount++;
 
         last = _this.time;
-        current = _this.now() - START;
+        current = _this.now();
 
         fpsFrame++;
         if (fpsLast + 1 < current) {
@@ -55,7 +60,7 @@ function Time() {
     };
 
     this.setStartTime = function(value) {
-        START = value;
+        LOCAL_START_TIME = value;
     };
 
     this.setFrame = function(value) {
@@ -75,7 +80,7 @@ function Time() {
     };
 
     this.construct = function() {
-        START = time.now() * 0.001;
+        LOCAL_START_TIME = now() * 0.001;
         frameCount = 0;
 
         _this.time = 0;
@@ -117,14 +122,10 @@ Time.create = function() {
     return new Time();
 };
 
-TimePrototype.now = function() {
-    return time.now() * 0.001;
-};
-
 TimePrototype.stamp = function() {
-    return time.stamp() * 0.001;
+    return (START_TIME + now()) * 0.001;
 };
 
 TimePrototype.stampMS = function() {
-    return time.stamp();
+    return START_TIME + now();
 };

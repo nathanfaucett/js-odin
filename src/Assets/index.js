@@ -1,4 +1,4 @@
-var Class = require("../Class"),
+var Class = require("class"),
     indexOf = require("index_of");
 
 

@@ -2,8 +2,6 @@ var indexOf = require("index_of"),
     isNumber = require("is_number"),
     mathf = require("mathf"),
     vec2 = require("vec2"),
-    vec3 = require("vec3"),
-    quat = require("quat"),
     particleState = require("./particleState"),
     normalMode = require("../../../enums/normalMode"),
     emitterRenderMode = require("../../../enums/emitterRenderMode"),
@@ -12,7 +10,7 @@ var indexOf = require("index_of"),
     sortMode = require("../../../enums/sortMode"),
     createSeededRandom = require("../../../utils/createSeededRandom"),
     randFloat = require("../../../utils/randFloat"),
-    Class = require("../../../Class");
+    Class = require("class");
 
 
 var MAX_SAFE_INTEGER = mathf.pow(2, 53) - 1,
@@ -24,7 +22,6 @@ module.exports = Emitter;
 
 
 function Emitter() {
-    var _this = this;
 
     Class.call(this);
 
@@ -344,7 +341,7 @@ function Emitter_running(_this, time) {
     }
 }
 
-function Emitter_end(_this, time) {
+function Emitter_end(_this) {
 
     _this.emit("end");
     _this.__currentTime = 0.0;

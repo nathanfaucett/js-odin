@@ -1,7 +1,7 @@
 var odin = exports;
 
 
-odin.Class = require("./Class");
+odin.Class = require("class");
 odin.createLoop = require("create_loop");
 
 odin.enums = require("./enums");

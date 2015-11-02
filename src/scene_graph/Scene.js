@@ -1,6 +1,6 @@
 var indexOf = require("index_of"),
     Input = require("../Input"),
-    Class = require("../Class"),
+    Class = require("class"),
     Time = require("../Time"),
     Entity = require("./Entity");
 
@@ -503,6 +503,8 @@ ScenePrototype.toJSON = function(json) {
 
     json = ClassPrototype.toJSON.call(this, json);
 
+    json.time = this.time.toJSON(json.time);
+
     json.name = this.name;
     jsonEntities = json.entities || (json.entities = []);
     jsonPlugins = json.plugins || (json.plugins = []);
@@ -536,6 +538,8 @@ ScenePrototype.fromJSON = function(json) {
     ClassPrototype.fromJSON.call(this, json);
 
     this.name = json.name;
+
+    this.time.fromJSON(json.time);
 
     while (i++ < il) {
         entity = new Entity();

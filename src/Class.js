@@ -1,7 +1,9 @@
 var has = require("has"),
+    isNull = require("is_null"),
     isFunction = require("is_function"),
     inherits = require("inherits"),
     EventEmitter = require("event_emitter"),
+    createPool = require("create_pool"),
     uuid = require("uuid");
 
 
@@ -18,39 +20,49 @@ function Class() {
     this.__id = null;
 }
 EventEmitter.extend(Class);
+createPool(Class);
 ClassPrototype = Class.prototype;
 
-Class.extend = function(child, className) {
+Class.extend = function(Child, className) {
     if (has(Class.__classes, className)) {
         throw new Error("extend(Child, className) class named " + className + " already defined");
+    } else {
+        Class.__classes[className] = Child;
+
+        inherits(Child, this);
+        createPool(Child);
+        Child.className = Child.prototype.className = className;
+
+        if (isFunction(this.onExtend)) {
+            this.onExtend.apply(this, arguments);
+        }
+
+        return Child;
     }
-
-    Class.__classes[className] = child;
-
-    inherits(child, this);
-    child.className = child.prototype.className = className;
-
-    if (isFunction(this.onExtend)) {
-        this.onExtend.apply(this, arguments);
-    }
-
-    return child;
 };
+
+Class.inherit = Class.extend;
 
 Class.__classes = {};
 
+Class.hasClass = function(className) {
+    return has(Class.__classes, className);
+};
+
 Class.getClass = function(className) {
-    return Class.__classes[className];
+    if (Class.hasClass(className)) {
+        return Class.__classes[className];
+    } else {
+        throw new Error("getClass(className) class named " + className + " is not defined");
+    }
 };
 
 Class.newClass = function(className) {
-    var constructor = Class.getClass(className);
-    return new constructor();
+    return new(Class.getClass(className))();
 };
 
-Class.createFromJSON = function(json) {
-    var constructor = Class.getClass(json.className);
-    return (new constructor()).fromJSON(json);
+Class.fromJSON = function(json) {
+    return (Class.newClass(json.className)).fromJSON(json);
 };
 
 Class.className = ClassPrototype.className = "Class";
@@ -75,7 +87,9 @@ ClassPrototype.destructor = function() {
 };
 
 ClassPrototype.generateNewId = function() {
+
     this.__id = uuid();
+
     return this;
 };
 
@@ -88,5 +102,10 @@ ClassPrototype.toJSON = function(json) {
 };
 
 ClassPrototype.fromJSON = function( /* json */ ) {
+
+    if (isNull(this.__id)) {
+        this.generateNewId();
+    }
+
     return this;
 };

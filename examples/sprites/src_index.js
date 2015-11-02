@@ -1,328 +1,5 @@
-(function(dependencies, chunks, undefined, global) {
-    
-    var cache = [];
-    
-
-    function Module() {
-        this.id = null;
-        this.filename = null;
-        this.dirname = null;
-        this.exports = {};
-        this.loaded = false;
-    }
-
-    Module.prototype.require = require;
-
-    function require(index) {
-        var module = cache[index],
-            callback, exports;
-
-        if (module !== undefined) {
-            return module.exports;
-        } else {
-            callback = dependencies[index];
-
-            cache[index] = module = new Module();
-            exports = module.exports;
-
-            callback.call(exports, require, exports, module, undefined, global);
-            module.loaded = true;
-
-            return module.exports;
-        }
-    }
-
-    require.resolve = function(path) {
-        return path;
-    };
-
-    
-
-    require.async = function async(index, callback) {
-        callback(require(index));
-    };
-
-    
-
-    if (typeof(define) === "function" && define.amd) {
-        define([], function() {
-            return require(0);
-        });
-    } else if (typeof(module) !== "undefined" && module.exports) {
-        module.exports = require(0);
-    } else {
-        
-        require(0);
-        
-    }
-}([
-function(require, exports, module, undefined, global) {
-/* index.js */
-
-var environment = require(1),
-    eventListener = require(2),
-    odin = require(3);
-
-
-eventListener.on(environment.window, "load", function onLoad() {
-    var assets = odin.Assets.create(),
-        canvas = odin.Canvas.create({
-            disableContextMenu: false
-        }),
-        renderer = odin.Renderer.create();
-
-    var shader = odin.Shader.create([
-            "void main(void) {",
-            "    gl_Position = perspectiveMatrix * modelViewMatrix * getPosition();",
-            "}"
-        ].join("\n"), [
-            "uniform vec3 color;",
-
-            "void main(void) {",
-            "    gl_FragColor = vec4(color, 1.0);",
-            "}"
-        ].join("\n")
-    );
-
-    var material = global.material = odin.Material.create("mat_box", null, {
-        shader: shader,
-        uniforms: {
-            color: [0.0, 0.0, 0.5]
-        }
-    });
-
-    assets.addAsset(material);
-
-    var camera = odin.Entity.create("main_camera").addComponent(
-        odin.Transform.create()
-            .setPosition([-5, -5, 5]),
-        odin.Camera.create()
-            .setOrthographic(false)
-            .setActive(),
-        odin.OrbitControl.create()
-    );
-
-    var ps = global.ps = odin.Entity.create().addComponent(
-        odin.Transform2D.create(),
-        odin.ParticleSystem.create({
-            playing: true,
-            emitter: odin.ParticleSystem.Emitter.create({
-                useDurationRange: true,
-                duration: 1.0,
-                recalcDurationRangeEachLoop: true
-            })
-        })
-    );
-    
-    var scene = global.scene = odin.Scene.create("scene").addEntity(camera, ps),
-        cameraComponent = camera.getComponent("odin.Camera");
-
-    scene.assets = assets;
-
-    canvas.on("resize", function(w, h) {
-        cameraComponent.set(w, h);
-    });
-    cameraComponent.set(canvas.pixelWidth, canvas.pixelHeight);
-
-    renderer.setCanvas(canvas.element);
-
-    var loop = odin.createLoop(function() {
-        scene.update();
-        renderer.render(scene, cameraComponent);
-    }, canvas.element);
-
-    assets.load(function() {
-        scene.init(canvas.element);
-        scene.awake();
-        loop.run();
-    });
-});
-
-
-},
-function(require, exports, module, undefined, global) {
-/* ../../../node_modules/environment/src/index.js */
-
-var environment = exports,
-
-    hasWindow = typeof(window) !== "undefined",
-    userAgent = hasWindow ? window.navigator.userAgent : "";
-
-
-environment.worker = typeof(importScripts) !== "undefined";
-
-environment.browser = environment.worker || !!(
-    hasWindow &&
-    typeof(navigator) !== "undefined" &&
-    window.document
-);
-
-environment.node = !environment.worker && !environment.browser;
-
-environment.mobile = environment.browser && /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
-
-environment.window = (
-    hasWindow ? window :
-    typeof(global) !== "undefined" ? global :
-    typeof(self) !== "undefined" ? self : {}
-);
-
-environment.pixelRatio = environment.window.devicePixelRatio || 1;
-
-environment.document = typeof(document) !== "undefined" ? document : {};
-
-
-},
-function(require, exports, module, undefined, global) {
-/* ../../../node_modules/event_listener/src/index.js */
-
-var process = require(4);
-var isObject = require(5),
-    isFunction = require(6),
-    environment = require(1),
-    eventTable = require(7);
-
-
-var eventListener = module.exports,
-
-    reSpliter = /[\s]+/,
-
-    window = environment.window,
-    document = environment.document,
-
-    listenToEvent, captureEvent, removeEvent, dispatchEvent;
-
-
-window.Event = window.Event || function EmptyEvent() {};
-
-
-eventListener.on = function(target, eventType, callback) {
-    var eventTypes = eventType.split(reSpliter),
-        i = eventTypes.length;
-
-    while (i--) {
-        listenToEvent(target, eventTypes[i], callback);
-    }
-};
-
-eventListener.capture = function(target, eventType, callback) {
-    var eventTypes = eventType.split(reSpliter),
-        i = eventTypes.length;
-
-    while (i--) {
-        captureEvent(target, eventTypes[i], callback);
-    }
-};
-
-eventListener.off = function(target, eventType, callback) {
-    var eventTypes = eventType.split(reSpliter),
-        i = eventTypes.length;
-
-    while (i--) {
-        removeEvent(target, eventTypes[i], callback);
-    }
-};
-
-eventListener.emit = function(target, eventType, event) {
-
-    return dispatchEvent(target, eventType, isObject(event) ? event : {});
-};
-
-eventListener.getEventConstructor = function(target, eventType) {
-    var getter = eventTable[eventType];
-    return isFunction(getter) ? getter(target) : window.Event;
-};
-
-
-if (isFunction(document.addEventListener)) {
-
-    listenToEvent = function(target, eventType, callback) {
-
-        target.addEventListener(eventType, callback, false);
-    };
-
-    captureEvent = function(target, eventType, callback) {
-
-        target.addEventListener(eventType, callback, true);
-    };
-
-    removeEvent = function(target, eventType, callback) {
-
-        target.removeEventListener(eventType, callback, false);
-    };
-
-    dispatchEvent = function(target, eventType, event) {
-        var getter = eventTable[eventType],
-            EventType = isFunction(getter) ? getter(target) : window.Event;
-
-        return !!target.dispatchEvent(new EventType(eventType, event));
-    };
-} else if (isFunction(document.attachEvent)) {
-
-    listenToEvent = function(target, eventType, callback) {
-
-        target.attachEvent("on" + eventType, callback);
-    };
-
-    captureEvent = function() {
-        if (process.env.NODE_ENV === "development") {
-            throw new Error(
-                "Attempted to listen to events during the capture phase on a " +
-                "browser that does not support the capture phase. Your application " +
-                "will not receive some events."
-            );
-        }
-    };
-
-    removeEvent = function(target, eventType, callback) {
-
-        target.detachEvent("on" + eventType, callback);
-    };
-
-    dispatchEvent = function(target, eventType, event) {
-        var doc = target.ownerDocument || document;
-
-        return !!target.fireEvent("on" + eventType, doc.createEventObject(event));
-    };
-} else {
-
-    listenToEvent = function(target, eventType, callback) {
-
-        target["on" + eventType] = callback;
-        return target;
-    };
-
-    captureEvent = function() {
-        if (process.env.NODE_ENV === "development") {
-            throw new Error(
-                "Attempted to listen to events during the capture phase on a " +
-                "browser that does not support the capture phase. Your application " +
-                "will not receive some events."
-            );
-        }
-    };
-
-    removeEvent = function(target, eventType) {
-
-        target["on" + eventType] = null;
-        return true;
-    };
-
-    dispatchEvent = function(target, eventType, event) {
-        var onType = "on" + eventType;
-
-        if (isFunction(target[onType])) {
-            event.type = eventType;
-            return !!target[onType](event);
-        }
-
-        return false;
-    };
-}
-
-
-},
-function(require, exports, module, undefined, global) {
+__COMN_DEFINE__(document.getElementById("__comn-module-13__"), [
+[13, function(require, exports, module, undefined, global) {
 /* ../../../src/index.js */
 
 var odin = exports;
@@ -379,669 +56,13 @@ odin.randFloat = require(46);
 odin.randInt = require(47);
 
 
-},
-function(require, exports, module, undefined, global) {
-/* ../../../node_modules/process/browser.js */
-
-// shim for using process in browser
-
-var process = module.exports = {};
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = setTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    clearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        setTimeout(drainQueue, 0);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-
-},
-function(require, exports, module, undefined, global) {
-/* ../../../node_modules/event_listener/node_modules/is_object/src/index.js */
-
-var isNull = require(8);
-
-
-module.exports = isObject;
-
-
-function isObject(value) {
-    var type = typeof(value);
-    return type === "function" || (!isNull(value) && type === "object") || false;
-}
-
-
-},
-function(require, exports, module, undefined, global) {
-/* ../../../node_modules/is_function/src/index.js */
-
-var objectToString = Object.prototype.toString,
-    isFunction;
-
-
-if (objectToString.call(function() {}) === "[object Object]") {
-    isFunction = function isFunction(value) {
-        return value instanceof Function;
-    };
-} else if (typeof(/./) === "function" || (typeof(Uint8Array) !== "undefined" && typeof(Uint8Array) !== "function")) {
-    isFunction = function isFunction(value) {
-        return objectToString.call(value) === "[object Function]";
-    };
-} else {
-    isFunction = function isFunction(value) {
-        return typeof(value) === "function" || false;
-    };
-}
-
-
-module.exports = isFunction;
-
-
-},
-function(require, exports, module, undefined, global) {
-/* ../../../node_modules/event_listener/src/event_table.js */
-
-var isNode = require(9),
-    environment = require(1);
-
-
-var window = environment.window,
-
-    XMLHttpRequest = window.XMLHttpRequest,
-    OfflineAudioContext = window.OfflineAudioContext;
-
-
-function returnEvent() {
-    return window.Event;
-}
-
-
-module.exports = {
-    abort: function(target) {
-        if (XMLHttpRequest && target instanceof XMLHttpRequest) {
-            return window.ProgressEvent || window.Event;
-        } else {
-            return window.UIEvent || window.Event;
-        }
-    },
-
-    afterprint: returnEvent,
-
-    animationend: function() {
-        return window.AnimationEvent || window.Event;
-    },
-    animationiteration: function() {
-        return window.AnimationEvent || window.Event;
-    },
-    animationstart: function() {
-        return window.AnimationEvent || window.Event;
-    },
-
-    audioprocess: function() {
-        return window.AudioProcessingEvent || window.Event;
-    },
-
-    beforeprint: returnEvent,
-    beforeunload: function() {
-        return window.BeforeUnloadEvent || window.Event;
-    },
-    beginevent: function() {
-        return window.TimeEvent || window.Event;
-    },
-
-    blocked: returnEvent,
-    blur: function() {
-        return window.FocusEvent || window.Event;
-    },
-
-    cached: returnEvent,
-    canplay: returnEvent,
-    canplaythrough: returnEvent,
-    chargingchange: returnEvent,
-    chargingtimechange: returnEvent,
-    checking: returnEvent,
-
-    click: function() {
-        return window.MouseEvent || window.Event;
-    },
-
-    close: returnEvent,
-    compassneedscalibration: function() {
-        return window.SensorEvent || window.Event;
-    },
-    complete: function(target) {
-        if (OfflineAudioContext && target instanceof OfflineAudioContext) {
-            return window.OfflineAudioCompletionEvent || window.Event;
-        } else {
-            return window.Event;
-        }
-    },
-
-    compositionend: function() {
-        return window.CompositionEvent || window.Event;
-    },
-    compositionstart: function() {
-        return window.CompositionEvent || window.Event;
-    },
-    compositionupdate: function() {
-        return window.CompositionEvent || window.Event;
-    },
-
-    contextmenu: function() {
-        return window.MouseEvent || window.Event;
-    },
-    copy: function() {
-        return window.ClipboardEvent || window.Event;
-    },
-    cut: function() {
-        return window.ClipboardEvent || window.Event;
-    },
-
-    dblclick: function() {
-        return window.MouseEvent || window.Event;
-    },
-    devicelight: function() {
-        return window.DeviceLightEvent || window.Event;
-    },
-    devicemotion: function() {
-        return window.DeviceMotionEvent || window.Event;
-    },
-    deviceorientation: function() {
-        return window.DeviceOrientationEvent || window.Event;
-    },
-    deviceproximity: function() {
-        return window.DeviceProximityEvent || window.Event;
-    },
-
-    dischargingtimechange: returnEvent,
-
-    DOMActivate: function() {
-        return window.UIEvent || window.Event;
-    },
-    DOMAttributeNameChanged: function() {
-        return window.MutationNameEvent || window.Event;
-    },
-    DOMAttrModified: function() {
-        return window.MutationEvent || window.Event;
-    },
-    DOMCharacterDataModified: function() {
-        return window.MutationEvent || window.Event;
-    },
-    DOMContentLoaded: returnEvent,
-    DOMElementNameChanged: function() {
-        return window.MutationNameEvent || window.Event;
-    },
-    DOMFocusIn: function() {
-        return window.FocusEvent || window.Event;
-    },
-    DOMFocusOut: function() {
-        return window.FocusEvent || window.Event;
-    },
-    DOMNodeInserted: function() {
-        return window.MutationEvent || window.Event;
-    },
-    DOMNodeInsertedIntoDocument: function() {
-        return window.MutationEvent || window.Event;
-    },
-    DOMNodeRemoved: function() {
-        return window.MutationEvent || window.Event;
-    },
-    DOMNodeRemovedFromDocument: function() {
-        return window.MutationEvent || window.Event;
-    },
-    DOMSubtreeModified: function() {
-        return window.FocusEvent || window.Event;
-    },
-    downloading: returnEvent,
-
-    drag: function() {
-        return window.DragEvent || window.Event;
-    },
-    dragend: function() {
-        return window.DragEvent || window.Event;
-    },
-    dragenter: function() {
-        return window.DragEvent || window.Event;
-    },
-    dragleave: function() {
-        return window.DragEvent || window.Event;
-    },
-    dragover: function() {
-        return window.DragEvent || window.Event;
-    },
-    dragstart: function() {
-        return window.DragEvent || window.Event;
-    },
-    drop: function() {
-        return window.DragEvent || window.Event;
-    },
-
-    durationchange: returnEvent,
-    ended: returnEvent,
-
-    endEvent: function() {
-        return window.TimeEvent || window.Event;
-    },
-    error: function(target) {
-        if (XMLHttpRequest && target instanceof XMLHttpRequest) {
-            return window.ProgressEvent || window.Event;
-        } else if (isNode(target)) {
-            return window.UIEvent || window.Event;
-        } else {
-            return window.Event;
-        }
-    },
-    focus: function() {
-        return window.FocusEvent || window.Event;
-    },
-    focusin: function() {
-        return window.FocusEvent || window.Event;
-    },
-    focusout: function() {
-        return window.FocusEvent || window.Event;
-    },
-
-    fullscreenchange: returnEvent,
-    fullscreenerror: returnEvent,
-
-    gamepadconnected: function() {
-        return window.GamepadEvent || window.Event;
-    },
-    gamepaddisconnected: function() {
-        return window.GamepadEvent || window.Event;
-    },
-
-    hashchange: function() {
-        return window.HashChangeEvent || window.Event;
-    },
-
-    input: returnEvent,
-    invalid: returnEvent,
-
-    keydown: function() {
-        return window.KeyboardEvent || window.Event;
-    },
-    keyup: function() {
-        return window.KeyboardEvent || window.Event;
-    },
-    keypress: function() {
-        return window.KeyboardEvent || window.Event;
-    },
-
-    languagechange: returnEvent,
-    levelchange: returnEvent,
-
-    load: function(target) {
-        if (XMLHttpRequest && target instanceof XMLHttpRequest) {
-            return window.ProgressEvent || window.Event;
-        } else {
-            return window.UIEvent || window.Event;
-        }
-    },
-
-    loadeddata: returnEvent,
-    loadedmetadata: returnEvent,
-
-    loadend: function() {
-        return window.ProgressEvent || window.Event;
-    },
-    loadstart: function() {
-        return window.ProgressEvent || window.Event;
-    },
-
-    message: function() {
-        return window.MessageEvent || window.Event;
-    },
-
-    mousedown: function() {
-        return window.MouseEvent || window.Event;
-    },
-    mouseenter: function() {
-        return window.MouseEvent || window.Event;
-    },
-    mouseleave: function() {
-        return window.MouseEvent || window.Event;
-    },
-    mousemove: function() {
-        return window.MouseEvent || window.Event;
-    },
-    mouseout: function() {
-        return window.MouseEvent || window.Event;
-    },
-    mouseover: function() {
-        return window.MouseEvent || window.Event;
-    },
-    mouseup: function() {
-        return window.MouseEvent || window.Event;
-    },
-
-    noupdate: returnEvent,
-    obsolete: returnEvent,
-    offline: returnEvent,
-    online: returnEvent,
-    open: returnEvent,
-    orientationchange: returnEvent,
-
-    pagehide: function() {
-        return window.PageTransitionEvent || window.Event;
-    },
-    pageshow: function() {
-        return window.PageTransitionEvent || window.Event;
-    },
-
-    paste: function() {
-        return window.ClipboardEvent || window.Event;
-    },
-    pause: returnEvent,
-    pointerlockchange: returnEvent,
-    pointerlockerror: returnEvent,
-    play: returnEvent,
-    playing: returnEvent,
-
-    popstate: function() {
-        return window.PopStateEvent || window.Event;
-    },
-    progress: function() {
-        return window.ProgressEvent || window.Event;
-    },
-
-    ratechange: returnEvent,
-    readystatechange: returnEvent,
-
-    repeatevent: function() {
-        return window.TimeEvent || window.Event;
-    },
-
-    reset: returnEvent,
-
-    resize: function() {
-        return window.UIEvent || window.Event;
-    },
-    scroll: function() {
-        return window.UIEvent || window.Event;
-    },
-
-    seeked: returnEvent,
-    seeking: returnEvent,
-
-    select: function() {
-        return window.UIEvent || window.Event;
-    },
-    show: function() {
-        return window.MouseEvent || window.Event;
-    },
-    stalled: returnEvent,
-    storage: function() {
-        return window.StorageEvent || window.Event;
-    },
-    submit: returnEvent,
-    success: returnEvent,
-    suspend: returnEvent,
-
-    SVGAbort: function() {
-        return window.SVGEvent || window.Event;
-    },
-    SVGError: function() {
-        return window.SVGEvent || window.Event;
-    },
-    SVGLoad: function() {
-        return window.SVGEvent || window.Event;
-    },
-    SVGResize: function() {
-        return window.SVGEvent || window.Event;
-    },
-    SVGScroll: function() {
-        return window.SVGEvent || window.Event;
-    },
-    SVGUnload: function() {
-        return window.SVGEvent || window.Event;
-    },
-    SVGZoom: function() {
-        return window.SVGEvent || window.Event;
-    },
-    timeout: function() {
-        return window.ProgressEvent || window.Event;
-    },
-
-    timeupdate: returnEvent,
-
-    touchcancel: function() {
-        return window.TouchEvent || window.Event;
-    },
-    touchend: function() {
-        return window.TouchEvent || window.Event;
-    },
-    touchenter: function() {
-        return window.TouchEvent || window.Event;
-    },
-    touchleave: function() {
-        return window.TouchEvent || window.Event;
-    },
-    touchmove: function() {
-        return window.TouchEvent || window.Event;
-    },
-    touchstart: function() {
-        return window.TouchEvent || window.Event;
-    },
-
-    transitionend: function() {
-        return window.TransitionEvent || window.Event;
-    },
-    unload: function() {
-        return window.UIEvent || window.Event;
-    },
-
-    updateready: returnEvent,
-    upgradeneeded: returnEvent,
-
-    userproximity: function() {
-        return window.SensorEvent || window.Event;
-    },
-
-    visibilitychange: returnEvent,
-    volumechange: returnEvent,
-    waiting: returnEvent,
-
-    wheel: function() {
-        return window.WheelEvent || window.Event;
-    }
-};
-
-
-},
-function(require, exports, module, undefined, global) {
-/* ../../../node_modules/is_null/src/index.js */
-
-module.exports = isNull;
-
-
-function isNull(value) {
-    return value === null;
-}
-
-
-},
-function(require, exports, module, undefined, global) {
-/* ../../../node_modules/is_node/src/index.js */
-
-var isString = require(10),
-    isNullOrUndefined = require(11),
-    isNumber = require(12),
-    isFunction = require(6);
-
-
-var isNode;
-
-
-if (typeof(Node) !== "undefined" && isFunction(Node)) {
-    isNode = function isNode(value) {
-        return value instanceof Node;
-    };
-} else {
-    isNode = function isNode(value) {
-        return (!isNullOrUndefined(value) &&
-            isNumber(value.nodeType) &&
-            isString(value.nodeName)
-        );
-    };
-}
-
-
-module.exports = isNode;
-
-
-},
-function(require, exports, module, undefined, global) {
-/* ../../../node_modules/is_string/src/index.js */
-
-module.exports = isString;
-
-
-function isString(value) {
-    return typeof(value) === "string" || false;
-}
-
-
-},
-function(require, exports, module, undefined, global) {
-/* ../../../node_modules/is_null_or_undefined/src/index.js */
-
-var isNull = require(8),
-    isUndefined = require(13);
-
-
-module.exports = isNullOrUndefined;
-
-/**
-  isNullOrUndefined accepts any value and returns true
-  if the value is null or undefined. For all other values
-  false is returned.
-  
-  @param {Any}        any value to test
-  @returns {Boolean}  the boolean result of testing value
-
-  @example
-    isNullOrUndefined(null);   // returns true
-    isNullOrUndefined(undefined);   // returns true
-    isNullOrUndefined("string");    // returns false
-**/
-function isNullOrUndefined(value) {
-    return isNull(value) || isUndefined(value);
-}
-
-
-},
-function(require, exports, module, undefined, global) {
-/* ../../../node_modules/is_number/src/index.js */
-
-module.exports = isNumber;
-
-
-function isNumber(value) {
-    return typeof(value) === "number" || false;
-}
-
-
-},
-function(require, exports, module, undefined, global) {
-/* ../../../node_modules/is_undefined/src/index.js */
-
-module.exports = isUndefined;
-
-
-function isUndefined(value) {
-    return value === void(0);
-}
-
-
-},
-function(require, exports, module, undefined, global) {
+}],
+[14, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/src/index.js */
 
 var has = require(48),
-    isNull = require(8),
-    isFunction = require(6),
+    isNull = require(7),
+    isFunction = require(5),
     inherits = require(49),
     EventEmitter = require(50),
     createPool = require(51),
@@ -1152,11 +173,11 @@ ClassPrototype.fromJSON = function( /* json */ ) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[15, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/create_loop/src/index.js */
 
-var isNull = require(8),
+var isNull = require(7),
     requestAnimationFrame = require(65);
 
 
@@ -1208,8 +229,8 @@ module.exports = function createLoop(callback, element) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[16, function(require, exports, module, undefined, global) {
 /* ../../../src/enums/index.js */
 
 var extend = require(58),
@@ -1228,12 +249,12 @@ enums.sortMode = require(74);
 enums.wrapMode = require(75);
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[17, function(require, exports, module, undefined, global) {
 /* ../../../src/Application/BaseApplication.js */
 
-var isString = require(10),
-    isNumber = require(12),
+var isString = require(9),
+    isNumber = require(11),
     indexOf = require(107),
     Class = require(14),
     Assets = require(19),
@@ -1397,12 +418,12 @@ function BaseApplication_removeScene(_this, scene) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[18, function(require, exports, module, undefined, global) {
 /* ../../../src/Application/index.js */
 
-var isString = require(10),
-    isNumber = require(12),
+var isString = require(9),
+    isNumber = require(11),
     Class = require(14),
     BaseApplication = require(17);
 
@@ -1485,8 +506,8 @@ ApplicationPrototype.loop = function() {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[19, function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/index.js */
 
 var Class = require(14),
@@ -1643,8 +664,8 @@ AssetsPrototype.load = function(callback) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[20, function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/Asset.js */
 
 var Class = require(14);
@@ -1706,8 +727,8 @@ AssetPrototype.load = function(callback) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[21, function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/AudioAsset.js */
 
 var isArray = require(103),
@@ -1799,8 +820,8 @@ AudioAssetPrototype.load = function(callback) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[22, function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/ImageAsset.js */
 
 var environment = require(1),
@@ -1880,8 +901,8 @@ ImageAssetPrototype.load = function(callback) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[23, function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/JSONAsset.js */
 
 var request = require(170),
@@ -1927,8 +948,8 @@ JSONAssetPrototype.load = function(callback) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[24, function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/Texture.js */
 
 var vec2 = require(124),
@@ -2114,8 +1135,8 @@ TexturePrototype.setType = function(value) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[25, function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/Material.js */
 
 var JSONAsset = require(23),
@@ -2202,8 +1223,8 @@ MaterialPrototype.parse = function() {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[26, function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/Geometry/index.js */
 
 var vec3 = require(83),
@@ -2704,12 +1725,12 @@ GeometryPrototype.calculateTangents = function() {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[27, function(require, exports, module, undefined, global) {
 /* ../../../src/Canvas.js */
 
-var isNumber = require(12),
-    isNullOrUndefined = require(11),
+var isNumber = require(11),
+    isNullOrUndefined = require(10),
     environment = require(1),
     eventListener = require(2),
     Class = require(14);
@@ -2925,8 +1946,8 @@ function Canvas_update(_this) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[28, function(require, exports, module, undefined, global) {
 /* ../../../src/Renderer/index.js */
 
 var indexOf = require(107),
@@ -3234,8 +2255,8 @@ RendererPrototype.render = function(scene, camera) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[29, function(require, exports, module, undefined, global) {
 /* ../../../src/Renderer/ComponentRenderer.js */
 
 var Class = require(14);
@@ -3323,8 +2344,8 @@ ComponentRendererPrototype.afterRender = function( /* camera, scene, manager */ 
 ComponentRendererPrototype.render = function( /* component, camera, scene, manager */ ) {};
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[30, function(require, exports, module, undefined, global) {
 /* ../../../src/Shader/index.js */
 
 var arrayMap = require(182),
@@ -3444,8 +2465,8 @@ function requireChunk(shaderChunks, templateVariables, chunk, type) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[31, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/Scene.js */
 
 var indexOf = require(107),
@@ -4014,8 +3035,8 @@ ScenePrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[32, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/Plugin.js */
 
 var Class = require(14);
@@ -4072,8 +3093,8 @@ PluginPrototype.destroy = function(emitEvent) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[33, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/Entity.js */
 
 var indexOf = require(107),
@@ -4390,8 +3411,8 @@ EntityPrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[34, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/component_managers/ComponentManager.js */
 
 var indexOf = require(107),
@@ -4545,8 +3566,8 @@ ComponentManagerPrototype.removeComponent = function(component) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[35, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/components/Component.js */
 
 var Class = require(14),
@@ -4635,14 +3656,14 @@ ComponentPrototype.destroy = function(emitEvent) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[36, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/components/AudioSource.js */
 
 var audio = require(159),
     vec2 = require(124),
     vec3 = require(83),
-    isNumber = require(12),
+    isNumber = require(11),
     Component = require(35);
 
 
@@ -4809,8 +3830,8 @@ AudioSourcePrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[37, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/components/Transform.js */
 
 var vec3 = require(83),
@@ -5021,8 +4042,8 @@ TransformPrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[38, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/components/Transform2D.js */
 
 var vec2 = require(124),
@@ -5224,12 +4245,12 @@ Transform2DPrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[39, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/components/Camera.js */
 
 var audio = require(159),
-    isNumber = require(12),
+    isNumber = require(11),
     mathf = require(76),
     vec2 = require(124),
     vec3 = require(83),
@@ -5561,11 +4582,11 @@ CameraPrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[40, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/components/Sprite.js */
 
-var isNumber = require(12),
+var isNumber = require(11),
     Component = require(35),
     SpriteManager = require(200);
 
@@ -5712,8 +4733,8 @@ SpritePrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[41, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/components/Mesh.js */
 
 var Component = require(35),
@@ -5818,8 +4839,8 @@ MeshPrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[42, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/components/MeshAnimation.js */
 
 var vec3 = require(83),
@@ -6094,8 +5115,8 @@ MeshAnimationPrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[43, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/components/OrbitControl.js */
 
 var environment = require(1),
@@ -6416,8 +5437,8 @@ function OrbitControl_onMouseWheel(_this, e, wheel) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[44, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/components/ParticleSystem/index.js */
 
 var indexOf = require(107),
@@ -6616,8 +5637,8 @@ ParticleSystemPrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[45, function(require, exports, module, undefined, global) {
 /* ../../../src/utils/createSeededRandom.js */
 
 var MULTIPLIER = 1664525,
@@ -6643,8 +5664,8 @@ function createSeededRandom() {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[46, function(require, exports, module, undefined, global) {
 /* ../../../src/utils/randFloat.js */
 
 module.exports = randFloat;
@@ -6655,8 +5676,8 @@ function randFloat(random, min, max, t) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[47, function(require, exports, module, undefined, global) {
 /* ../../../src/utils/randInt.js */
 
 var mathf = require(76);
@@ -6670,13 +5691,13 @@ function randInt(random, min, max, t) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[48, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/has/src/index.js */
 
 var isNative = require(53),
     getPrototypeOf = require(54),
-    isNullOrUndefined = require(11);
+    isNullOrUndefined = require(10);
 
 
 var nativeHasOwnProp = Object.prototype.hasOwnProperty,
@@ -6711,8 +5732,8 @@ if (isNative(nativeHasOwnProp)) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[49, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/inherits/src/index.js */
 
 var create = require(57),
@@ -6763,16 +5784,16 @@ function defineStatic(name, value) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[50, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/event_emitter/src/index.js */
 
-var isFunction = require(6),
+var isFunction = require(5),
     inherits = require(49),
     fastSlice = require(63),
     keys = require(62),
-    isNumber = require(12),
-    isNullOrUndefined = require(11);
+    isNumber = require(11),
+    isNullOrUndefined = require(10);
 
 
 var EventEmitterPrototype;
@@ -7142,12 +6163,12 @@ EventEmitter.extend = function(child) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[51, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/create_pool/src/index.js */
 
-var isFunction = require(6),
-    isNumber = require(12),
+var isFunction = require(5),
+    isNumber = require(11),
     defineProperty = require(60);
 
 
@@ -7330,8 +6351,8 @@ function createReleaser(Constructor) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[52, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/uuid/src/index.js */
 
 var CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split(""),
@@ -7358,12 +6379,12 @@ function uuid() {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[53, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/is_native/src/index.js */
 
-var isFunction = require(6),
-    isNullOrUndefined = require(11),
+var isFunction = require(5),
+    isNullOrUndefined = require(10),
     escapeRegExp = require(55);
 
 
@@ -7408,13 +6429,13 @@ isHostObject = function isHostObject(value) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[54, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/get_prototype_of/src/index.js */
 
-var isObject = require(5),
+var isObject = require(4),
     isNative = require(53),
-    isNullOrUndefined = require(11);
+    isNullOrUndefined = require(10);
 
 
 var nativeGetPrototypeOf = Object.getPrototypeOf,
@@ -7449,8 +6470,8 @@ if (isNative(nativeGetPrototypeOf)) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[55, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/escape_regexp/src/index.js */
 
 var toString = require(56);
@@ -7473,12 +6494,12 @@ function escapeRegExp(string) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[56, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/to_string/src/index.js */
 
-var isString = require(10),
-    isNullOrUndefined = require(11);
+var isString = require(9),
+    isNullOrUndefined = require(10);
 
 
 module.exports = toString;
@@ -7495,11 +6516,11 @@ function toString(value) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[57, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/create/src/index.js */
 
-var isNull = require(8),
+var isNull = require(7),
     isNative = require(53),
     isPrimitive = require(61);
 
@@ -7538,8 +6559,8 @@ if (!isNative(nativeCreate)) {
 module.exports = create;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[58, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/extend/src/index.js */
 
 var keys = require(62);
@@ -7572,12 +6593,12 @@ function baseExtend(a, b) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[59, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/mixin/src/index.js */
 
 var keys = require(62),
-    isNullOrUndefined = require(11);
+    isNullOrUndefined = require(10);
 
 
 module.exports = mixin;
@@ -7610,12 +6631,12 @@ function baseMixin(a, b) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[60, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/define_property/src/index.js */
 
-var isObject = require(5),
-    isFunction = require(6),
+var isObject = require(4),
+    isFunction = require(5),
     isPrimitive = require(61),
     isNative = require(53),
     has = require(48);
@@ -7670,11 +6691,11 @@ if (!isNative(nativeDefineProperty) || !(function() {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[61, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/is_primitive/src/index.js */
 
-var isNullOrUndefined = require(11);
+var isNullOrUndefined = require(10);
 
 
 module.exports = isPrimitive;
@@ -7686,14 +6707,14 @@ function isPrimitive(obj) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[62, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/keys/src/index.js */
 
 var has = require(48),
     isNative = require(53),
-    isNullOrUndefined = require(11),
-    isObject = require(5);
+    isNullOrUndefined = require(10),
+    isObject = require(4);
 
 
 var nativeKeys = Object.keys;
@@ -7728,12 +6749,12 @@ if (!isNative(nativeKeys)) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[63, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/fast_slice/src/index.js */
 
 var clamp = require(64),
-    isNumber = require(12);
+    isNumber = require(11);
 
 
 module.exports = fastSlice;
@@ -7758,8 +6779,8 @@ function fastSlice(array, offset) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[64, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/clamp/src/index.js */
 
 module.exports = clamp;
@@ -7776,8 +6797,8 @@ function clamp(x, min, max) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[65, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/request_animation_frame/src/index.js */
 
 var environment = require(1),
@@ -7855,8 +6876,8 @@ requestAnimationFrame(emptyFunction);
 module.exports = requestAnimationFrame;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[66, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/empty_function/src/index.js */
 
 module.exports = emptyFunction;
@@ -7882,8 +6903,8 @@ emptyFunction.thatReturnsArgument = function(argument) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[67, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/now/src/browser.js */
 
 var Date_now = Date.now || function Date_now() {
@@ -7919,8 +6940,8 @@ START_TIME -= now();
 module.exports = now;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[68, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/index.js */
 
 var mathf = require(76),
@@ -8761,8 +7782,8 @@ function getWebGLContext(canvas, attributes) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[69, function(require, exports, module, undefined, global) {
 /* ../../../src/enums/emitterRenderMode.js */
 
 var enums = require(95);
@@ -8779,8 +7800,8 @@ var emitterRenderMode = enums([
 module.exports = emitterRenderMode;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[70, function(require, exports, module, undefined, global) {
 /* ../../../src/enums/interpolation.js */
 
 var enums = require(95);
@@ -8798,8 +7819,8 @@ var interpolation = enums([
 module.exports = interpolation;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[71, function(require, exports, module, undefined, global) {
 /* ../../../src/enums/normalMode.js */
 
 var enums = require(95);
@@ -8815,8 +7836,8 @@ var normalMode = enums([
 module.exports = normalMode;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[72, function(require, exports, module, undefined, global) {
 /* ../../../src/enums/screenAlignment.js */
 
 var enums = require(95);
@@ -8834,8 +7855,8 @@ var screenAlignment = enums([
 module.exports = screenAlignment;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[73, function(require, exports, module, undefined, global) {
 /* ../../../src/enums/side.js */
 
 var enums = require(95);
@@ -8852,8 +7873,8 @@ var side = enums([
 module.exports = side;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[74, function(require, exports, module, undefined, global) {
 /* ../../../src/enums/sortMode.js */
 
 var enums = require(95);
@@ -8871,8 +7892,8 @@ var sortMode = enums([
 module.exports = sortMode;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[75, function(require, exports, module, undefined, global) {
 /* ../../../src/enums/wrapMode.js */
 
 var enums = require(95);
@@ -8889,8 +7910,8 @@ var wrapMode = enums([
 module.exports = wrapMode;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[76, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/mathf/src/index.js */
 
 var keys = require(62),
@@ -9300,15 +8321,15 @@ mathf.direction = function(x, y) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[77, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/color/src/index.js */
 
 var mathf = require(76),
     vec3 = require(83),
     vec4 = require(84),
-    isNumber = require(12),
-    isString = require(10),
+    isNumber = require(11),
+    isString = require(9),
     colorNames = require(85);
 
 
@@ -9533,8 +8554,8 @@ color.fromStyle = function(out, style) {
 color.colorNames = colorNames;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[78, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/index.js */
 
 var objectReverse = require(86);
@@ -9556,8 +8577,8 @@ enums.textureType = require(93);
 enums.textureWrap = require(94);
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[79, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/WebGLBuffer.js */
 
 module.exports = WebGLBuffer;
@@ -9593,8 +8614,8 @@ WebGLBuffer.prototype.compile = function(type, array, stride, draw) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[80, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/WebGLTexture.js */
 
 var isArray = require(103),
@@ -9790,8 +8811,8 @@ function getWrap(gl, wrap) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[81, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/WebGLProgram.js */
 
 var isArray = require(103),
@@ -9938,11 +8959,11 @@ function createShader(gl, source, type) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[82, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/is_nan/src/index.js */
 
-var isNumber = require(12);
+var isNumber = require(11);
 
 
 module.exports = Number.isNaN || function isNaN(value) {
@@ -9950,12 +8971,12 @@ module.exports = Number.isNaN || function isNaN(value) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[83, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/vec3/src/index.js */
 
 var mathf = require(76),
-    isNumber = require(12);
+    isNumber = require(11);
 
 
 var vec3 = exports;
@@ -10362,12 +9383,12 @@ vec3.str = function(out) {
 vec3.string = vec3.toString = vec3.str;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[84, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/vec4/src/index.js */
 
 var mathf = require(76),
-    isNumber = require(12);
+    isNumber = require(11);
 
 
 var vec4 = exports;
@@ -10727,8 +9748,8 @@ vec4.str = function(out) {
 vec4.string = vec4.toString = vec4.str;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[85, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/color/src/colorNames.js */
 
 module.exports = {
@@ -10876,8 +9897,8 @@ module.exports = {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[86, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/object-reverse/src/index.js */
 
 var has = require(48);
@@ -10901,8 +9922,8 @@ function objectReverse(object) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[87, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/blending.js */
 
 var enums = require(95);
@@ -10917,8 +9938,8 @@ module.exports = enums([
 ]);
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[88, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/cullFace.js */
 
 var enums = require(95),
@@ -10933,8 +9954,8 @@ module.exports = enums({
 });
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[89, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/depth.js */
 
 var enums = require(95),
@@ -10954,8 +9975,8 @@ module.exports = enums({
 });
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[90, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/filterMode.js */
 
 var enums = require(95);
@@ -10967,8 +9988,8 @@ module.exports = enums({
 });
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[91, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/gl.js */
 
 var enums = require(95);
@@ -11275,8 +10296,8 @@ module.exports = enums({
 });
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[92, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/textureFormat.js */
 
 var enums = require(95),
@@ -11292,8 +10313,8 @@ module.exports = enums({
 });
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[93, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/textureType.js */
 
 var enums = require(95),
@@ -11311,8 +10332,8 @@ module.exports = enums({
 });
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[94, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/textureWrap.js */
 
 var enums = require(95),
@@ -11326,15 +10347,15 @@ module.exports = enums({
 });
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[95, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/enums/src/index.js */
 
 var create = require(57),
     defineProperty = require(60),
     forEach = require(96),
-    isString = require(10),
-    isNumber = require(12),
+    isString = require(9),
+    isNumber = require(11),
     emptyFunction = require(66),
     stringHashCode = require(97);
 
@@ -11386,12 +10407,12 @@ createEnum.set = function(object) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[96, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/for_each/src/index.js */
 
 var isArrayLike = require(98),
-    isNullOrUndefined = require(11),
+    isNullOrUndefined = require(10),
     fastBindThis = require(99),
     arrayForEach = require(100),
     objectForEach = require(101);
@@ -11408,11 +10429,11 @@ function forEach(value, callback, thisArg) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[97, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/string-hash_code/src/index.js */
 
-var isUndefined = require(13);
+var isUndefined = require(12);
 
 
 var STRING_HASH_CACHE_MIN_STRING_LENGTH = 16,
@@ -11463,13 +10484,13 @@ function hashString(string) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[98, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/is_array_like/src/index.js */
 
 var isLength = require(102),
-    isFunction = require(6),
-    isObject = require(5);
+    isFunction = require(5),
+    isObject = require(4);
 
 
 module.exports = isArrayLike;
@@ -11480,11 +10501,11 @@ function isArrayLike(value) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[99, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/fast_bind_this/src/index.js */
 
-var isNumber = require(12);
+var isNumber = require(11);
 
 
 module.exports = fastBindThis;
@@ -11520,8 +10541,8 @@ function fastBindThis(callback, thisArg, length) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[100, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/array-for_each/src/index.js */
 
 module.exports = arrayForEach;
@@ -11541,8 +10562,8 @@ function arrayForEach(array, callback) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[101, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/object-for_each/src/index.js */
 
 var keys = require(62);
@@ -11569,11 +10590,11 @@ function objectForEach(object, callback) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[102, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/is_length/src/index.js */
 
-var isNumber = require(12);
+var isNumber = require(11);
 
 
 var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
@@ -11587,13 +10608,13 @@ function isLength(value) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[103, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/is_array/src/index.js */
 
 var isNative = require(53),
     isLength = require(102),
-    isObject = require(5);
+    isObject = require(4);
 
 
 var objectToString = Object.prototype.toString,
@@ -11617,13 +10638,13 @@ if (isNative(nativeIsArray)) {
 module.exports = isArray;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[104, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/fast_hash/src/index.js */
 
 var has = require(48),
     indexOf = require(107),
-    isNullOrUndefined = require(11),
+    isNullOrUndefined = require(10),
     arrayForEach = require(100),
     fastBindThis = require(99);
 
@@ -11719,8 +10740,8 @@ FastHashPrototype.forEach = function(callback, thisArg) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[105, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/index.js */
 
 module.exports = {
@@ -11749,8 +10770,8 @@ module.exports = {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[106, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/index.js */
 
 module.exports = {
@@ -11767,8 +10788,8 @@ module.exports = {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[107, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/index_of/src/index.js */
 
 var isEqual = require(108);
@@ -11791,8 +10812,8 @@ function indexOf(array, value, fromIndex) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[108, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/is_equal/src/index.js */
 
 module.exports = isEqual;
@@ -11803,8 +10824,8 @@ function isEqual(a, b) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[109, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform1b.js */
 
 var Uniform = require(123);
@@ -11838,8 +10859,8 @@ Uniform1b.prototype.set = function(value, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[110, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform1i.js */
 
 var Uniform = require(123);
@@ -11873,8 +10894,8 @@ Uniform1i.prototype.set = function(value, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[111, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform1f.js */
 
 var Uniform = require(123);
@@ -11908,8 +10929,8 @@ Uniform1f.prototype.set = function(value, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[112, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform2i.js */
 
 var vec2 = require(124),
@@ -11944,8 +10965,8 @@ Uniform2i.prototype.set = function(value, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[113, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform3i.js */
 
 var vec3 = require(83),
@@ -11980,8 +11001,8 @@ Uniform3i.prototype.set = function(value, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[114, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform4i.js */
 
 var vec4 = require(84),
@@ -12016,8 +11037,8 @@ Uniform4i.prototype.set = function(value, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[115, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform2f.js */
 
 var vec2 = require(124),
@@ -12052,8 +11073,8 @@ Uniform2f.prototype.set = function(value, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[116, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform3f.js */
 
 var vec3 = require(83),
@@ -12088,8 +11109,8 @@ Uniform3f.prototype.set = function(value, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[117, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform4f.js */
 
 var vec4 = require(84),
@@ -12124,8 +11145,8 @@ Uniform4f.prototype.set = function(value, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[118, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/UniformMatrix2fv.js */
 
 var mat2 = require(125),
@@ -12160,8 +11181,8 @@ UniformMatrix2fv.prototype.set = function(value, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[119, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/UniformMatrix3fv.js */
 
 var mat3 = require(126),
@@ -12200,8 +11221,8 @@ UniformMatrix3fv.prototype.set = function(value, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[120, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/UniformMatrix4fv.js */
 
 var mat4 = require(127),
@@ -12241,8 +11262,8 @@ UniformMatrix4fv.prototype.set = function(value, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[121, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/UniformTexture.js */
 
 var Uniform = require(123);
@@ -12262,8 +11283,8 @@ UniformTexture.prototype.set = function(value, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[122, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/UniformTextureCube.js */
 
 var Uniform = require(123);
@@ -12283,8 +11304,8 @@ UniformTextureCube.prototype.set = function(value, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[123, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform.js */
 
 var inherits = require(49);
@@ -12310,12 +11331,12 @@ Uniform.prototype.set = function( /* value, force */ ) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[124, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/vec2/src/index.js */
 
 var mathf = require(76),
-    isNumber = require(12);
+    isNumber = require(11);
 
 
 var vec2 = exports;
@@ -12682,12 +11703,12 @@ vec2.str = function(out) {
 vec2.string = vec2.toString = vec2.str;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[125, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/mat2/src/index.js */
 
 var mathf = require(76),
-    isNumber = require(12);
+    isNumber = require(11);
 
 
 var mat2 = exports;
@@ -12904,12 +11925,12 @@ mat2.str = function(out) {
 mat2.string = mat2.toString = mat2.str;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[126, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/mat3/src/index.js */
 
 var mathf = require(76),
-    isNumber = require(12);
+    isNumber = require(11);
 
 
 var mat3 = exports;
@@ -13299,13 +12320,13 @@ mat3.str = function(out) {
 mat3.string = mat3.toString = mat3.str;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[127, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/mat4/src/index.js */
 
 var mathf = require(76),
     vec3 = require(83),
-    isNumber = require(12);
+    isNumber = require(11);
 
 
 var mat4 = exports;
@@ -14316,8 +13337,8 @@ mat4.str = function(out) {
 mat4.string = mat4.toString = mat4.str;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[128, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute1i.js */
 
 var Attribute = require(136);
@@ -14340,8 +13361,8 @@ Attribute1i.prototype.set = function(buffer, offset, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[129, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute1f.js */
 
 var Attribute = require(136);
@@ -14364,8 +13385,8 @@ Attribute1f.prototype.set = function(buffer, offset, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[130, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute2i.js */
 
 var Attribute = require(136);
@@ -14388,8 +13409,8 @@ Attribute2i.prototype.set = function(buffer, offset, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[131, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute3i.js */
 
 var Attribute = require(136);
@@ -14412,8 +13433,8 @@ Attribute3i.prototype.set = function(buffer, offset, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[132, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute4i.js */
 
 var Attribute = require(136);
@@ -14436,8 +13457,8 @@ Attribute4i.prototype.set = function(buffer, offset, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[133, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute2f.js */
 
 var Attribute = require(136);
@@ -14460,8 +13481,8 @@ Attribute2f.prototype.set = function(buffer, offset, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[134, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute3f.js */
 
 var Attribute = require(136);
@@ -14484,8 +13505,8 @@ Attribute3f.prototype.set = function(buffer, offset, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[135, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute4f.js */
 
 var Attribute = require(136);
@@ -14508,8 +13529,8 @@ Attribute4f.prototype.set = function(buffer, offset, force) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[136, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute.js */
 
 var inherits = require(49);
@@ -14533,8 +13554,8 @@ Attribute.prototype.set = function( /* buffer, offset, force */ ) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[137, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/index.js */
 
 var vec3 = require(83),
@@ -14727,8 +13748,8 @@ InputPrototype.update = function(time, frame) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[138, function(require, exports, module, undefined, global) {
 /* ../../../src/Time.js */
 
 var now = require(67);
@@ -14864,8 +13885,8 @@ TimePrototype.stampMS = function() {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[139, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Handler.js */
 
 var EventEmitter = require(50),
@@ -15002,8 +14023,8 @@ HandlerPrototype.detach = function() {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[140, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Mouse.js */
 
 var vec2 = require(124);
@@ -15083,8 +14104,8 @@ MousePrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[141, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Buttons.js */
 
 var Button = require(156);
@@ -15204,8 +14225,8 @@ ButtonsPrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[142, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Touches.js */
 
 var indexOf = require(107),
@@ -15344,8 +14365,8 @@ TouchesPrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[143, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Axes.js */
 
 var Axis = require(158);
@@ -15538,8 +14559,8 @@ AxesPrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[144, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/eventHandlers.js */
 
 var mathf = require(76);
@@ -15671,11 +14692,11 @@ eventHandlers.devicemotion = function(input, e) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[145, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/focus_node/src/index.js */
 
-var isNode = require(9);
+var isNode = require(8);
 
 
 module.exports = focusNode;
@@ -15690,11 +14711,11 @@ function focusNode(node) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[146, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/blur_node/src/index.js */
 
-var isNode = require(9);
+var isNode = require(8);
 
 
 module.exports = blurNode;
@@ -15709,8 +14730,8 @@ function blurNode(node) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[147, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/get_active_element/src/index.js */
 
 var isDocument = require(149),
@@ -15734,8 +14755,8 @@ function getActiveElement(ownerDocument) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[148, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/events/index.js */
 
 var MouseEvent = require(150),
@@ -15765,11 +14786,11 @@ module.exports = {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[149, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/is_document/src/index.js */
 
-var isNode = require(9);
+var isNode = require(8);
 
 
 module.exports = isDocument;
@@ -15780,8 +14801,8 @@ function isDocument(value) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[150, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/events/MouseEvent.js */
 
 var createPool = require(51),
@@ -15841,8 +14862,8 @@ function getButton(e) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[151, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/events/WheelEvent.js */
 
 var createPool = require(51);
@@ -15893,8 +14914,8 @@ function getDeltaY(e) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[152, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/events/KeyEvent.js */
 
 var createPool = require(51),
@@ -15932,8 +14953,8 @@ KeyEventPrototype.destructor = function() {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[153, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/events/TouchEvent.js */
 
 var createPool = require(51);
@@ -16083,8 +15104,8 @@ function getForce(nativeTouch) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[154, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/events/DeviceMotionEvent.js */
 
 var createPool = require(51);
@@ -16117,8 +15138,8 @@ DeviceMotionEventPrototype.destructor = function() {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[155, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/events/keyCodes.js */
 
 module.exports = {
@@ -16237,8 +15258,8 @@ module.exports = {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[156, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Button.js */
 
 var ButtonPrototype;
@@ -16354,8 +15375,8 @@ ButtonPrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[157, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Touch.js */
 
 var vec2 = require(124),
@@ -16478,8 +15499,8 @@ TouchPrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[158, function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Axis.js */
 
 var mathf = require(76);
@@ -16702,8 +15723,8 @@ AxisPrototype.toJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[159, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/src/index.js */
 
 var audio = exports;
@@ -16715,8 +15736,8 @@ audio.Clip = require(162);
 audio.Source = require(163);
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[160, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/src/context.js */
 
 var environment = require(1),
@@ -16779,8 +15800,8 @@ if (AudioContext) {
 module.exports = context != null ? context : false;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[161, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/src/load.js */
 
 var eventListener = require(2),
@@ -16815,8 +15836,8 @@ function load(src, callback) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[162, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/src/Clip.js */
 
 var load = require(161);
@@ -16850,8 +15871,8 @@ ClipPrototype.load = function(callback) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[163, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/src/Source.js */
 
 var EventEmitter = require(50),
@@ -17077,8 +16098,8 @@ WebAudioSourcePrototype.stop = function() {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[164, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/node_modules/xmlhttprequest_polyfill/src/index.js */
 
 var extend = require(58),
@@ -17170,8 +16191,8 @@ if (!XMLHttpRequestPolyfillPrototype.sendAsBinary) {
 module.exports = XMLHttpRequestPolyfill;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[165, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/node_modules/xmlhttprequest_polyfill/src/createXMLHttpRequest.js */
 
 var EventEmitter = require(50),
@@ -17379,8 +16400,8 @@ function createXMLHttpRequest(createNativeObject) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[166, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/node_modules/xmlhttprequest_polyfill/src/toUint8Array.js */
 
 var environment = require(1);
@@ -17406,8 +16427,8 @@ function toUint8Array(str) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[167, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/node_modules/time/src/index.js */
 
 var now = require(67);
@@ -17425,8 +16446,8 @@ time.stamp = function stamp() {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[168, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/http_error/src/index.js */
 
 var objectForEach = require(101),
@@ -17512,8 +16533,8 @@ HttpErrorPrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[169, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/status_codes/src/browser.js */
 
 module.exports = {
@@ -17581,15 +16602,15 @@ module.exports = {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[170, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/request/src/browser.js */
 
 module.exports = require(171)(require(172));
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[171, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/request/src/create.js */
 
 var methods = require(173),
@@ -17634,14 +16655,14 @@ module.exports = function createRequest(request) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[172, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/request/src/requestBrowser.js */
 
 var PromisePolyfill = require(175),
     XMLHttpRequestPolyfill = require(164),
-    isFunction = require(6),
-    isString = require(10),
+    isFunction = require(5),
+    isString = require(9),
     objectForEach = require(101),
     trim = require(176),
     extend = require(58),
@@ -17832,8 +16853,8 @@ function request(options) {
 module.exports = request;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[173, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/methods/src/browser.js */
 
 module.exports = [
@@ -17867,13 +16888,13 @@ module.exports = [
 ];
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[174, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/request/src/defaults.js */
 
 var extend = require(58),
-    isString = require(10),
-    isFunction = require(6);
+    isString = require(9),
+    isFunction = require(5);
 
 
 function defaults(options) {
@@ -17914,15 +16935,15 @@ defaults.values = {
 module.exports = defaults;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[175, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/promise_polyfill/src/index.js */
 
-var process = require(4);
-var isNull = require(8),
+var process = require(3);
+var isNull = require(7),
     isArray = require(103),
-    isObject = require(5),
-    isFunction = require(6),
+    isObject = require(4),
+    isFunction = require(5),
     WeakMapPolyfill = require(180),
     fastSlice = require(63);
 
@@ -18203,8 +17224,8 @@ if (!isFunction(PromisePolyfill.race)) {
 module.exports = PromisePolyfill;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[176, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/trim/src/index.js */
 
 var isNative = require(53),
@@ -18267,8 +17288,8 @@ trim.right = function trimRight(str) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[177, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/request/src/Response.js */
 
 module.exports = Response;
@@ -18284,8 +17305,8 @@ function Response() {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[178, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/request/src/camelcaseHeader.js */
 
 var arrayMap = require(182),
@@ -18297,8 +17318,8 @@ module.exports = function camelcaseHeader(str) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[179, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/request/src/parseContentType.js */
 
 module.exports = function parseContentType(str) {
@@ -18319,8 +17340,8 @@ module.exports = function parseContentType(str) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[180, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/weak_map_polyfill/src/index.js */
 
 var isNative = require(53),
@@ -18371,8 +17392,8 @@ WeakMapPolyfillPrototype.remove = WeakMapPolyfillPrototype["delete"];
 module.exports = WeakMapPolyfill;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[181, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/create_store/src/index.js */
 
 var has = require(48),
@@ -18489,8 +17510,8 @@ function privateStore(key, privateKey) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[182, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/array-map/src/index.js */
 
 module.exports = arrayMap;
@@ -18510,8 +17531,8 @@ function arrayMap(array, callback) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[183, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/capitalize_string/src/index.js */
 
 module.exports = capitalizeString;
@@ -18522,8 +17543,8 @@ function capitalizeString(string) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[184, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/template/src/index.js */
 
 var reEscaper = /\\|'|\r|\n|\t|\u2028|\u2029/g,
@@ -18615,8 +17636,8 @@ template.settings = {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[185, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/push_unique/src/index.js */
 
 var indexOf = require(107);
@@ -18654,8 +17675,8 @@ function basePushUnique(array, value) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[186, function(require, exports, module, undefined, global) {
 /* ../../../src/Shader/chunks.js */
 
 var ShaderChunk = require(187);
@@ -18929,8 +17950,8 @@ chunks.getUV = ShaderChunk.create({
 });
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[187, function(require, exports, module, undefined, global) {
 /* ../../../src/Shader/ShaderChunk.js */
 
 var isArray = require(103);
@@ -18983,14 +18004,14 @@ ShaderChunkPrototype.destructor = function() {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[188, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/quat/src/index.js */
 
 var mathf = require(76),
     vec3 = require(83),
     vec4 = require(84),
-    isNumber = require(12);
+    isNumber = require(11);
 
 
 var quat = exports;
@@ -19370,8 +18391,8 @@ quat.fromMat4 = function(out, m) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[189, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/aabb3/src/index.js */
 
 var vec3 = require(83);
@@ -19644,8 +18665,8 @@ aabb3.fromJSON = function(out, json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[190, function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/Geometry/Attribute.js */
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array,
@@ -19763,8 +18784,8 @@ AttributePrototype.setXYZW = function(index, x, y, z, w) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[191, function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/Geometry/GeometryBone.js */
 
 var vec3 = require(83),
@@ -19819,8 +18840,8 @@ GeometryBonePrototype.destructor = function() {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[192, function(require, exports, module, undefined, global) {
 /* ../../../src/Renderer/MeshRenderer.js */
 
 var mat3 = require(126),
@@ -19883,8 +18904,8 @@ MeshRendererPrototype.render = function(mesh, camera) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[193, function(require, exports, module, undefined, global) {
 /* ../../../src/Renderer/SpriteRenderer.js */
 
 var mat3 = require(126),
@@ -20021,8 +19042,8 @@ SpriteRendererPrototype.render = function(sprite, camera) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[194, function(require, exports, module, undefined, global) {
 /* ../../../src/Renderer/RendererGeometry.js */
 
 var FastHash = require(104);
@@ -20250,8 +19271,8 @@ function DataBuffer(name, offset) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[195, function(require, exports, module, undefined, global) {
 /* ../../../src/Renderer/RendererMaterial.js */
 
 var has = require(48);
@@ -20416,8 +19437,8 @@ function getOptions(data) {
 }
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[196, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/component_managers/TransformManager.js */
 
 var ComponentManager = require(34);
@@ -20440,13 +19461,13 @@ TransformManagerPrototype.sortFunction = function(a, b) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[197, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/mat32/src/index.js */
 
 var mathf = require(76),
     vec2 = require(124),
-    isNumber = require(12);
+    isNumber = require(11);
 
 
 var mat32 = exports;
@@ -20829,8 +19850,8 @@ mat32.str = function(out) {
 mat32.string = mat32.toString = mat32.str;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[198, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/component_managers/Transform2DManager.js */
 
 var ComponentManager = require(34);
@@ -20853,8 +19874,8 @@ Transform2DManagerPrototype.sortFunction = function(a, b) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[199, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/component_managers/CameraManager.js */
 
 var ComponentManager = require(34);
@@ -20936,8 +19957,8 @@ CameraManagerPrototype.removeComponent = function(component) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[200, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/component_managers/SpriteManager.js */
 
 var indexOf = require(107),
@@ -21138,8 +20159,8 @@ SpriteManagerPrototype.removeComponent = function(component) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[201, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/components/Bone.js */
 
 var vec3 = require(83),
@@ -21284,8 +20305,8 @@ BonePrototype.fromJSON = function(json) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[202, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/component_managers/MeshManager.js */
 
 var ComponentManager = require(34);
@@ -21308,8 +20329,8 @@ MeshManagerPrototype.sortFunction = function(a, b) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[203, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/component_managers/BoneManager.js */
 
 var ComponentManager = require(34);
@@ -21332,8 +20353,8 @@ BoneManagerPrototype.sortFunction = function(a, b) {
 };
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[204, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/components/ParticleSystem/particleState.js */
 
 var enums = require(95);
@@ -21350,12 +20371,12 @@ var particleState = enums([
 module.exports = particleState;
 
 
-},
-function(require, exports, module, undefined, global) {
+}],
+[205, function(require, exports, module, undefined, global) {
 /* ../../../src/scene_graph/components/ParticleSystem/Emitter.js */
 
 var indexOf = require(107),
-    isNumber = require(12),
+    isNumber = require(11),
     mathf = require(76),
     vec2 = require(124),
     particleState = require(204),
@@ -21783,4 +20804,51 @@ EmitterPrototype.fromJSON = function(json) {
 };
 
 
-}], null, void(0), (new Function("return this;"))()));
+}],
+[206, function(require, exports, module, undefined, global) {
+/* PlayerControl.js */
+
+var odin = require(13),
+    vec2 = require(124);
+
+
+module.exports = PlayerControl;
+
+
+function PlayerControl() {
+    odin.Component.call(this);
+
+    this.velocity = vec2.create();
+    this.paused = true;
+}
+odin.Component.extend(PlayerControl, "PlayerControl");
+
+PlayerControl.prototype.update = function update() {
+    var velocity = this.velocity,
+        entity = this.entity,
+        scene = entity.scene,
+        input = scene.input,
+        dt = scene.time.delta,
+        transform = entity.getComponent("odin.Transform2D"),
+        audioSource = entity.getComponent("odin.AudioSource"),
+        velLength;
+
+    velocity[0] = input.axis("horizontal") * dt;
+    velocity[1] = input.axis("vertical") * dt;
+    velLength = vec2.length(velocity) / dt;
+
+    vec2.add(transform.position, transform.position, velocity);
+
+    if (velLength > 0) {
+        audioSource.play();
+        audioSource.setVolume(velLength);
+        this.paused = false;
+    } else if (!this.paused) {
+        audioSource.setVolume(0);
+        audioSource.pause();
+        this.paused = true;
+    }
+};
+
+
+}]]);

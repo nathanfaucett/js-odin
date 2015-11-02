@@ -1,7 +1,8 @@
 var isNumber = require("is_number"),
+    isNullOrUndefined = require("is_null_or_undefined"),
     environment = require("environment"),
     eventListener = require("event_listener"),
-    Class = require("./Class");
+    Class = require("class");
 
 
 var ClassPrototype = Class.prototype,
@@ -48,6 +49,7 @@ module.exports = Canvas;
 
 
 function Canvas() {
+
     Class.call(this);
 
     this.element = null;
@@ -86,13 +88,13 @@ CanvasPrototype.construct = function(options) {
     options.parent.appendChild(element);
     this.element = element;
 
-    this.fixed = options.fixed != null ? options.fixed : (options.width == null && options.height == null) ? true : false;
-    this.keepAspect = options.keepAspect != null ? !!options.keepAspect : false;
+    this.fixed = !isNullOrUndefined(options.fixed) ? options.fixed : (!isNumber(options.width) && !isNumber(options.height)) ? true : false;
+    this.keepAspect = !isNullOrUndefined(options.keepAspect) ? !!options.keepAspect : false;
 
     this.width = isNumber(options.width) ? options.width : window.innerWidth;
     this.height = isNumber(options.height) ? options.height : window.innerHeight;
 
-    this.aspect = isNumber(options.aspect) && options.width == null && options.height == null ? options.aspect : this.width / this.height;
+    this.aspect = (isNumber(options.aspect) && !isNumber(options.width) && !isNumber(options.height)) ? options.aspect : this.width / this.height;
 
     this.pixelWidth = this.width;
     this.pixelHeight = this.height;

@@ -1,6 +1,6 @@
 var isString = require("is_string"),
     isNumber = require("is_number"),
-    Class = require("../Class"),
+    Class = require("class"),
     BaseApplication = require("./BaseApplication");
 
 

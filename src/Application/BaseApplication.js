@@ -1,7 +1,7 @@
 var isString = require("is_string"),
     isNumber = require("is_number"),
     indexOf = require("index_of"),
-    Class = require("../Class"),
+    Class = require("class"),
     Assets = require("../Assets"),
     createLoop = require("create_loop"),
     Scene = require("../scene_graph/Scene");

@@ -2,7 +2,7 @@ var indexOf = require("index_of"),
     WebGLContext = require("webgl_context"),
     mat4 = require("mat4"),
 
-    Class = require("../Class"),
+    Class = require("class"),
     side = require("../enums/side"),
 
     MeshRenderer = require("./MeshRenderer"),

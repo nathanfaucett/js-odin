@@ -1,5 +1,5 @@
 var indexOf = require("index_of"),
-    Class = require("../Class");
+    Class = require("class");
 
 
 var ClassPrototype = Class.prototype,

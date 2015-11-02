@@ -2,7 +2,7 @@ var arrayMap = require("array-map"),
     keys = require("keys"),
     template = require("template"),
     pushUnique = require("push_unique"),
-    Class = require("../Class"),
+    Class = require("class"),
     chunks = require("./chunks");
 
 

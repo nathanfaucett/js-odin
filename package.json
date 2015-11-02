@@ -12,21 +12,22 @@
     "odin.js"
   ],
   "scripts": {
-    "bones": "comn -f examples/bones/src/index.js -o examples/bones/index.js",
-    "particles": "comn -f examples/particles/src/index.js -o examples/particles/index.js",
-    "sprites": "comn -f examples/sprites/src/index.js -o examples/sprites/index.js",
+    "bones": "comn -f ./examples/bones/src/index.js -o ./examples/bones/index.js",
+    "particles": "comn -f ./examples/particles/src/index.js -o ./examples/particles/index.js",
+    "sprites": "comn -f ./examples/sprites/src/index.js -o ./examples/sprites",
     "examples": "npm run bones && npm run particles && npm run sprites"
   },
   "author": "Nathan Faucett",
   "license": "MIT",
   "readmeFilename": "README.md",
   "devDependencies": {
-    "comn": "git://github.com/nathanfaucett/comn",
+    "comn": "git://github.com/nathanfaucett/comn.git",
     "grunt": "^0.4.5",
-    "grunt-contrib-jshint": "^0.10.0",
-    "grunt-jsbeautifier": "^0.2.7"
+    "grunt-contrib-jshint": "^0.11.3",
+    "grunt-jsbeautifier": "^0.2.10"
   },
   "dependencies": {
+    "class": "git://github.com/nathanfaucett/class.git",
     "array-for_each": "git://github.com/nathanfaucett/array-for_each.git",
     "audio": "git://github.com/nathanfaucett/audio.git",
     "aabb3": "git://github.com/nathanfaucett/aabb3.git",
@@ -49,6 +50,7 @@
     "is_array": "git://github.com/nathanfaucett/is_array.git",
     "is_function": "git://github.com/nathanfaucett/is_function.git",
     "is_number": "git://github.com/nathanfaucett/is_number.git",
+    "is_null_or_undefined": "git://github.com/nathanfaucett/is_null_or_undefined.git",
     "is_string": "git://github.com/nathanfaucett/is_string.git",
     "keys": "git://github.com/nathanfaucett/keys.git",
     "array-map": "git://github.com/nathanfaucett/array-map.git",
@@ -60,7 +62,7 @@
     "quat": "git://github.com/nathanfaucett/quat.git",
     "request": "git://github.com/nathanfaucett/request.git",
     "template": "git://github.com/nathanfaucett/template.git",
-    "time": "git://github.com/nathanfaucett/time.git",
+    "now": "git://github.com/nathanfaucett/now.git",
     "uuid": "git://github.com/nathanfaucett/uuid.git",
     "vec2": "git://github.com/nathanfaucett/vec2.git",
     "vec3": "git://github.com/nathanfaucett/vec3.git",

@@ -1,5 +1,4 @@
-var vec3 = require("vec3"),
-    isNumber = require("is_number"),
+var isNumber = require("is_number"),
     Component = require("./Component"),
     SpriteManager = require("../component_managers/SpriteManager");
 

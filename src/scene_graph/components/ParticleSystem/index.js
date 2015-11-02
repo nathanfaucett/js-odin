@@ -169,7 +169,7 @@ ParticleSystemPrototype.toJSON = function(json) {
 
     json = ComponentPrototype.toJSON.call(this, json);
 
-    jsonEmitters = json.emitters || (json.emitters = [])
+    jsonEmitters = json.emitters || (json.emitters = []);
     json.playing = this.playing;
 
     while (i++ < il) {
