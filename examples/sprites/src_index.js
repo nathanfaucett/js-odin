@@ -826,7 +826,7 @@ AudioAssetPrototype.load = function(callback) {
 
 var environment = require(1),
     eventListener = require(2),
-    HttpError = require(168),
+    HttpError = require(164),
     Asset = require(20);
 
 
@@ -906,7 +906,7 @@ ImageAssetPrototype.load = function(callback) {
 /* ../../../src/Assets/JSONAsset.js */
 
 var request = require(170),
-    HttpError = require(168),
+    HttpError = require(164),
     Asset = require(20);
 
 
@@ -3663,7 +3663,6 @@ ComponentPrototype.destroy = function(emitEvent) {
 var audio = require(159),
     vec2 = require(124),
     vec3 = require(83),
-    isNumber = require(11),
     Component = require(35);
 
 
@@ -3680,6 +3679,8 @@ function AudioSource() {
     Component.call(this);
 
     this.offset = vec3.create();
+
+    this.audioAsset = null;
 
     this.__source = new audio.Source();
 
@@ -3701,22 +3702,16 @@ AudioSourcePrototype = AudioSource.prototype;
 
 AudioSourcePrototype.construct = function(audioAsset, options) {
 
-    ComponentPrototype.construct.call(this, audioAsset);
+    ComponentPrototype.construct.call(this);
+
+    this.audioAsset = audioAsset;
 
     this.__source.setClip(audioAsset.clip);
+    this.__source.construct(options);
 
     if (options) {
-        if (options.ambient) {
-            this.setAmbient(options.ambient);
-        }
-        if (isNumber(options.dopplerLevel)) {
-            this.setDopplerLevel(options.dopplerLevel);
-        }
-        if (isNumber(options.volume)) {
-            this.setVolume(options.volume);
-        }
-        if (options.loop) {
-            this.setLoop(options.loop);
+        if (options.offset) {
+            vec2.copy(this.offset, options.offset);
         }
     }
 
@@ -3726,6 +3721,8 @@ AudioSourcePrototype.construct = function(audioAsset, options) {
 AudioSourcePrototype.destructor = function() {
 
     ComponentPrototype.destructor.call(this);
+
+    this.audioAsset = null;
 
     this.__source.destructor();
 
@@ -15740,7 +15737,8 @@ audio.Source = require(163);
 [160, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/src/context.js */
 
-var environment = require(1),
+var isNullOrUndefined = require(10),
+    environment = require(1),
     eventListener = require(2);
 
 
@@ -15780,10 +15778,9 @@ if (AudioContext) {
     GainPrototype.setTargetAtTime = GainPrototype.setTargetAtTime || GainPrototype.setTargetValueAtTime;
 
     onTouchStart = function onTouchStart() {
-        var buffer = context.createBuffer(1, 1, 22050),
-            source = context.createBufferSource();
+        var source = context.createBufferSource();
 
-        source.buffer = buffer;
+        source.buffer = context.createBuffer(1, 1, 22050);
         source.connect(context.destination);
         source.start(0);
 
@@ -15797,43 +15794,69 @@ if (AudioContext) {
 }
 
 
-module.exports = context != null ? context : false;
+module.exports = isNullOrUndefined(context) ? false : context;
 
 
 }],
 [161, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/src/load.js */
 
-var eventListener = require(2),
-    XMLHttpRequestPolyfill = require(164),
+var HttpError = require(164),
+    eventListener = require(2),
+    XMLHttpRequestPolyfill = require(165),
     context = require(160);
 
 
-module.exports = load;
+var load;
 
 
-function load(src, callback) {
-    var request = new XMLHttpRequestPolyfill();
+if (context) {
+    load = function load(src, callback) {
+        var request = new XMLHttpRequestPolyfill();
 
-    request.open("GET", src, true);
-    request.responseType = "arraybuffer";
+        request.open("GET", src, true);
+        request.responseType = "arraybuffer";
 
-    eventListener.on(request, "load", function onLoad() {
-        context.decodeAudioData(
-            request.response,
-            function onDecodeAudioData(buffer) {
-                callback(undefined, buffer);
-            },
-            callback
-        );
-    });
+        eventListener.on(request, "load", function onLoad() {
+            context.decodeAudioData(
+                request.response,
+                function onDecodeAudioData(buffer) {
+                    callback(undefined, buffer);
+                },
+                callback
+            );
+        });
 
-    request.send(null);
+        eventListener.on(request, "error", function onError() {
+            callback(new HttpError(404));
+        });
 
-    return function abort() {
-        request.abort();
+        request.send(null);
+
+        return function abort() {
+            request.abort();
+        };
+    };
+} else {
+    load = function load(src, callback) {
+        var audio = document.createElement("audio");
+
+        eventListener.on(audio, "load", function onLoad() {
+            callback(undefined, audio);
+        });
+
+        eventListener.on(audio, "error", function onError() {
+            callback(new HttpError(404));
+        });
+
+        audio.src = src;
+
+        return function abort() {};
     };
 }
+
+
+module.exports = load;
 
 
 }],
@@ -15873,11 +15896,13 @@ ClipPrototype.load = function(callback) {
 
 }],
 [163, function(require, exports, module, undefined, global) {
-/* ../../../node_modules/audio/src/Source.js */
+/* ../../../node_modules/audio/src/WebAudioSource.js */
 
-var EventEmitter = require(50),
+var isBoolean = require(169),
+    isNumber = require(11),
+    EventEmitter = require(50),
     mathf = require(76),
-    time = require(167),
+    now = require(67),
     context = require(160);
 
 
@@ -15894,10 +15919,10 @@ function WebAudioSource() {
 
     this.clip = null;
 
-    this.currentTime = 0;
     this.loop = false;
-    this.volume = 1;
-    this.dopplerLevel = 0;
+    this.volume = 1.0;
+    this.dopplerLevel = 0.0;
+    this.currentTime = 0.0;
 
     this.playing = false;
     this.paused = false;
@@ -15906,7 +15931,7 @@ function WebAudioSource() {
     this.__gain = null;
     this.__panner = null;
 
-    this.__startTime = 0;
+    this.__startTime = 0.0;
 
     this.__onEnd = function onEnd() {
         _this.__source = null;
@@ -15914,23 +15939,41 @@ function WebAudioSource() {
         _this.__panner = null;
         _this.playing = false;
         _this.paused = false;
-        _this.currentTime = 0;
-        _this.__startTime = 0;
+        _this.currentTime = 0.0;
+        _this.__startTime = 0.0;
         _this.emit("end");
     };
 }
 EventEmitter.extend(WebAudioSource);
 WebAudioSourcePrototype = WebAudioSource.prototype;
 
-WebAudioSourcePrototype.destructor = function() {
+WebAudioSource.create = function(options) {
+    return (new WebAudioSource()).construct(options);
+};
 
-    this.clip = null;
+WebAudioSourcePrototype.construct = function(options) {
 
-    this.ambient = false;
-    this.currentTime = 0;
-    this.loop = false;
-    this.volume = 1;
-    this.dopplerLevel = 0;
+    if (options) {
+        if (options.clip) {
+            this.clip = options.clip;
+        }
+
+        if (isBoolean(options.ambient)) {
+            this.ambient = options.ambient;
+        }
+        if (isBoolean(options.loop)) {
+            this.loop = options.loop;
+        }
+
+        if (isNumber(options.volume)) {
+            this.volume = options.volume;
+        }
+        if (isNumber(options.dopplerLevel)) {
+            this.dopplerLevel = options.dopplerLevel;
+        }
+    }
+
+    this.currentTime = 0.0;
 
     this.playing = false;
     this.paused = false;
@@ -15939,7 +15982,29 @@ WebAudioSourcePrototype.destructor = function() {
     this.__gain = null;
     this.__panner = null;
 
-    this.__startTime = 0;
+    this.__startTime = 0.0;
+
+    return this;
+};
+
+WebAudioSourcePrototype.destructor = function() {
+
+    this.clip = null;
+
+    this.ambient = false;
+    this.loop = false;
+    this.volume = 1.0;
+    this.dopplerLevel = 0.0;
+    this.currentTime = 0.0;
+
+    this.playing = false;
+    this.paused = false;
+
+    this.__source = null;
+    this.__gain = null;
+    this.__panner = null;
+
+    this.__startTime = 0.0;
 
     return this;
 };
@@ -15960,12 +16025,12 @@ WebAudioSourcePrototype.setDopplerLevel = function(value) {
 };
 
 WebAudioSourcePrototype.setVolume = function(value) {
-    var gain = this.__gain;
+    var gainNode = this.__gain;
 
     this.volume = mathf.clamp01(value || 0);
 
-    if (gain) {
-        gain.gain.value = this.volume;
+    if (gainNode) {
+        gainNode.gain.value = this.volume;
     }
 
     return this;
@@ -16006,36 +16071,36 @@ WebAudioSourcePrototype.setOrientation = function(orientation) {
     return this;
 };
 
-WebAudioSource_reset = function(_this) {
+function WebAudioSource_reset(_this) {
     var source = _this.__source = context.createBufferSource(),
-        gain = _this.__gain = context.createGain(),
-        panner;
+        gainNode = _this.__gain = context.createGain(),
+        pannerNode;
 
     if (_this.ambient === true) {
-        gain.connect(context.destination);
-        source.connect(gain);
+        gainNode.connect(context.destination);
+        source.connect(gainNode);
     } else {
-        panner = _this.__panner = context.createPanner();
+        pannerNode = _this.__panner = context.createPanner();
 
-        panner.panningModel = "HRTF";
-        panner.distanceModel = "inverse";
+        pannerNode.panningModel = "HRTF";
+        pannerNode.distanceModel = "inverse";
 
-        panner.rolloffFactor = 1;
-        panner.coneInnerAngle = 360;
-        panner.coneOuterAngle = 0;
-        panner.coneOuterGain = 0;
+        pannerNode.rolloffFactor = 1;
+        pannerNode.coneInnerAngle = 360;
+        pannerNode.coneOuterAngle = 0;
+        pannerNode.coneOuterGain = 0;
 
-        gain.connect(panner);
-        panner.connect(context.destination);
-        source.connect(panner);
+        pannerNode.connect(gainNode);
+        gainNode.connect(context.destination);
+        source.connect(pannerNode);
     }
 
     source.buffer = _this.clip.raw;
     source.onended = _this.__onEnd;
 
-    gain.gain.value = _this.volume;
+    gainNode.gain.value = _this.volume;
     source.loop = _this.loop;
-};
+}
 
 WebAudioSourcePrototype.play = function(delay, offset, duration) {
     var _this = this,
@@ -16046,21 +16111,24 @@ WebAudioSourcePrototype.play = function(delay, offset, duration) {
         currentTime = this.currentTime;
         clipDuration = clip.raw.duration;
 
-        delay = delay || 0;
+        delay = delay || 0.0;
         offset = offset || currentTime;
-        duration = duration || clipDuration;
-        duration = duration > clipDuration ? clipDuration : duration;
+        duration = mathf.clamp(duration || clipDuration || 0.0, 0.0, clipDuration);
 
         WebAudioSource_reset(this);
 
         this.playing = true;
         this.paused = false;
-        this.__startTime = time.now();
+        this.__startTime = now() * 0.001;
         this.currentTime = offset;
 
-        this.__source.start(delay, offset, duration);
+        if (this.loop) {
+            this.__source.start(delay, offset);
+        } else {
+            this.__source.start(delay, offset, duration);
+        }
 
-        if (delay === 0) {
+        if (delay === 0.0) {
             this.emit("play");
         } else {
             setTimeout(function() {
@@ -16077,8 +16145,8 @@ WebAudioSourcePrototype.pause = function() {
 
     if (clip && clip.raw && this.playing && !this.paused) {
         this.paused = true;
-        this.currentTime = time.now() - this.__startTime;
-        this.__source.stop(this.currentTime);
+        this.currentTime = (now() - this.__startTime) * 0.001;
+        this.__source.stop();
         this.emit("pause");
     }
 
@@ -16089,7 +16157,7 @@ WebAudioSourcePrototype.stop = function() {
     var clip = this.clip;
 
     if (this.playing && clip && clip.raw) {
-        this.__source.stop(0);
+        this.__source.stop();
         this.emit("stop");
         this.__onEnd();
     }
@@ -16100,13 +16168,100 @@ WebAudioSourcePrototype.stop = function() {
 
 }],
 [164, function(require, exports, module, undefined, global) {
+/* ../../../node_modules/audio/node_modules/http_error/src/index.js */
+
+var objectForEach = require(101),
+    inherits = require(49),
+    STATUS_CODES = require(166);
+
+
+var STATUS_NAMES = {},
+    STATUS_STRINGS = {},
+    HttpErrorPrototype;
+
+
+module.exports = HttpError;
+
+
+objectForEach(STATUS_CODES, function eachStatus(status, statusCode) {
+    var name;
+
+    if (statusCode < 400) {
+        return;
+    }
+
+    name = status.replace(/\s+/g, "");
+
+    if (!(/\w+Error$/.test(name))) {
+        name += "Error";
+    }
+
+    STATUS_NAMES[statusCode] = name;
+    STATUS_STRINGS[statusCode] = status;
+});
+
+
+function HttpError(statusCode, message, fileName, lineNumber) {
+    if (message instanceof Error) {
+        message = message.message;
+    }
+
+    if (statusCode instanceof Error) {
+        message = statusCode.message;
+        statusCode = 500;
+    } else if (typeof(statusCode) === "string") {
+        message = statusCode;
+        statusCode = 500;
+    } else {
+        statusCode = statusCode || 500;
+    }
+
+    Error.call(this, message, fileName, lineNumber);
+
+    if (Error.captureStackTrace) {
+        Error.captureStackTrace(this, this.constructor);
+    }
+
+    this.name = STATUS_NAMES[statusCode] || "UnknownHttpError";
+    this.statusCode = statusCode;
+    this.message = this.name + ": " + statusCode + " " + (message || STATUS_STRINGS[statusCode]);
+}
+inherits(HttpError, Error);
+HttpErrorPrototype = HttpError.prototype;
+
+HttpErrorPrototype.toString = function() {
+    return this.message;
+};
+
+HttpErrorPrototype.toJSON = function(json) {
+    json = json || {};
+
+    json.name = this.name;
+    json.statusCode = this.statusCode;
+    json.message = this.message;
+
+    return json;
+};
+
+HttpErrorPrototype.fromJSON = function(json) {
+
+    this.name = json.name;
+    this.statusCode = json.statusCode;
+    this.message = json.message;
+
+    return this;
+};
+
+
+}],
+[165, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/node_modules/xmlhttprequest_polyfill/src/index.js */
 
 var extend = require(58),
     environment = require(1),
     emptyFunction = require(66),
-    createXMLHttpRequest = require(165),
-    toUint8Array = require(166);
+    createXMLHttpRequest = require(167),
+    toUint8Array = require(168);
 
 
 var window = environment.window,
@@ -16192,11 +16347,80 @@ module.exports = XMLHttpRequestPolyfill;
 
 
 }],
-[165, function(require, exports, module, undefined, global) {
+[166, function(require, exports, module, undefined, global) {
+/* ../../../node_modules/audio/node_modules/status_codes/src/browser.js */
+
+module.exports = {
+    100: "Continue",
+    101: "Switching Protocols",
+    102: "Processing",
+    200: "OK",
+    201: "Created",
+    202: "Accepted",
+    203: "Non-Authoritative Information",
+    204: "No Content",
+    205: "Reset Content",
+    206: "Partial Content",
+    207: "Multi-Status",
+    208: "Already Reported",
+    226: "IM Used",
+    300: "Multiple Choices",
+    301: "Moved Permanently",
+    302: "Found",
+    303: "See Other",
+    304: "Not Modified",
+    305: "Use Proxy",
+    307: "Temporary Redirect",
+    308: "Permanent Redirect",
+    400: "Bad Request",
+    401: "Unauthorized",
+    402: "Payment Required",
+    403: "Forbidden",
+    404: "Not Found",
+    405: "Method Not Allowed",
+    406: "Not Acceptable",
+    407: "Proxy Authentication Required",
+    408: "Request Timeout",
+    409: "Conflict",
+    410: "Gone",
+    411: "Length Required",
+    412: "Precondition Failed",
+    413: "Payload Too Large",
+    414: "URI Too Long",
+    415: "Unsupported Media Type",
+    416: "Range Not Satisfiable",
+    417: "Expectation Failed",
+    418: "I\"m a teapot",
+    421: "Misdirected Request",
+    422: "Unprocessable Entity",
+    423: "Locked",
+    424: "Failed Dependency",
+    425: "Unordered Collection",
+    426: "Upgrade Required",
+    428: "Precondition Required",
+    429: "Too Many Requests",
+    431: "Request Header Fields Too Large",
+    500: "Internal Server Error",
+    501: "Not Implemented",
+    502: "Bad Gateway",
+    503: "Service Unavailable",
+    504: "Gateway Timeout",
+    505: "HTTP Version Not Supported",
+    506: "Variant Also Negotiates",
+    507: "Insufficient Storage",
+    508: "Loop Detected",
+    509: "Bandwidth Limit Exceeded",
+    510: "Not Extended",
+    511: "Network Authentication Required"
+};
+
+
+}],
+[167, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/node_modules/xmlhttprequest_polyfill/src/createXMLHttpRequest.js */
 
 var EventEmitter = require(50),
-    toUint8Array = require(166);
+    toUint8Array = require(168);
 
 
 module.exports = createXMLHttpRequest;
@@ -16401,7 +16625,7 @@ function createXMLHttpRequest(createNativeObject) {
 
 
 }],
-[166, function(require, exports, module, undefined, global) {
+[168, function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/node_modules/xmlhttprequest_polyfill/src/toUint8Array.js */
 
 var environment = require(1);
@@ -16428,178 +16652,15 @@ function toUint8Array(str) {
 
 
 }],
-[167, function(require, exports, module, undefined, global) {
-/* ../../../node_modules/audio/node_modules/time/src/index.js */
-
-var now = require(67);
-
-
-var time = exports,
-    START_TIME = now.getStartTime();
-
-
-time.now = now;
-
-
-time.stamp = function stamp() {
-    return START_TIME + now();
-};
-
-
-}],
-[168, function(require, exports, module, undefined, global) {
-/* ../../../node_modules/http_error/src/index.js */
-
-var objectForEach = require(101),
-    inherits = require(49),
-    STATUS_CODES = require(169);
-
-
-var STATUS_NAMES = {},
-    STATUS_STRINGS = {},
-    HttpErrorPrototype;
-
-
-module.exports = HttpError;
-
-
-objectForEach(STATUS_CODES, function eachStatus(status, statusCode) {
-    var name;
-
-    if (statusCode < 400) {
-        return;
-    }
-
-    name = status.replace(/\s+/g, "");
-
-    if (!(/\w+Error$/.test(name))) {
-        name += "Error";
-    }
-
-    STATUS_NAMES[statusCode] = name;
-    STATUS_STRINGS[statusCode] = status;
-});
-
-
-function HttpError(statusCode, message, fileName, lineNumber) {
-    if (message instanceof Error) {
-        message = message.message;
-    }
-
-    if (statusCode instanceof Error) {
-        message = statusCode.message;
-        statusCode = 500;
-    } else if (typeof(statusCode) === "string") {
-        message = statusCode;
-        statusCode = 500;
-    } else {
-        statusCode = statusCode || 500;
-    }
-
-    Error.call(this, message, fileName, lineNumber);
-
-    if (Error.captureStackTrace) {
-        Error.captureStackTrace(this, this.constructor);
-    }
-
-    this.name = STATUS_NAMES[statusCode] || "UnknownHttpError";
-    this.statusCode = statusCode;
-    this.message = this.name + ": " + statusCode + " " + (message || STATUS_STRINGS[statusCode]);
-}
-inherits(HttpError, Error);
-HttpErrorPrototype = HttpError.prototype;
-
-HttpErrorPrototype.toString = function() {
-    return this.message;
-};
-
-HttpErrorPrototype.toJSON = function(json) {
-    json = json || {};
-
-    json.name = this.name;
-    json.statusCode = this.statusCode;
-    json.message = this.message;
-
-    return json;
-};
-
-HttpErrorPrototype.fromJSON = function(json) {
-
-    this.name = json.name;
-    this.statusCode = json.statusCode;
-    this.message = json.message;
-
-    return this;
-};
-
-
-}],
 [169, function(require, exports, module, undefined, global) {
-/* ../../../node_modules/status_codes/src/browser.js */
+/* ../../../node_modules/audio/node_modules/is_boolean/src/index.js */
 
-module.exports = {
-    100: "Continue",
-    101: "Switching Protocols",
-    102: "Processing",
-    200: "OK",
-    201: "Created",
-    202: "Accepted",
-    203: "Non-Authoritative Information",
-    204: "No Content",
-    205: "Reset Content",
-    206: "Partial Content",
-    207: "Multi-Status",
-    208: "Already Reported",
-    226: "IM Used",
-    300: "Multiple Choices",
-    301: "Moved Permanently",
-    302: "Found",
-    303: "See Other",
-    304: "Not Modified",
-    305: "Use Proxy",
-    307: "Temporary Redirect",
-    308: "Permanent Redirect",
-    400: "Bad Request",
-    401: "Unauthorized",
-    402: "Payment Required",
-    403: "Forbidden",
-    404: "Not Found",
-    405: "Method Not Allowed",
-    406: "Not Acceptable",
-    407: "Proxy Authentication Required",
-    408: "Request Timeout",
-    409: "Conflict",
-    410: "Gone",
-    411: "Length Required",
-    412: "Precondition Failed",
-    413: "Payload Too Large",
-    414: "URI Too Long",
-    415: "Unsupported Media Type",
-    416: "Range Not Satisfiable",
-    417: "Expectation Failed",
-    418: "I\"m a teapot",
-    421: "Misdirected Request",
-    422: "Unprocessable Entity",
-    423: "Locked",
-    424: "Failed Dependency",
-    425: "Unordered Collection",
-    426: "Upgrade Required",
-    428: "Precondition Required",
-    429: "Too Many Requests",
-    431: "Request Header Fields Too Large",
-    500: "Internal Server Error",
-    501: "Not Implemented",
-    502: "Bad Gateway",
-    503: "Service Unavailable",
-    504: "Gateway Timeout",
-    505: "HTTP Version Not Supported",
-    506: "Variant Also Negotiates",
-    507: "Insufficient Storage",
-    508: "Loop Detected",
-    509: "Bandwidth Limit Exceeded",
-    510: "Not Extended",
-    511: "Network Authentication Required"
-};
+module.exports = isBoolean;
+
+
+function isBoolean(value) {
+    return typeof(value) === "boolean" || false;
+}
 
 
 }],
@@ -16660,7 +16721,7 @@ module.exports = function createRequest(request) {
 /* ../../../node_modules/request/src/requestBrowser.js */
 
 var PromisePolyfill = require(175),
-    XMLHttpRequestPolyfill = require(164),
+    XMLHttpRequestPolyfill = require(165),
     isFunction = require(5),
     isString = require(9),
     objectForEach = require(101),
@@ -20816,10 +20877,10 @@ module.exports = PlayerControl;
 
 
 function PlayerControl() {
+
     odin.Component.call(this);
 
     this.velocity = vec2.create();
-    this.paused = true;
 }
 odin.Component.extend(PlayerControl, "PlayerControl");
 
@@ -20839,15 +20900,8 @@ PlayerControl.prototype.update = function update() {
 
     vec2.add(transform.position, transform.position, velocity);
 
-    if (velLength > 0) {
-        audioSource.play();
-        audioSource.setVolume(velLength);
-        this.paused = false;
-    } else if (!this.paused) {
-        audioSource.setVolume(0);
-        audioSource.pause();
-        this.paused = true;
-    }
+    audioSource.setVolume(velLength);
+    audioSource.play();
 };
 
 

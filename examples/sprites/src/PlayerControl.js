@@ -6,10 +6,10 @@ module.exports = PlayerControl;
 
 
 function PlayerControl() {
+
     odin.Component.call(this);
 
     this.velocity = vec2.create();
-    this.paused = true;
 }
 odin.Component.extend(PlayerControl, "PlayerControl");
 
@@ -29,13 +29,6 @@ PlayerControl.prototype.update = function update() {
 
     vec2.add(transform.position, transform.position, velocity);
 
-    if (velLength > 0) {
-        audioSource.play();
-        audioSource.setVolume(velLength);
-        this.paused = false;
-    } else if (!this.paused) {
-        audioSource.setVolume(0);
-        audioSource.pause();
-        this.paused = true;
-    }
+    audioSource.setVolume(velLength);
+    audioSource.play();
 };

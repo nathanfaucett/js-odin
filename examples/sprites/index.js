@@ -140,7 +140,7 @@ eventListener.on(environment.window, "load", function load() {
 
 
         global.odin = odin;
-        
+
 
         var assets = odin.Assets.create(),
             canvas = odin.Canvas.create({
@@ -216,6 +216,7 @@ eventListener.on(environment.window, "load", function load() {
         var sprite2 = global.object = odin.Entity.create().addComponent(
             odin.Transform2D.create(),
             odin.AudioSource.create(engineLoop, {
+                ambient: false,
                 loop: true
             }),
             PlayerControl.create(),
@@ -231,6 +232,9 @@ eventListener.on(environment.window, "load", function load() {
             cameraComponent = camera.getComponent("odin.Camera");
 
         scene.assets = assets;
+
+        scene.input.axes.get("horizontal").gravity = 2;
+        scene.input.axes.get("vertical").gravity = 2;
 
         canvas.on("resize", function(w, h) {
             cameraComponent.set(w, h);

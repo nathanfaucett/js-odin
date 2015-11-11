@@ -48,6 +48,7 @@
     "index_of": "git://github.com/nathanfaucett/index_of.git",
     "inherits": "git://github.com/nathanfaucett/inherits.git",
     "is_array": "git://github.com/nathanfaucett/is_array.git",
+    "is_boolean": "git://github.com/nathanfaucett/is_boolean.git",
     "is_function": "git://github.com/nathanfaucett/is_function.git",
     "is_number": "git://github.com/nathanfaucett/is_number.git",
     "is_null_or_undefined": "git://github.com/nathanfaucett/is_null_or_undefined.git",

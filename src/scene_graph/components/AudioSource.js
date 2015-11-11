@@ -1,7 +1,6 @@
 var audio = require("audio"),
     vec2 = require("vec2"),
     vec3 = require("vec3"),
-    isNumber = require("is_number"),
     Component = require("./Component");
 
 
@@ -18,6 +17,8 @@ function AudioSource() {
     Component.call(this);
 
     this.offset = vec3.create();
+
+    this.audioAsset = null;
 
     this.__source = new audio.Source();
 
@@ -39,22 +40,16 @@ AudioSourcePrototype = AudioSource.prototype;
 
 AudioSourcePrototype.construct = function(audioAsset, options) {
 
-    ComponentPrototype.construct.call(this, audioAsset);
+    ComponentPrototype.construct.call(this);
+
+    this.audioAsset = audioAsset;
 
     this.__source.setClip(audioAsset.clip);
+    this.__source.construct(options);
 
     if (options) {
-        if (options.ambient) {
-            this.setAmbient(options.ambient);
-        }
-        if (isNumber(options.dopplerLevel)) {
-            this.setDopplerLevel(options.dopplerLevel);
-        }
-        if (isNumber(options.volume)) {
-            this.setVolume(options.volume);
-        }
-        if (options.loop) {
-            this.setLoop(options.loop);
+        if (options.offset) {
+            vec2.copy(this.offset, options.offset);
         }
     }
 
@@ -64,6 +59,8 @@ AudioSourcePrototype.construct = function(audioAsset, options) {
 AudioSourcePrototype.destructor = function() {
 
     ComponentPrototype.destructor.call(this);
+
+    this.audioAsset = null;
 
     this.__source.destructor();
 
