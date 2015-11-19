@@ -1,7 +1,8 @@
 var environment = require("environment"),
     mathf = require("mathf"),
     vec3 = require("vec3"),
-    Component = require("./Component");
+    isNullOrUndefined = require("is_null_or_undefined"),
+    Component = require("./index");
 
 
 var ComponentPrototype = Component.prototype,
@@ -32,6 +33,8 @@ function OrbitControl() {
     this.allowRotate = null;
 
     this.target = vec3.create();
+
+    this.gamepadIndex = null;
 
     this.__offset = vec3.create();
     this.__pan = vec3.create();
@@ -75,9 +78,11 @@ OrbitControlPrototype.construct = function(options) {
     this.speed = options.speed > mathf.EPSILON ? options.speed : 1;
     this.zoomSpeed = options.zoomSpeed > mathf.EPSILON ? options.zoomSpeed : 2;
 
-    this.allowZoom = options.allowZoom != null ? !!options.allowZoom : true;
-    this.allowPan = options.allowPan != null ? !!options.allowPan : true;
-    this.allowRotate = options.allowRotate != null ? !!options.allowRotate : true;
+    this.allowZoom = isNullOrUndefined(options.allowZoom) ? true : !!options.allowZoom;
+    this.allowPan = isNullOrUndefined(options.allowPan) ? true : !!options.allowPan;
+    this.allowRotate = isNullOrUndefined(options.allowRotate) ? true : !!options.allowRotate;
+
+    this.gamepadIndex = isNullOrUndefined(options.gamepadIndex) ? 0 : options.gamepadIndex;
 
     if (options.target) {
         vec3.copy(this.target, options.target);

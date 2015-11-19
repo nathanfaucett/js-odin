@@ -1,5 +1,6 @@
 var indexOf = require("index_of"),
-    Class = require("class");
+    Class = require("class"),
+    isNullOrUndefined = require("is_null_or_undefined");
 
 
 var ClassPrototype = Class.prototype,
@@ -18,7 +19,7 @@ function ComponentManager() {
 }
 
 ComponentManager.onExtend = function(child, className, order) {
-    child.order = child.prototype.order = order != null ? order : 0;
+    child.order = child.prototype.order = isNullOrUndefined(order) ? 0 : order;
 };
 
 Class.extend(ComponentManager, "odin.ComponentManager");

@@ -1,4 +1,5 @@
-var indexOf = require("index_of"),
+var isNull = require("is_null"),
+    indexOf = require("index_of"),
     Touch = require("./Touch");
 
 
@@ -47,7 +48,7 @@ TouchesPrototype.__start = function(targetTouch) {
         oldTouch = findTouch(array, targetTouch.identifier),
         touch;
 
-    if (oldTouch === null) {
+    if (isNull(oldTouch)) {
         touch = Touch.create(targetTouch);
         array[array.length] = touch;
         return touch;
@@ -60,7 +61,7 @@ TouchesPrototype.__end = function(changedTouch) {
     var array = this.__array,
         touch = findTouch(array, changedTouch.identifier);
 
-    if (touch !== null) {
+    if (!isNull(touch)) {
         array.splice(indexOf(array, touch), 1);
     }
 
@@ -70,7 +71,7 @@ TouchesPrototype.__end = function(changedTouch) {
 TouchesPrototype.__move = function(changedTouch) {
     var touch = findTouch(this.__array, changedTouch.identifier);
 
-    if (touch !== null) {
+    if (!isNull(touch)) {
         touch.update(changedTouch);
     }
 
@@ -118,16 +119,16 @@ TouchesPrototype.fromJSON = function(json) {
         il = jsonArray.length - 1,
         array = this.__array,
         hash = this.__hash = {},
-        button;
+        touch;
 
     array.length = 0;
 
     while (i++ < il) {
-        button = Touch.create();
-        button.fromJSON(jsonArray[i]);
+        touch = Touch.create();
+        touch.fromJSON(jsonArray[i]);
 
-        array[array.length] = button;
-        hash[button.name] = button;
+        array[array.length] = touch;
+        hash[touch.name] = touch;
     }
 
     return this;

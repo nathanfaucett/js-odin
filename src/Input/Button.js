@@ -14,6 +14,8 @@ function Button() {
     this.frameUp = null;
 
     this.value = null;
+    this.pressed = null;
+
     this.__first = null;
 }
 ButtonPrototype = Button.prototype;
@@ -32,7 +34,9 @@ ButtonPrototype.construct = function(name) {
     this.frameDown = -1;
     this.frameUp = -1;
 
-    this.value = false;
+    this.value = 0.0;
+    this.pressed = false;
+
     this.__first = true;
 
     return this;
@@ -49,12 +53,14 @@ ButtonPrototype.destructor = function() {
     this.frameUp = null;
 
     this.value = null;
+    this.pressed = null;
+
     this.__first = null;
 
     return this;
 };
 
-ButtonPrototype.on = function(time, frame) {
+ButtonPrototype.on = function(value, time, frame) {
 
     if (this.__first) {
         this.frameDown = frame;
@@ -62,16 +68,28 @@ ButtonPrototype.on = function(time, frame) {
         this.__first = false;
     }
 
-    this.value = true;
+    this.value = value;
+    this.pressed = true;
 
     return this;
 };
 
-ButtonPrototype.off = function(time, frame) {
+ButtonPrototype.update = function(value, pressed, time, frame) {
+    if (pressed) {
+        return this.on(value, time, frame);
+    } else {
+        return this.off(value, time, frame);
+    }
+};
+
+ButtonPrototype.off = function(value, time, frame) {
 
     this.frameUp = frame;
     this.timeUp = time;
-    this.value = false;
+
+    this.value = value;
+    this.pressed = false;
+
     this.__first = true;
 
     return this;
@@ -90,6 +108,7 @@ ButtonPrototype.toJSON = function(json) {
     json.frameUp = this.frameUp;
 
     json.value = this.value;
+    json.pressed = this.pressed;
 
     return json;
 };
@@ -105,6 +124,8 @@ ButtonPrototype.fromJSON = function(json) {
     this.frameUp = json.frameUp;
 
     this.value = json.value;
+    this.pressed = json.pressed;
+
     this.__first = true;
 
     return this;

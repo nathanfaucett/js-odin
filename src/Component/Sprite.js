@@ -1,6 +1,7 @@
 var isNumber = require("is_number"),
-    Component = require("./Component"),
-    SpriteManager = require("../component_managers/SpriteManager");
+    isNullOrUndefined = require("is_null_or_undefined"),
+    Component = require("./index"),
+    SpriteManager = require("../ComponentManager/SpriteManager");
 
 
 var ComponentPrototype = Component.prototype,
@@ -40,14 +41,14 @@ SpritePrototype.construct = function(options) {
     ComponentPrototype.construct.call(this);
 
     if (options) {
-        this.visible = options.visible != null ? !!options.visible : true;
+        this.visible = isNullOrUndefined(options.visible) ? true : !!options.visible;
 
         this.layer = isNumber(options.layer) ? (options.layer < 0 ? 0 : options.layer) : 0;
         this.z = isNumber(options.z) ? options.z : 0;
 
-        this.alpha = options.alpha != null ? options.alpha : 1;
+        this.alpha = isNullOrUndefined(options.alpha) ? 1 : options.alpha;
 
-        this.material = options.material != null ? options.material : null;
+        this.material = isNullOrUndefined(options.material) ? null : options.material;
 
         this.width = isNumber(options.width) ? options.width : 1;
         this.height = isNumber(options.height) ? options.height : 1;

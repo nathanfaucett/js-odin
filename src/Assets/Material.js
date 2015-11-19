@@ -1,4 +1,5 @@
-var JSONAsset = require("./JSONAsset"),
+var isNullOrUndefined = require("is_null_or_undefined"),
+    JSONAsset = require("./JSONAsset"),
     Shader = require("../Shader"),
     enums = require("../enums");
 
@@ -46,14 +47,14 @@ MaterialPrototype.construct = function(name, src, options) {
 
     this.uniforms = options.uniforms || {};
 
-    this.side = options.side != null ? options.side : enums.side.FRONT;
-    this.blending = options.blending != null ? options.blending : enums.blending.DEFAULT;
+    this.side = isNullOrUndefined(options.side) ? enums.side.FRONT : options.side;
+    this.blending = isNullOrUndefined(options.blending) ? enums.blending.DEFAULT : options.blending;
 
-    this.wireframe = options.wireframe != null ? !!options.wireframe : false;
-    this.wireframeLineWidth = options.wireframeLineWidth != null ? options.wireframeLineWidth : 1;
+    this.wireframe = isNullOrUndefined(options.wireframe) ? false : !!options.wireframe;
+    this.wireframeLineWidth = isNullOrUndefined(options.wireframeLineWidth) ? 1 : options.wireframeLineWidth;
 
-    this.receiveShadow = options.receiveShadow != null ? !!options.receiveShadow : true;
-    this.castShadow = options.castShadow != null ? !!options.castShadow : true;
+    this.receiveShadow = isNullOrUndefined(options.receiveShadow) ? true : !!options.receiveShadow;
+    this.castShadow = isNullOrUndefined(options.castShadow) ? true : !!options.castShadow;
 
     return this;
 };

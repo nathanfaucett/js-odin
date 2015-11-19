@@ -32,15 +32,15 @@ WheelEventPrototype.destructor = function() {
 };
 
 function getDeltaX(e) {
-    return e.deltaX != null ? e.deltaX : (
-        e.wheelDeltaX != null ? -e.wheelDeltaX : 0
+    return e.deltaX ? e.deltaX : (
+        e.wheelDeltaX ? -e.wheelDeltaX : 0
     );
 }
 
 function getDeltaY(e) {
-    return e.deltaY != null ? e.deltaY : (
-        e.wheelDeltaY != null ? -e.wheelDeltaY : (
-            e.wheelDelta != null ? -e.wheelDelta : 0
+    return e.deltaY ? e.deltaY : (
+        e.wheelDeltaY ? -e.wheelDeltaY : (
+            e.wheelDelta ? -e.wheelDelta : 0
         )
     );
 }

@@ -1,4 +1,5 @@
-var isArray = require("is_array");
+var isArray = require("is_array"),
+    isNullOrUndefined = require("is_null_or_undefined");
 
 
 var ShaderChunkPrototype;
@@ -27,8 +28,8 @@ ShaderChunkPrototype.construct = function(options) {
 
     this.code = options.code;
     this.template = options.template;
-    this.vertex = options.vertex != null ? !!options.vertex : true;
-    this.fragment = options.fragment != null ? !!options.fragment : true;
+    this.vertex = isNullOrUndefined(options.vertex) ? true : !!options.vertex;
+    this.fragment = isNullOrUndefined(options.fragment) ? true : !!options.fragment;
     this.requires = isArray(options.requires) ? options.requires : [];
     this.extensions = isArray(options.extensions) ? options.extensions : [];
 

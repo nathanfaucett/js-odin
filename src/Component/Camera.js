@@ -5,8 +5,9 @@ var audio = require("audio"),
     vec3 = require("vec3"),
     mat4 = require("mat4"),
     color = require("color"),
-    Component = require("./Component"),
-    CameraManager = require("../component_managers/CameraManager");
+    isNullOrUndefined = require("is_null_or_undefined"),
+    Component = require("./index"),
+    CameraManager = require("../ComponentManager/CameraManager");
 
 
 var ComponentPrototype = Component.prototype,
@@ -60,7 +61,7 @@ CameraPrototype.construct = function(options) {
     this.invWidth = 1 / this.width;
     this.invHeight = 1 / this.height;
 
-    this.autoResize = options.autoResize != null ? !!options.autoResize : true;
+    this.autoResize = isNullOrUndefined(options.autoResize) ? true : !!options.autoResize;
     if (options.background) {
         color.copy(this.background, options.background);
     }
@@ -71,7 +72,7 @@ CameraPrototype.construct = function(options) {
     this.near = isNumber(options.near) ? options.near : 0.0625;
     this.far = isNumber(options.far) ? options.far : 16384;
 
-    this.orthographic = options.orthographic != null ? !!options.orthographic : false;
+    this.orthographic = isNullOrUndefined(options.orthographic) ? false : !!options.orthographic;
     this.orthographicSize = isNumber(options.orthographicSize) ? options.orthographicSize : 2;
 
     this.needsUpdate = true;
@@ -225,13 +226,14 @@ CameraPrototype.toScreen = function(v, out) {
     return out;
 };
 
-var update_position = vec3.create(),
-    update_orientation = vec3.create(),
-    update_up = vec3.create(0, 0, 1);
+var update_tmp0 = vec3.create(),
+    update_tmp1 = vec3.create(),
+    update_orientation = vec3.create(0.0, 1.0, 0.0),
+    update_up = vec3.create(0.0, 0.0, 1.0);
 CameraPrototype.update = function(force) {
     var entity = this.entity,
         transform = entity && (entity.components["odin.Transform"] || entity.components["odin.Transform2D"]),
-        matrixWorld, orthographicSize, right, left, top, bottom, listener, position, orientation, up;
+        matrixWorld, orthographicSize, right, left, top, bottom, position, orientation, up;
 
     if (force || this.__active) {
         if (this.needsUpdate) {
@@ -252,26 +254,24 @@ CameraPrototype.update = function(force) {
             this.needsUpdate = false;
         }
 
-        if (transform) {
-            listener = audio.context.listener;
-
-            position = update_position;
-            orientation = update_orientation;
-            up = update_up;
+        if (transform && audio.context) {
+            orientation = update_tmp0;
+            up = update_tmp1;
             matrixWorld = transform.getMatrixWorld();
 
             mat4.inverse(this.view, matrixWorld);
 
-            vec3.transformProjectionNoPosition(orientation, transform.getWorldPosition(position), matrixWorld);
+            vec3.transformMat4Rotation(orientation, update_orientation, matrixWorld);
             vec3.normalize(orientation, orientation);
 
-            vec3.transformProjectionNoPosition(up, position, matrixWorld);
+            vec3.transformMat4Rotation(up, update_up, matrixWorld);
             vec3.normalize(up, up);
 
-            listener.setOrientation(orientation[0], orientation[1], orientation[2], up[0], up[1], up[2]);
+            audio.setOrientation(orientation[0], orientation[1], orientation[2], up[0], up[1], up[2]);
 
+            position = up;
             transform.getWorldPosition(position);
-            listener.setPosition(position[0], position[1], position[2]);
+            audio.setPosition(position[0], position[1], position[2]);
         }
     }
 

@@ -1,5 +1,6 @@
 var createPool = require("create_pool"),
-    environment = require("environment");
+    environment = require("environment"),
+    isNullOrUndefined = require("is_null_or_undefined");
 
 
 var window = environment.window,
@@ -48,8 +49,8 @@ function getButton(e) {
     var button = e.button;
 
     return (
-        e.which != null ? button : (
+        isNullOrUndefined(e.which) ? (
             button === 2 ? 2 : button === 4 ? 1 : 0
-        )
+        ) : button
     );
 }

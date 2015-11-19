@@ -1,4 +1,6 @@
-var mathf = require("mathf");
+var mathf = require("mathf"),
+    isNullOrUndefined = require("is_null_or_undefined"),
+    axis = require("../enums/axis");
 
 
 var AxisPrototype;
@@ -25,29 +27,23 @@ function Axis() {
     this.axis = null;
     this.index = null;
 
-    this.joyNum = null;
+    this.gamepadIndex = null;
 
     this.value = null;
 }
 AxisPrototype = Axis.prototype;
 
-Axis.ButtonType = 1;
-Axis.MouseType = 2;
-Axis.TouchType = 3;
-Axis.WheelType = 4;
-Axis.JoystickType = 5;
-
 Axis.create = function(
     name,
     negButton, posButton,
     altNegButton, altPosButton,
-    gravity, sensitivity, dead, type, axis, index, joyNum
+    gravity, sensitivity, dead, type, axis, index, gamepadIndex
 ) {
     return (new Axis()).construct(
         name,
         negButton, posButton,
         altNegButton, altPosButton,
-        gravity, sensitivity, dead, type, axis, index, joyNum
+        gravity, sensitivity, dead, type, axis, index, gamepadIndex
     );
 };
 
@@ -55,27 +51,27 @@ AxisPrototype.construct = function(
     name,
     negButton, posButton,
     altNegButton, altPosButton,
-    gravity, sensitivity, dead, type, axis, index, joyNum
+    gravity, sensitivity, dead, type, axis, index, gamepadIndex
 ) {
 
-    this.name = name != null ? name : "unknown";
+    this.name = isNullOrUndefined(name) ? "unknown" : name;
 
-    this.negButton = negButton != null ? negButton : "";
-    this.posButton = posButton != null ? posButton : "";
+    this.negButton = isNullOrUndefined(negButton) ? "" : negButton;
+    this.posButton = isNullOrUndefined(posButton) ? "" : posButton;
 
-    this.altNegButton = altNegButton != null ? altNegButton : "";
-    this.altPosButton = altPosButton != null ? altPosButton : "";
+    this.altNegButton = isNullOrUndefined(altNegButton) ? "" : altNegButton;
+    this.altPosButton = isNullOrUndefined(altPosButton) ? "" : altPosButton;
 
-    this.gravity = gravity != null ? gravity : 3;
-    this.sensitivity = sensitivity != null ? sensitivity : 3;
+    this.gravity = isNullOrUndefined(gravity) ? 3 : gravity;
+    this.sensitivity = isNullOrUndefined(sensitivity) ? 3 : sensitivity;
 
-    this.dead = dead != null ? dead : 0.001;
+    this.dead = isNullOrUndefined(dead) ? 0.001 : dead;
 
-    this.type = type != null ? type : Axis.ButtonType;
-    this.axis = axis != null ? axis : "x";
-    this.index = index != null ? index : 0;
+    this.type = isNullOrUndefined(type) ? Axis.ButtonType : type;
+    this.axis = isNullOrUndefined(axis) ? 0 : axis;
+    this.index = isNullOrUndefined(index) ? 0 : index;
 
-    this.joyNum = joyNum != null ? joyNum : 0;
+    this.gamepadIndex = isNullOrUndefined(gamepadIndex) ? 0 : gamepadIndex;
 
     this.value = 0;
 
@@ -101,7 +97,7 @@ AxisPrototype.destructor = function() {
     this.axis = null;
     this.index = null;
 
-    this.joyNum = null;
+    this.gamepadIndex = null;
 
     this.value = null;
 
@@ -112,34 +108,51 @@ AxisPrototype.update = function(input, dt) {
     var value = this.value,
         type = this.type,
         sensitivity = this.sensitivity,
-        buttons, button, altButton, neg, pos, touch, tmp;
+        buttons, button, altButton, neg, pos, touch, gamepad, tmp;
 
-    if (type === Axis.ButtonType) {
+    if (type === axis.BUTTON) {
         buttons = input.buttons.__hash;
 
         button = buttons[this.negButton];
         altButton = buttons[this.altNegButton];
-        neg = button && button.value || altButton && altButton.value;
+        neg = button && button.pressed || altButton && altButton.pressed;
 
         button = buttons[this.posButton];
         altButton = buttons[this.altPosButton];
-        pos = button && button.value || altButton && altButton.value;
+        pos = button && button.pressed || altButton && altButton.pressed;
 
-    } else if (type === Axis.MouseType) {
-        this.value = input.mouse.delta[this.axis];
+    } else if (type === axis.MOUSE) {
+        this.value = input.mouse.delta[this.axis] || 0.0;
         return this;
-    } else if (type === Axis.TouchType) {
+    } else if (type === axis.TOUCH) {
         touch = input.touches.__array[this.index];
 
         if (touch) {
-            this.value = touch.delta[this.axis];
+            this.value = touch.delta[this.axis] || 0.0;
+            return this;
         } else {
             return this;
         }
-    } else if (type === Axis.WheelType) {
+    } else if (type === axis.WHEEL) {
         value += input.mouse.wheel;
-    } else if (type === Axis.JoystickType) {
-        return this;
+    } else if (type === axis.GAMEPAD) {
+        gamepad = input.gamepads.__array[this.gamepadIndex];
+
+        if (gamepad) {
+            tmp = gamepad.axes[(this.index * 2) + this.axis];
+
+            value = tmp ? tmp.value : 0.0;
+            value = mathf.clamp(value, -1.0, 1.0);
+
+            if (mathf.abs(value) <= this.dead) {
+                value = 0.0;
+            }
+
+            this.value = value;
+            return this;
+        } else {
+            return this;
+        }
     }
 
     if (neg) {
@@ -149,14 +162,14 @@ AxisPrototype.update = function(input, dt) {
         value += sensitivity * dt;
     }
 
-    if (!pos && !neg && value !== 0) {
+    if (!pos && !neg && value !== 0.0) {
         tmp = mathf.abs(value);
         value -= mathf.clamp(mathf.sign(value) * this.gravity * dt, -tmp, tmp);
     }
 
-    value = mathf.clamp(value, -1, 1);
+    value = mathf.clamp(value, -1.0, 1.0);
     if (mathf.abs(value) <= this.dead) {
-        value = 0;
+        value = 0.0;
     }
 
     this.value = value;
@@ -182,7 +195,7 @@ AxisPrototype.fromJSON = function(json) {
     this.axis = json.axis;
     this.index = json.index;
 
-    this.joyNum = json.joyNum;
+    this.gamepadIndex = json.gamepadIndex;
 
     this.value = json.value;
 
@@ -210,7 +223,7 @@ AxisPrototype.toJSON = function(json) {
     json.axis = this.axis;
     json.index = this.index;
 
-    json.joyNum = this.joyNum;
+    json.gamepadIndex = this.gamepadIndex;
 
     json.value = this.value;
 

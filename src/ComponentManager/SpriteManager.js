@@ -1,5 +1,5 @@
 var indexOf = require("index_of"),
-    ComponentManager = require("./ComponentManager");
+    ComponentManager = require("./index");
 
 
 var SpriteManagerPrototype;

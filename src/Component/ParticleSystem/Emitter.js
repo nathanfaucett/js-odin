@@ -2,15 +2,15 @@ var indexOf = require("index_of"),
     isNumber = require("is_number"),
     mathf = require("mathf"),
     vec2 = require("vec2"),
+    Class = require("class"),
     particleState = require("./particleState"),
-    normalMode = require("../../../enums/normalMode"),
-    emitterRenderMode = require("../../../enums/emitterRenderMode"),
-    interpolation = require("../../../enums/interpolation"),
-    screenAlignment = require("../../../enums/screenAlignment"),
-    sortMode = require("../../../enums/sortMode"),
-    createSeededRandom = require("../../../utils/createSeededRandom"),
-    randFloat = require("../../../utils/randFloat"),
-    Class = require("class");
+    normalMode = require("../../enums/normalMode"),
+    emitterRenderMode = require("../../enums/emitterRenderMode"),
+    interpolation = require("../../enums/interpolation"),
+    screenAlignment = require("../../enums/screenAlignment"),
+    sortMode = require("../../enums/sortMode"),
+    createSeededRandom = require("../../utils/createSeededRandom"),
+    randFloat = require("../../utils/randFloat");
 
 
 var MAX_SAFE_INTEGER = mathf.pow(2, 53) - 1,

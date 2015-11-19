@@ -1,6 +1,6 @@
 var indexOf = require("index_of"),
     particleState = require("./particleState"),
-    Component = require("../Component");
+    Component = require("../index");
 
 
 var ComponentPrototype = Component.prototype,

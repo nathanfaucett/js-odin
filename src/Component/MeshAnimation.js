@@ -1,8 +1,9 @@
 var vec3 = require("vec3"),
     quat = require("quat"),
     mathf = require("mathf"),
-    Component = require("./Component"),
-    wrapMode = require("../../enums/wrapMode");
+    isNullOrUndefined = require("is_null_or_undefined"),
+    Component = require("./index"),
+    wrapMode = require("../enums/wrapMode");
 
 
 var ComponentPrototype = Component.prototype,
@@ -40,10 +41,10 @@ MeshAnimationPrototype.construct = function(animations, options) {
 
     this.animations = animations;
 
-    this.current = options.current != null ? options.current : "idle";
-    this.mode = options.mode != null ? options.mode : wrapMode.LOOP;
+    this.current = isNullOrUndefined(options.current) ? "idle" : options.current;
+    this.mode = isNullOrUndefined(options.mode) ? wrapMode.LOOP : options.mode;
 
-    this.rate = options.rate != null ? options.rate : 1 / 24;
+    this.rate = isNullOrUndefined(options.rate) ? 1 / 24 : options.rate;
     this.playing = false;
 
     return this;
@@ -225,7 +226,7 @@ MeshAnimationPrototype.play = function(name, mode, rate) {
     this.playing = true;
 
     this.current = name;
-    this.rate = rate != null ? rate : (rate = this.rate);
+    this.rate = isNullOrUndefined(rate) ? (rate = this.rate) : rate;
     this.mode = mode || (mode = this.mode);
     this.__frame = 0;
     this.__lastFrame = 0;

@@ -1,7 +1,7 @@
 var audio = require("audio"),
     vec2 = require("vec2"),
     vec3 = require("vec3"),
-    Component = require("./Component");
+    Component = require("./index");
 
 
 var ComponentPrototype = Component.prototype,
@@ -67,8 +67,53 @@ AudioSourcePrototype.destructor = function() {
     return this;
 };
 
+AudioSourcePrototype.setOffset = function(value) {
+    vec3.set(this.offset, value);
+    return this;
+};
+
 AudioSourcePrototype.setClip = function(value) {
     this.__source.setClip(value);
+    return this;
+};
+
+AudioSourcePrototype.setPanningModel = function(value) {
+    this.__source.setPanningModel(value);
+    return this;
+};
+
+AudioSourcePrototype.setDistanceModel = function(value) {
+    this.__source.setDistanceModel(value);
+    return this;
+};
+
+AudioSourcePrototype.setRefDistance = function(value) {
+    this.__source.setRefDistance(value);
+    return this;
+};
+
+AudioSourcePrototype.setMaxDistance = function(value) {
+    this.__source.setMaxDistance(value);
+    return this;
+};
+
+AudioSourcePrototype.setRolloffFactor = function(value) {
+    this.__source.setRolloffFactor(value);
+    return this;
+};
+
+AudioSourcePrototype.setConeInnerAngle = function(value) {
+    this.__source.setConeInnerAngle(value);
+    return this;
+};
+
+AudioSourcePrototype.setConeOuterAngle = function(value) {
+    this.__source.setConeOuterAngle(value);
+    return this;
+};
+
+AudioSourcePrototype.setConeOuterGain = function(value) {
+    this.__source.setConeOuterGain(value);
     return this;
 };
 
@@ -108,7 +153,8 @@ AudioSourcePrototype.stop = function() {
 };
 
 var update_position = vec3.create(),
-    update_orientation = vec3.create();
+    update_orientation = vec3.create(0.0, 0.0, 1.0),
+    update_tmp0 = vec3.create();
 AudioSourcePrototype.update = function() {
     var source = this.__source,
         dopplerLevel, entity, scene, camera, transform, transform2d, position, orientation;
@@ -125,22 +171,26 @@ AudioSourcePrototype.update = function() {
             transform = entity.components["odin.Transform"];
             transform2d = entity.components["odin.Transform2D"];
             position = update_position;
-            orientation = update_orientation;
+            orientation = update_tmp0;
 
             if (transform) {
-                vec3.add(position, transform.position, this.offset);
-                vec3.transformProjectionNoPosition(orientation, position, transform.getMatrixWorld());
-                vec3.normalize(orientation, orientation);
+                vec3.copy(position, this.offset);
+                vec3.transformMat4(position, position, transform.getMatrixWorld());
+                vec3.transformMat4Rotation(orientation, update_orientation, transform.getMatrixWorld());
             } else if (transform2d) {
-                position[2] = 0.0;
-                vec2.add(position, transform2d.position, this.offset);
-                vec3.transformProjectionNoPosition(orientation, position, transform2d.getMatrixWorld());
-                vec3.normalize(orientation, orientation);
-            }
 
-            if (camera && camera.orthographic) {
-                position[2] = camera.orthographicSize * 0.5;
+                vec2.copy(position, this.offset);
+
+                if (camera && camera.orthographic) {
+                    position[2] = camera.orthographicSize * 0.5;
+                } else {
+                    position[2] = 0.0;
+                }
+
+                vec2.transformMat4(position, position, transform2d.getMatrixWorld());
+                vec3.transformMat4Rotation(orientation, update_orientation, transform2d.getMatrixWorld());
             }
+            vec3.normalize(orientation, orientation);
 
             source.setPosition(position);
             source.setOrientation(orientation);
@@ -154,12 +204,18 @@ AudioSourcePrototype.toJSON = function(json) {
 
     json = ComponentPrototype.toJSON.call(this, json);
 
+    json.offset = vec3.copy(json.offset || [], this.offset);
+    json.source = this.__source.toJSON(json.source);
+
     return json;
 };
 
 AudioSourcePrototype.fromJSON = function(json) {
 
     ComponentPrototype.fromJSON.call(this, json);
+
+    vec3.copy(this.offset, json.offset);
+    this.__source.fromJSON(json.source);
 
     return this;
 };

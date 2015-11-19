@@ -1,5 +1,6 @@
 var Class = require("class"),
-    indexOf = require("index_of");
+    indexOf = require("index_of"),
+    isNullOrUndefined = require("is_null_or_undefined");
 
 
 var ClassPrototype = Class.prototype,
@@ -78,7 +79,7 @@ function Assets_addAsset(_this, asset) {
         hash[name] = asset;
         array[array.length] = asset;
 
-        if (asset.src != null) {
+        if (!isNullOrUndefined(asset.src)) {
             notLoaded[notLoaded.length] = asset;
         }
     } else {

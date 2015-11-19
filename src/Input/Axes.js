@@ -1,4 +1,5 @@
-var Axis = require("./Axis");
+var Axis = require("./Axis"),
+    axis = require("../enums/axis");
 
 
 var AxesPrototype;
@@ -25,7 +26,7 @@ AxesPrototype.construct = function() {
         negButton: "left",
         altPosButton: "d",
         altNegButton: "a",
-        type: Axis.ButtonType
+        type: axis.BUTTON
     });
 
     this.add({
@@ -34,7 +35,7 @@ AxesPrototype.construct = function() {
         negButton: "down",
         altPosButton: "w",
         altNegButton: "s",
-        type: Axis.ButtonType
+        type: axis.BUTTON
     });
 
     this.add({
@@ -43,7 +44,7 @@ AxesPrototype.construct = function() {
         negButton: "",
         altPosButton: "mouse0",
         altNegButton: "",
-        type: Axis.ButtonType
+        type: axis.BUTTON
     });
 
     this.add({
@@ -52,36 +53,54 @@ AxesPrototype.construct = function() {
         negButton: "",
         altPosButton: "mouse2",
         altNegButton: "",
-        type: Axis.ButtonType
+        type: axis.BUTTON
     });
 
     this.add({
         name: "mouseX",
-        type: Axis.MouseType,
+        type: axis.MOUSE,
         axis: 0
     });
 
     this.add({
         name: "mouseY",
-        type: Axis.MouseType,
+        type: axis.MOUSE,
         axis: 1
     });
 
     this.add({
         name: "touchX",
-        type: Axis.TouchType,
+        type: axis.TOUCH,
         axis: 0
     });
 
     this.add({
         name: "touchY",
-        type: Axis.TouchType,
+        type: axis.TOUCH,
         axis: 1
     });
 
     this.add({
         name: "mouseWheel",
-        type: Axis.WheelType
+        type: axis.WHEEL
+    });
+
+    this.add({
+        name: "analogX",
+        type: axis.GAMEPAD,
+        gamepadIndex: 0,
+        dead: 0.075,
+        index: 0,
+        axis: 0
+    });
+
+    this.add({
+        name: "analogY",
+        type: axis.GAMEPAD,
+        gamepadIndex: 0,
+        dead: 0.075,
+        index: 0,
+        axis: 1
     });
 
     return this;

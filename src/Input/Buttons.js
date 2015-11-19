@@ -43,12 +43,16 @@ ButtonsPrototype.destructor = function() {
     return this;
 };
 
-ButtonsPrototype.on = function(name, time, frame) {
-    return (this.__hash[name] || Buttons_add(this, name)).on(time, frame);
+ButtonsPrototype.on = function(name, value, time, frame) {
+    return (this.__hash[name] || Buttons_add(this, name)).on(value, time, frame);
 };
 
-ButtonsPrototype.off = function(name, time, frame) {
-    return (this.__hash[name] || Buttons_add(this, name)).off(time, frame);
+ButtonsPrototype.update = function(name, value, pressed, time, frame) {
+    return (this.__hash[name] || Buttons_add(this, name)).update(value, pressed, time, frame);
+};
+
+ButtonsPrototype.off = function(name, value, time, frame) {
+    return (this.__hash[name] || Buttons_add(this, name)).off(value, time, frame);
 };
 
 ButtonsPrototype.allOff = function(time, frame) {
@@ -57,7 +61,7 @@ ButtonsPrototype.allOff = function(time, frame) {
         il = array.length - 1;
 
     while (i++ < il) {
-        array[i].off(time, frame);
+        array[i].off(0.0, time, frame);
     }
 
     return this;

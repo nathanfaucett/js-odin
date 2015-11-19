@@ -1,7 +1,7 @@
 var indexOf = require("index_of"),
-    Input = require("../Input"),
     Class = require("class"),
-    Time = require("../Time"),
+    Input = require("./Input"),
+    Time = require("./Time"),
     Entity = require("./Entity");
 
 
@@ -89,6 +89,7 @@ ScenePrototype.awake = function() {
     this.__awake = true;
     this.awakePlugins();
     this.awakeManagers();
+    this.awakeEntities();
     this.emit("awake");
 
     return this;
@@ -102,6 +103,7 @@ ScenePrototype.update = function() {
 
     this.updatePlugins();
     this.updateManagers();
+    this.updateEntities();
 
     return this;
 };
@@ -359,6 +361,20 @@ ScenePrototype.awakeManagers = function awakeManagers() {
     return this.eachManager(awakeManagers_callback);
 };
 
+function awakeEntities_callback(entity) {
+    entity.emit("awake");
+}
+ScenePrototype.awakeEntities = function awakeEntities() {
+    return this.eachEntity(awakeEntities_callback);
+};
+
+function updateEntities_callback(entity) {
+    entity.emit("update");
+}
+ScenePrototype.updateEntities = function updateEntities() {
+    return this.eachEntity(updateEntities_callback);
+};
+
 function updateManagers_callback(manager) {
     manager.update();
 }
@@ -371,6 +387,19 @@ function destroyManagers_callback(manager) {
 }
 ScenePrototype.destroyManagers = function destroyManagers() {
     return this.eachManager(destroyManagers_callback);
+};
+
+ScenePrototype.eachEntity = function eachEntity(fn) {
+    var entities = this.__entities,
+        i = -1,
+        il = entities.length - 1;
+
+    while (i++ < il) {
+        if (fn(entities[i]) === false) {
+            break;
+        }
+    }
+    return this;
 };
 
 ScenePrototype.eachManager = function eachManager(fn) {

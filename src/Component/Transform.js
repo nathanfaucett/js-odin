@@ -2,8 +2,8 @@ var vec3 = require("vec3"),
     quat = require("quat"),
     mat3 = require("mat3"),
     mat4 = require("mat4"),
-    Component = require("./Component"),
-    TransformManager = require("../component_managers/TransformManager");
+    Component = require("./index"),
+    TransformManager = require("../ComponentManager/TransformManager");
 
 
 var ComponentPrototype = Component.prototype,

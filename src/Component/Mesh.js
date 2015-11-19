@@ -1,8 +1,8 @@
-var Component = require("./Component"),
+var Component = require("./index"),
     Bone = require("./Bone"),
     Transform = require("./Transform"),
     Entity = require("../Entity"),
-    MeshManager = require("../component_managers/MeshManager");
+    MeshManager = require("../ComponentManager/MeshManager");
 
 
 var ComponentPrototype = Component.prototype,

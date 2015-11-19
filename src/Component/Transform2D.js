@@ -2,8 +2,8 @@ var vec2 = require("vec2"),
     mat3 = require("mat3"),
     mat32 = require("mat32"),
     mat4 = require("mat4"),
-    Component = require("./Component"),
-    Transform2DManager = require("../component_managers/Transform2DManager");
+    Component = require("./index"),
+    Transform2DManager = require("../ComponentManager/Transform2DManager");
 
 
 var ComponentPrototype = Component.prototype,

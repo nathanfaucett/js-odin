@@ -1,8 +1,9 @@
 var vec3 = require("vec3"),
     quat = require("quat"),
     mat4 = require("mat4"),
-    Component = require("./Component"),
-    BoneManager = require("../component_managers/BoneManager");
+    isNullOrUndefined = require("is_null_or_undefined"),
+    Component = require("./index"),
+    BoneManager = require("../ComponentManager/BoneManager");
 
 
 var ComponentPrototype = Component.prototype,
@@ -37,18 +38,18 @@ BonePrototype.construct = function(options) {
 
     options = options || {};
 
-    this.parentIndex = options.parentIndex != null ? options.parentIndex : -1;
-    this.name = options.name != null ? options.name : "Bone" + UNKNOWN_BONE_COUNT++;
+    this.parentIndex = isNullOrUndefined(options.parentIndex) ? -1 : options.parentIndex;
+    this.name = isNullOrUndefined(options.name) ? "Bone" + UNKNOWN_BONE_COUNT++ : options.name;
 
-    this.skinned = options.skinned != null ? !!options.skinned : false;
+    this.skinned = isNullOrUndefined(options.skinned) ? false : !!options.skinned;
 
     if (options.bindPose) {
         mat4.copy(this.bindPose, options.bindPose);
     }
 
-    this.inheritPosition = options.inheritPosition != null ? !!options.inheritPosition : true;
-    this.inheritRotation = options.inheritRotation != null ? !!options.inheritRotation : true;
-    this.inheritScale = options.inheritScale != null ? !!options.inheritScale : true;
+    this.inheritPosition = isNullOrUndefined(options.inheritPosition) ? true : !!options.inheritPosition;
+    this.inheritRotation = isNullOrUndefined(options.inheritRotation) ? true : !!options.inheritRotation;
+    this.inheritScale = isNullOrUndefined(options.inheritScale) ? true : !!options.inheritScale;
 
     return this;
 };

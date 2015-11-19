@@ -1,6 +1,7 @@
 var vec3 = require("vec3"),
     quat = require("quat"),
-    mat4 = require("mat4");
+    mat4 = require("mat4"),
+    isNullOrUndefined = require("is_null_or_undefined");
 
 
 var UNKNOWN_BONE_COUNT = 1,
@@ -28,8 +29,8 @@ GeometryBone.create = function(parentIndex, name) {
 
 GeometryBonePrototype.construct = function(parentIndex, name) {
 
-    this.parentIndex = parentIndex != null ? parentIndex : -1;
-    this.name = name != null ? name : "GeometryBone" + UNKNOWN_BONE_COUNT++;
+    this.parentIndex = isNullOrUndefined(parentIndex) ? -1 : parentIndex;
+    this.name = isNullOrUndefined(name) ? "GeometryBone" + UNKNOWN_BONE_COUNT++ : name;
     this.skinned = false;
 
     return this;

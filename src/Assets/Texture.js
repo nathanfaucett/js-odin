@@ -1,4 +1,5 @@
 var vec2 = require("vec2"),
+    isNullOrUndefined = require("is_null_or_undefined"),
     WebGLContext = require("webgl_context"),
     ImageAsset = require("./ImageAsset");
 
@@ -50,16 +51,16 @@ TexturePrototype.construct = function(name, src, options) {
 
     options = options || {};
 
-    this.generateMipmap = options.generateMipmap != null ? !!options.generateMipmap : true;
-    this.flipY = options.flipY != null ? !!options.flipY : false;
-    this.premultiplyAlpha = options.premultiplyAlpha != null ? !!options.premultiplyAlpha : false;
+    this.generateMipmap = isNullOrUndefined(options.generateMipmap) ? true : !!options.generateMipmap;
+    this.flipY = isNullOrUndefined(options.flipY) ? false : !!options.flipY;
+    this.premultiplyAlpha = isNullOrUndefined(options.premultiplyAlpha) ? false : !!options.premultiplyAlpha;
 
-    this.anisotropy = options.anisotropy != null ? options.anisotropy : 1;
+    this.anisotropy = isNullOrUndefined(options.anisotropy) ? 1 : options.anisotropy;
 
-    this.filter = options.filter != null ? options.filter : filterMode.Linear;
-    this.format = options.format != null ? options.format : textureFormat.RGBA;
-    this.wrap = options.wrap != null ? options.wrap : textureWrap.Repeat;
-    this.type = options.type != null ? options.type : textureType.UnsignedByte;
+    this.filter = isNullOrUndefined(options.filter) ? filterMode.Linear : options.filter;
+    this.format = isNullOrUndefined(options.format) ? textureFormat.RGBA : options.format;
+    this.wrap = isNullOrUndefined(options.wrap) ? textureWrap.Repeat : options.wrap;
+    this.type = isNullOrUndefined(options.type) ? textureType.UnsignedByte : options.type;
 
     return this;
 };
@@ -94,7 +95,7 @@ TexturePrototype.destructor = function() {
 TexturePrototype.parse = function() {
     var data = this.data;
 
-    if (data != null) {
+    if (!isNullOrUndefined(data)) {
         this.setSize(data.width || 1, data.height || 1);
     }
 
@@ -134,7 +135,7 @@ TexturePrototype.setRepeat = function(x, y) {
 
 TexturePrototype.setMipmap = function(value) {
 
-    this.generateMipmap = value != null ? !!value : this.generateMipmap;
+    this.generateMipmap = isNullOrUndefined(value) ? this.generateMipmap : !!value;
     this.emit("update");
 
     return this;

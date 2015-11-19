@@ -134,102 +134,102 @@ var environment = require(1),
 
 eventListener.on(environment.window, "load", function load() {
     require.async(13, function(odin) {
-        var vec2 = require(125),
-            quat = require(200),
-            PlayerControl = require(218);
+        var BoxControl = require(208),
 
-
-        global.odin = odin;
-
-
-        var assets = odin.Assets.create(),
+            assets = odin.Assets.create(),
             canvas = odin.Canvas.create({
                 disableContextMenu: false
             }),
-            renderer = odin.Renderer.create();
 
-        var texture = odin.Texture.create("image_hospital", "../content/images/hospital.png");
+            renderer = odin.Renderer.create(),
 
-        var shader = odin.Shader.create(
-            [
-                "varying vec2 vUv;",
-                "varying vec3 vNormal;",
+            texture = odin.Texture.create("image-default_diffuse", "../content/images/default_diffuse.jpg"),
 
-                "void main(void) {",
-                "    vUv = getUV();",
-                "    vNormal = getNormal();",
-                "    gl_Position = perspectiveMatrix * modelViewMatrix * getPosition();",
-                "}"
-            ].join("\n"), [
-                "uniform sampler2D texture;",
+            shader = odin.Shader.create([
+                    "varying vec2 vUv;",
+                    "varying vec3 vNormal;",
 
-                "varying vec2 vUv;",
-                "varying vec3 vNormal;",
+                    "void main(void) {",
+                    "    vUv = getUV();",
+                    "    vNormal = getNormal();",
+                    "    gl_Position = perspectiveMatrix * modelViewMatrix * getPosition();",
+                    "}"
+                ].join("\n"), [
+                    "uniform sampler2D texture;",
 
-                "void main(void) {",
-                "    vec3 light = vec3(0.5, 0.2, 1.0);",
-                "    float dprod = max(0.0, dot(vNormal, light));",
-                "    gl_FragColor = texture2D(texture, vec2(vUv.s, vUv.t)) * vec4(dprod, dprod, dprod, 1.0);",
-                "}"
-            ].join("\n")
-        );
+                    "varying vec2 vUv;",
+                    "varying vec3 vNormal;",
 
-        var material = odin.Material.create("mat_box", null, {
-            shader: shader,
-            side: odin.enums.side.BOTH,
-            blending: odin.enums.blending.MULTIPLY,
-            wireframe: false,
-            wireframeLineWidth: 1,
-            uniforms: {
-                texture: texture
-            }
+                    "void main(void) {",
+                    "    vec3 light = vec3(0.25, 0.5, 0.75);",
+                    "    float dprod = max(0.0, dot(vNormal, light)) * 0.5;",
+                    "    gl_FragColor = texture2D(texture, vec2(vUv.s, vUv.t)) * vec4(dprod, dprod, dprod, 1.0);",
+                    "}"
+                ].join("\n")
+            ),
+
+            material = odin.Material.create("mat_box", null, {
+                shader: shader,
+                side: odin.enums.side.BOTH,
+                uniforms: {
+                    texture: texture
+                }
+            }),
+
+            geometryBox = odin.Geometry.create("geometry-box", "../content/geometry/box.json"),
+
+            audioBoom = odin.AudioAsset.create("audio-boom", "../content/audio/boom.ogg"),
+
+            camera = global.camera = odin.Entity.create("main_camera").addComponent(
+                odin.Transform.create()
+                    .setPosition([0, -2, 0]),
+                odin.Camera.create()
+                    .setOrthographic(false)
+                    .setActive(),
+                odin.OrbitControl.create()
+            ),
+
+            boxLeft = global.boxLeft = odin.Entity.create().addComponent(
+                odin.Transform.create()
+                    .setPosition([0, 0, 0])
+                    .setScale([0.25, 0.25, 0.25]),
+                odin.AudioSource.create(audioBoom)
+                    .setConeOuterGain(0.5)
+                    .setConeInnerAngle(180)
+                    .setConeOuterAngle(180),
+                odin.Mesh.create(geometryBox, material),
+                BoxControl.create()
+            ),
+
+            boxRight = global.boxRight = odin.Entity.create().addComponent(
+                odin.Transform.create()
+                    .setPosition([0, 0, 0])
+                    .setScale([0.25, 0.25, 0.25]),
+                odin.AudioSource.create(audioBoom)
+                    .setConeOuterGain(0.5)
+                    .setConeInnerAngle(180)
+                    .setConeOuterAngle(180),
+                odin.Mesh.create(geometryBox, material),
+                BoxControl.create({
+                    position: 2,
+                    offset: 0.5
+                })
+            ),
+
+            scene = global.scene = odin.Scene.create("scene").addEntity(camera, boxLeft, boxRight),
+            cameraComponent = camera.getComponent("odin.Camera");
+
+        boxLeft.on("awake", function() {
+            setTimeout(function() {
+                boxLeft.getComponent("odin.AudioSource").play();
+            }, 750);
         });
 
-        var engineLoop = odin.AudioAsset.create("audio_engine-loop", [
-            "../content/audio/engine-loop.mp3",
-            "../content/audio/engine-loop.ogg",
-            "../content/audio/engine-loop.wav"
-        ]);
+        boxRight.on("awake", function() {
+            boxRight.getComponent("odin.AudioSource").play();
+        });
 
-        assets.addAsset(material, texture, engineLoop);
-
-        var camera = odin.Entity.create("main_camera").addComponent(
-            odin.Transform.create()
-                .setPosition([0, -5, 5]),
-            odin.Camera.create()
-                .setOrthographic(false)
-                .setActive(),
-            odin.OrbitControl.create()
-        );
-
-        var sprite = global.object = odin.Entity.create().addComponent(
-            odin.Transform2D.create(),
-            odin.Sprite.create({
-                x: 0,
-                y: 0,
-                w: 1,
-                h: 0.5,
-                material: material
-            })
-        );
-
-        var sprite2 = global.object = odin.Entity.create().addComponent(
-            odin.Transform2D.create(),
-            odin.AudioSource.create(engineLoop, {
-                ambient: false,
-                loop: true
-            }),
-            PlayerControl.create(),
-            odin.Sprite.create({
-                z: 1,
-                width: 0.5,
-                height: 0.5,
-                material: material
-            })
-        );
-
-        var scene = global.scene = odin.Scene.create("scene").addEntity(camera, sprite2, sprite),
-            cameraComponent = camera.getComponent("odin.Camera");
+        assets.addAsset(material, texture, geometryBox, audioBoom);
 
         scene.assets = assets;
 
@@ -554,7 +554,7 @@ function isObject(value) {
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/event_listener/node_modules/is_function/src/index.js */
+/* ../../../node_modules/is_function/src/index.js */
 
 var objectToString = Object.prototype.toString,
     isFunction;
@@ -991,7 +991,7 @@ module.exports = {
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/event_listener/node_modules/is_object/node_modules/is_null/src/index.js */
+/* ../../../node_modules/is_null/src/index.js */
 
 module.exports = isNull;
 
@@ -1033,7 +1033,7 @@ module.exports = isNode;
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/is_node/node_modules/is_string/src/index.js */
+/* ../../../node_modules/is_string/src/index.js */
 
 module.exports = isString;
 
@@ -1045,7 +1045,7 @@ function isString(value) {
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/is_node/node_modules/is_null_or_undefined/src/index.js */
+/* ../../../node_modules/is_null_or_undefined/src/index.js */
 
 var isNull = require(7),
     isUndefined = require(12);
@@ -1073,7 +1073,7 @@ function isNullOrUndefined(value) {
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/is_node/node_modules/is_number/src/index.js */
+/* ../../../node_modules/is_number/src/index.js */
 
 module.exports = isNumber;
 
@@ -1096,17 +1096,6 @@ function isUndefined(value) {
 
 
 },
-null,
-null,
-null,
-null,
-null,
-null,
-null,
-null,
-null,
-null,
-null,
 null,
 null,
 null,

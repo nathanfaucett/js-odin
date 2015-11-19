@@ -102,44 +102,44 @@ function getTouchY(touch, target) {
 
 function getRadiusX(nativeTouch) {
     return (
-        nativeTouch.radiusX != null ? nativeTouch.radiusX :
-        nativeTouch.webkitRadiusX != null ? nativeTouch.webkitRadiusX :
-        nativeTouch.mozRadiusX != null ? nativeTouch.mozRadiusX :
-        nativeTouch.msRadiusX != null ? nativeTouch.msRadiusX :
-        nativeTouch.oRadiusX != null ? nativeTouch.oRadiusX :
+        nativeTouch.radiusX ? nativeTouch.radiusX :
+        nativeTouch.webkitRadiusX ? nativeTouch.webkitRadiusX :
+        nativeTouch.mozRadiusX ? nativeTouch.mozRadiusX :
+        nativeTouch.msRadiusX ? nativeTouch.msRadiusX :
+        nativeTouch.oRadiusX ? nativeTouch.oRadiusX :
         0
     );
 }
 
 function getRadiusY(nativeTouch) {
     return (
-        nativeTouch.radiusY != null ? nativeTouch.radiusY :
-        nativeTouch.webkitRadiusY != null ? nativeTouch.webkitRadiusY :
-        nativeTouch.mozRadiusY != null ? nativeTouch.mozRadiusY :
-        nativeTouch.msRadiusY != null ? nativeTouch.msRadiusY :
-        nativeTouch.oRadiusY != null ? nativeTouch.oRadiusY :
+        nativeTouch.radiusY ? nativeTouch.radiusY :
+        nativeTouch.webkitRadiusY ? nativeTouch.webkitRadiusY :
+        nativeTouch.mozRadiusY ? nativeTouch.mozRadiusY :
+        nativeTouch.msRadiusY ? nativeTouch.msRadiusY :
+        nativeTouch.oRadiusY ? nativeTouch.oRadiusY :
         0
     );
 }
 
 function getRotationAngle(nativeTouch) {
     return (
-        nativeTouch.rotationAngle != null ? nativeTouch.rotationAngle :
-        nativeTouch.webkitRotationAngle != null ? nativeTouch.webkitRotationAngle :
-        nativeTouch.mozRotationAngle != null ? nativeTouch.mozRotationAngle :
-        nativeTouch.msRotationAngle != null ? nativeTouch.msRotationAngle :
-        nativeTouch.oRotationAngle != null ? nativeTouch.oRotationAngle :
+        nativeTouch.rotationAngle ? nativeTouch.rotationAngle :
+        nativeTouch.webkitRotationAngle ? nativeTouch.webkitRotationAngle :
+        nativeTouch.mozRotationAngle ? nativeTouch.mozRotationAngle :
+        nativeTouch.msRotationAngle ? nativeTouch.msRotationAngle :
+        nativeTouch.oRotationAngle ? nativeTouch.oRotationAngle :
         0
     );
 }
 
 function getForce(nativeTouch) {
     return (
-        nativeTouch.force != null ? nativeTouch.force :
-        nativeTouch.webkitForce != null ? nativeTouch.webkitForce :
-        nativeTouch.mozForce != null ? nativeTouch.mozForce :
-        nativeTouch.msForce != null ? nativeTouch.msForce :
-        nativeTouch.oForce != null ? nativeTouch.oForce :
+        nativeTouch.force ? nativeTouch.force :
+        nativeTouch.webkitForce ? nativeTouch.webkitForce :
+        nativeTouch.mozForce ? nativeTouch.mozForce :
+        nativeTouch.msForce ? nativeTouch.msForce :
+        nativeTouch.oForce ? nativeTouch.oForce :
         1
     );
 }

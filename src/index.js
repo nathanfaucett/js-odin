@@ -24,28 +24,28 @@ odin.ComponentRenderer = require("./Renderer/ComponentRenderer");
 
 odin.Shader = require("./Shader");
 
-odin.Scene = require("./scene_graph/Scene");
-odin.Plugin = require("./scene_graph/Plugin");
-odin.Entity = require("./scene_graph/Entity");
+odin.Scene = require("./Scene");
+odin.Plugin = require("./Plugin");
+odin.Entity = require("./Entity");
 
-odin.ComponentManager = require("./scene_graph/component_managers/ComponentManager");
+odin.ComponentManager = require("./ComponentManager");
 
-odin.Component = require("./scene_graph/components/Component");
+odin.Component = require("./Component");
 
-odin.AudioSource = require("./scene_graph/components/AudioSource");
+odin.AudioSource = require("./Component/AudioSource");
 
-odin.Transform = require("./scene_graph/components/Transform");
-odin.Transform2D = require("./scene_graph/components/Transform2D");
-odin.Camera = require("./scene_graph/components/Camera");
+odin.Transform = require("./Component/Transform");
+odin.Transform2D = require("./Component/Transform2D");
+odin.Camera = require("./Component/Camera");
 
-odin.Sprite = require("./scene_graph/components/Sprite");
+odin.Sprite = require("./Component/Sprite");
 
-odin.Mesh = require("./scene_graph/components/Mesh");
-odin.MeshAnimation = require("./scene_graph/components/MeshAnimation");
+odin.Mesh = require("./Component/Mesh");
+odin.MeshAnimation = require("./Component/MeshAnimation");
 
-odin.OrbitControl = require("./scene_graph/components/OrbitControl");
+odin.OrbitControl = require("./Component/OrbitControl");
 
-odin.ParticleSystem = require("./scene_graph/components/ParticleSystem");
+odin.ParticleSystem = require("./Component/ParticleSystem");
 
 odin.createSeededRandom = require("./utils/createSeededRandom");
 odin.randFloat = require("./utils/randFloat");

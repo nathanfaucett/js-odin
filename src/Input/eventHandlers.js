@@ -9,20 +9,37 @@ var eventHandlers = exports,
     ];
 
 
-eventHandlers.keyup = function(input, e, time, frame) {
-    var key = e.key,
-        button = input.buttons.off(key, time, frame);
-
-    input.emit("keyup", e, button);
-};
-
 eventHandlers.keydown = function(input, e, time, frame) {
     var key = e.key,
-        button = input.buttons.on(key, time, frame);
+        button = input.buttons.on(key, 1.0, time, frame);
 
     input.emit("keydown", e, button);
 };
 
+eventHandlers.keyup = function(input, e, time, frame) {
+    var key = e.key,
+        button = input.buttons.off(key, 0.0, time, frame);
+
+    input.emit("keyup", e, button);
+};
+
+eventHandlers.gamepadconnect = function(input, e, time, frame) {
+    var gamepad = e.gamepad;
+    input.gamepads.connect(gamepad, time, frame);
+    input.emit("gamepadconnect", e, gamepad);
+};
+
+eventHandlers.gamepadupdate = function(input, e, time, frame) {
+    var gamepad = e.gamepad;
+    input.gamepads.update(gamepad, time, frame);
+    input.emit("gamepadupdate", e, gamepad);
+};
+
+eventHandlers.gamepaddisconnect = function(input, e, time, frame) {
+    var gamepad = e.gamepad;
+    input.gamepads.disconnect(gamepad, time, frame);
+    input.emit("gamepaddisconnect", e, gamepad);
+};
 
 eventHandlers.mousemove = function(input, e) {
     input.mouse.update(e.x, e.y);
@@ -30,13 +47,13 @@ eventHandlers.mousemove = function(input, e) {
 };
 
 eventHandlers.mousedown = function(input, e, time, frame) {
-    var button = input.buttons.on(mouseButtons[e.button], time, frame);
+    var button = input.buttons.on(mouseButtons[e.button], 1.0, time, frame);
 
     input.emit("mousedown", e, button, input.mouse);
 };
 
 eventHandlers.mouseup = function(input, e, time, frame) {
-    var button = input.buttons.off(mouseButtons[e.button], time, frame);
+    var button = input.buttons.off(mouseButtons[e.button], 0.0, time, frame);
 
     input.emit("mouseup", e, button, input.mouse);
 };
@@ -55,7 +72,6 @@ eventHandlers.wheel = function(input, e) {
     input.mouse.wheel = value;
     input.emit("wheel", e, value, input.mouse);
 };
-
 
 eventHandlers.touchstart = function(input, e) {
     var touches = input.touches,
@@ -118,9 +134,9 @@ eventHandlers.devicemotion = function(input, e) {
     if (acc && (acc.x || acc.y || acc.z)) {
         acceleration = input.acceleration;
 
-        acceleration.x = acc.x;
-        acceleration.y = acc.y;
-        acceleration.z = acc.z;
+        acceleration[0] = acc.x;
+        acceleration[1] = acc.y;
+        acceleration[2] = acc.z;
 
         input.emit("acceleration", e, acceleration);
     }

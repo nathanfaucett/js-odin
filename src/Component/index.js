@@ -1,5 +1,5 @@
 var Class = require("class"),
-    ComponentManager = require("../component_managers/ComponentManager");
+    ComponentManager = require("../ComponentManager");
 
 
 var ClassPrototype = Class.prototype,

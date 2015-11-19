@@ -5,6 +5,7 @@ var extend = require("extend"),
 var enums = extend(exports, WebGLContext.enums);
 
 
+enums.axis = require("./axis");
 enums.emitterRenderMode = require("./emitterRenderMode");
 enums.interpolation = require("./interpolation");
 enums.normalMode = require("./normalMode");

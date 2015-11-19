@@ -4,6 +4,7 @@ var vec3 = require("vec3"),
     mathf = require("mathf"),
     aabb3 = require("aabb3"),
     FastHash = require("fast_hash"),
+    isNullOrUndefined = require("is_null_or_undefined"),
     Attribute = require("./Attribute"),
     JSONAsset = require("../JSONAsset"),
     GeometryBone = require("./GeometryBone");
@@ -218,16 +219,16 @@ GeometryPrototype.calculateNormals = function() {
 
     position = position ? position.array : null;
 
-    if (position == null) {
+    if (isNullOrUndefined(position)) {
         throw new Error("Geometry.calculateNormals: missing required attribures position");
     }
-    if (index == null) {
+    if (isNullOrUndefined(index)) {
         throw new Error("Geometry.calculateNormals: missing required attribures index");
     }
 
     length = position.length;
 
-    if (normal == null) {
+    if (isNullOrUndefined(normal)) {
         this.addAttribute("normal", length, 3, NativeFloat32Array);
         normal = attributesHash.normal.array;
     } else {
@@ -355,22 +356,22 @@ GeometryPrototype.calculateTangents = function() {
     uv = uv ? uv.array : null;
     normal = normal ? normal.array : null;
 
-    if (normal == null) {
+    if (isNullOrUndefined(normal)) {
         throw new Error("Geometry.calculateTangents: missing required attribure normal");
     }
-    if (uv == null) {
+    if (isNullOrUndefined(uv)) {
         throw new Error("Geometry.calculateTangents: missing required attribure uv");
     }
-    if (index == null) {
+    if (isNullOrUndefined(index)) {
         throw new Error("Geometry.calculateTangents: missing indices");
     }
-    if (position == null) {
+    if (isNullOrUndefined(position)) {
         throw new Error("Geometry.calculateTangents: missing required attribure position");
     }
 
     length = position.length;
 
-    if (tangent == null) {
+    if (isNullOrUndefined(tangent)) {
         this.addAttribute("tangent", (4 / 3) * length, 4, NativeFloat32Array);
         tangent = attributeHash.tangent.array;
     } else {

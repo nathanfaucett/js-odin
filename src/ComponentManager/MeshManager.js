@@ -1,4 +1,4 @@
-var ComponentManager = require("./ComponentManager");
+var ComponentManager = require("./index");
 
 
 var MeshManagerPrototype;

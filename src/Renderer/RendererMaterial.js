@@ -1,4 +1,5 @@
-var has = require("has");
+var has = require("has"),
+    isNullOrUndefined = require("is_null_or_undefined");
 
 
 var RendererMaterialPrototype;
@@ -145,7 +146,9 @@ function getOptions(data) {
     options.boneCount = data.bones ? data.bones.length : 0;
     options.boneWeightCount = data.boneWeightCount || 0;
     options.useBones = options.boneCount !== 0;
-    options.isSprite = data.x != null && data.y != null && data.width != null && data.height != null;
+    options.isSprite = (!isNullOrUndefined(data.x) && !isNullOrUndefined(data.y) &&
+        !isNullOrUndefined(data.width) && !isNullOrUndefined(data.height)
+    );
 
     if (data.material) {
         material = data.material;

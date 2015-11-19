@@ -2,9 +2,9 @@ var isString = require("is_string"),
     isNumber = require("is_number"),
     indexOf = require("index_of"),
     Class = require("class"),
-    Assets = require("../Assets"),
     createLoop = require("create_loop"),
-    Scene = require("../scene_graph/Scene");
+    Assets = require("../Assets"),
+    Scene = require("../Scene");
 
 
 var ClassPrototype = Class.prototype,
