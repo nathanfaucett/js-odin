@@ -494,7 +494,7 @@ function isObject(value) {
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/event_listener/node_modules/is_function/src/index.js */
+/* ../../../node_modules/is_function/src/index.js */
 
 var objectToString = Object.prototype.toString,
     isFunction;
@@ -931,7 +931,7 @@ module.exports = {
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/event_listener/node_modules/is_object/node_modules/is_null/src/index.js */
+/* ../../../node_modules/is_null/src/index.js */
 
 module.exports = isNull;
 
@@ -973,7 +973,7 @@ module.exports = isNode;
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/is_node/node_modules/is_string/src/index.js */
+/* ../../../node_modules/is_string/src/index.js */
 
 module.exports = isString;
 
@@ -985,7 +985,7 @@ function isString(value) {
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/is_node/node_modules/is_null_or_undefined/src/index.js */
+/* ../../../node_modules/is_null_or_undefined/src/index.js */
 
 var isNull = require(8),
     isUndefined = require(13);
@@ -1013,7 +1013,7 @@ function isNullOrUndefined(value) {
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/is_node/node_modules/is_number/src/index.js */
+/* ../../../node_modules/is_number/src/index.js */
 
 module.exports = isNumber;
 
@@ -16206,7 +16206,7 @@ function updateGamepad(index, eventGamepad) {
 
     if (hasGamepad(index)) {
         gamepad = controllers[index];
-        
+
         if (gamepad.update(eventGamepad)) {
             gamepads.emitArg("update", gamepad);
         }
@@ -16556,7 +16556,7 @@ GamepadPrototype.update = function(e) {
     if (changed) {
         this.emitArg("update", this);
     }
-    
+
     return changed;
 };
 

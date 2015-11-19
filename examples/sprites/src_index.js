@@ -15227,7 +15227,7 @@ function updateGamepad(index, eventGamepad) {
 
     if (hasGamepad(index)) {
         gamepad = controllers[index];
-        
+
         if (gamepad.update(eventGamepad)) {
             gamepads.emitArg("update", gamepad);
         }
@@ -15577,7 +15577,7 @@ GamepadPrototype.update = function(e) {
     if (changed) {
         this.emitArg("update", this);
     }
-    
+
     return changed;
 };
 
