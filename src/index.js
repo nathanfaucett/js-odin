@@ -20,6 +20,7 @@ odin.Geometry = require("./Assets/Geometry");
 
 odin.Canvas = require("./Canvas");
 odin.Renderer = require("./Renderer");
+odin.FrameBuffer = require("./Renderer/FrameBuffer");
 odin.ComponentRenderer = require("./Renderer/ComponentRenderer");
 
 odin.Shader = require("./Shader");

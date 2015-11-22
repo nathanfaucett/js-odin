@@ -24,7 +24,7 @@ ImageAssetPrototype.construct = function(name, src) {
 
     AssetPrototype.construct.call(this, name, src);
 
-    this.data = environment.browser ? new Image() : null;
+    this.data = (environment.browser && src) ? new Image() : null;
     this.__listenedTo = false;
 
     return this;
@@ -53,23 +53,29 @@ ImageAssetPrototype.setSrc = function(src) {
 ImageAssetPrototype.load = function(callback) {
     var _this = this,
         src = this.src,
+        image;
+
+    if (src) {
         image = this.data;
 
-    eventListener.on(image, "load", function() {
-        _this.parse();
-        _this.emit("load");
+        eventListener.on(image, "load", function() {
+            _this.parse();
+            _this.emit("load");
+            callback();
+        });
+
+        eventListener.on(image, "error", function(e) {
+            var err = new HttpError(e.status, src);
+
+            _this.emit("error", err);
+            callback(err);
+        });
+
+        image.src = src;
+        this.__listenedTo = true;
+    } else {
         callback();
-    });
-
-    eventListener.on(image, "error", function(e) {
-        var err = new HttpError(e.status, src);
-
-        _this.emit("error", err);
-        callback(err);
-    });
-
-    image.src = src;
-    this.__listenedTo = true;
+    }
 
     return this;
 };

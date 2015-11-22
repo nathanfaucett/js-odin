@@ -23,16 +23,16 @@ function SpriteRenderer() {
         uv = [
             0.0, 0.0,
             0.0, 1.0,
-            1.0, 0.0,
-            1.0, 1.0
+            1.0, 1.0,
+            1.0, 0.0
         ];
 
     ComponentRenderer.call(this);
 
     geometry
-        .addAttribute("position", 12, 3, NativeFloat32Array, false, [-0.5, 0.5, 0.0, -0.5, -0.5, 0.0,
-            0.5, 0.5, 0.0,
-            0.5, -0.5, 0.0
+        .addAttribute("position", 12, 3, NativeFloat32Array, false, [-1.0, -1.0, 0.0, -1.0, 1.0, 0.0,
+            1.0, 1.0, 0.0,
+            1.0, -1.0, 0.0
         ])
         .addAttribute("normal", 12, 3, NativeFloat32Array, false, [
             0.0, 0.0, 1.0,
@@ -43,15 +43,12 @@ function SpriteRenderer() {
         .addAttribute("tangent", 16, 4, NativeFloat32Array, false, [
             0.0, 0.0, 0.0, 1.0,
             0.0, 1.0, 0.0, 1.0,
-            1.0, 0.0, 0.0, 1.0,
-            1.0, 1.0, 0.0, 1.0
+            1.0, 1.0, 0.0, 1.0,
+            1.0, 0.0, 0.0, 1.0
         ])
         .addAttribute("uv", 8, 2, NativeFloat32Array, false, uv)
-        .addAttribute("uv2", 8, 2, NativeFloat32Array, false, uv);
-
-    geometry.index = new NativeUint16Array([
-        0, 1, 2, 3, 2, 1
-    ]);
+        .addAttribute("uv2", 8, 2, NativeFloat32Array, false, uv)
+        .setIndex(new NativeUint16Array([0, 2, 1, 0, 3, 2]));
 
     this.geometry = geometry;
     this.spriteGeometry = null;

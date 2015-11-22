@@ -19,23 +19,27 @@ JSONAssetPrototype.load = function(callback) {
     var _this = this,
         src = this.src;
 
-    request.get(src, {
-        requestHeaders: {
-            "Content-Type": "application/json"
-        },
-        success: function(response) {
-            _this.data = response.data;
-            _this.parse();
-            _this.emit("load");
-            callback();
-        },
-        error: function(response) {
-            var err = new HttpError(response.statusCode, src);
+    if (src) {
+        request.get(src, {
+            requestHeaders: {
+                "Content-Type": "application/json"
+            },
+            success: function(response) {
+                _this.data = response.data;
+                _this.parse();
+                _this.emit("load");
+                callback();
+            },
+            error: function(response) {
+                var err = new HttpError(response.statusCode, src);
 
-            _this.emit("error", err);
-            callback(err);
-        }
-    });
+                _this.emit("error", err);
+                callback(err);
+            }
+        });
+    } else {
+        callback();
+    }
 
     return this;
 };

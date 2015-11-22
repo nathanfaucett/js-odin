@@ -55,6 +55,10 @@ AttributePrototype.setDynamic = function(value) {
     return this;
 };
 
+AttributePrototype.size = function() {
+    return this.array.length / this.itemSize;
+};
+
 AttributePrototype.set = function(array) {
 
     this.array.set(array);

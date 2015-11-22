@@ -16,7 +16,8 @@
     "particles": "comn -f ./examples/particles/src/index.js -o ./examples/particles/index.js",
     "sound": "comn -f ./examples/sound/src/index.js -o ./examples/sound",
     "sprites": "comn -f ./examples/sprites/src/index.js -o ./examples/sprites",
-    "examples": "npm run bones && npm run particles && npm run sprites"
+    "pixels": "comn -f ./examples/pixels/src/index.js -o ./examples/pixels",
+    "examples": "npm run bones && npm run particles && npm run sprites && npm run pixels"
   },
   "author": "Nathan Faucett",
   "license": "MIT",

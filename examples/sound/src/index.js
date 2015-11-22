@@ -46,7 +46,7 @@ eventListener.on(environment.window, "load", function load() {
                 }
             }),
 
-            geometryBox = odin.Geometry.create("geometry-box", "../content/geometry/box.json"),
+            geometryBox = odin.Geometry.create("geometry-box", "../content/geometry/player.json"),
 
             audioBoom = odin.AudioAsset.create("audio-boom", "../content/audio/boom.ogg"),
 
@@ -61,8 +61,7 @@ eventListener.on(environment.window, "load", function load() {
 
             boxLeft = global.boxLeft = odin.Entity.create().addComponent(
                 odin.Transform.create()
-                    .setPosition([0, 0, 0])
-                    .setScale([0.25, 0.25, 0.25]),
+                    .setPosition([0, 0, 0]),
                 odin.AudioSource.create(audioBoom)
                     .setConeInnerAngle(180)
                     .setConeOuterAngle(180),
@@ -72,8 +71,7 @@ eventListener.on(environment.window, "load", function load() {
 
             boxRight = global.boxRight = odin.Entity.create().addComponent(
                 odin.Transform.create()
-                    .setPosition([0, 0, 0])
-                    .setScale([0.25, 0.25, 0.25]),
+                    .setPosition([0, 0, 0]),
                 odin.AudioSource.create(audioBoom)
                     .setConeInnerAngle(180)
                     .setConeOuterAngle(180),

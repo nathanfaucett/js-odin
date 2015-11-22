@@ -2,12 +2,15 @@ var indexOf = require("index_of"),
     WebGLContext = require("webgl_context"),
     mat4 = require("mat4"),
 
+    isNullOrUndefined = require("is_null_or_undefined"),
+
     Class = require("class"),
     side = require("../enums/side"),
 
     MeshRenderer = require("./MeshRenderer"),
     SpriteRenderer = require("./SpriteRenderer"),
 
+    ProgramData = require("./ProgramData"),
     RendererGeometry = require("./RendererGeometry"),
     RendererMaterial = require("./RendererMaterial");
 
@@ -46,9 +49,15 @@ function Renderer() {
 Class.extend(Renderer, "odin.Renderer");
 RendererPrototype = Renderer.prototype;
 
-RendererPrototype.construct = function() {
+RendererPrototype.construct = function(options) {
 
     ClassPrototype.construct.call(this);
+
+    if (options) {
+        if (options.attributes) {
+            this.context.setAttributes(options.attributes);
+        }
+    }
 
     this.addRenderer(MeshRenderer.create(this), false, false);
     this.addRenderer(SpriteRenderer.create(this), false, false);
@@ -161,6 +170,93 @@ RendererPrototype.material = function(material) {
     return materials[material.__id] || (materials[material.__id] = RendererMaterial.create(this, this.context, material));
 };
 
+function getOptions(data) {
+    var options = {},
+        material;
+
+    options.boneCount = data.bones ? data.bones.length : 0;
+    options.boneWeightCount = data.boneWeightCount || 0;
+    options.useBones = options.boneCount !== 0;
+    options.isSprite = (!isNullOrUndefined(data.x) && !isNullOrUndefined(data.y) &&
+        !isNullOrUndefined(data.width) && !isNullOrUndefined(data.height)
+    );
+
+    if (data.material) {
+        material = data.material;
+
+        options.receiveShadow = material.receiveShadow;
+        options.castShadow = material.castShadow;
+        options.side = material.side;
+        options.wireframe = material.wireframe;
+    }
+
+    return options;
+}
+
+RendererPrototype.createProgram = function(shader, data, force) {
+    var id = data.__id,
+
+        programs = this.__programs,
+        programHash = this.__programHash,
+
+        programData = programHash[id],
+
+        options, vertex, fragment, i, il, cacheData, index;
+
+    if (programData && !force) {
+        program = programData.program;
+    } else {
+        if (programData) {
+            this.context.deleteProgram(programData.program);
+            programs.splice(program.index, 1);
+            delete programHash[id];
+            programData = null;
+        }
+        options = getOptions(data);
+
+        vertex = shader.vertex(options);
+        fragment = shader.fragment(options);
+
+        i = -1,
+            il = programs.length - 1;
+        while (i++ < il) {
+            cacheData = programs[i];
+
+            if (cacheData.vertex === vertex && cacheData.fragment === fragment) {
+                programData = cacheData;
+                break;
+            }
+        }
+
+        if (!programData) {
+            programData = new ProgramData();
+
+            program = programData.program = this.context.createProgram();
+
+            programData.vertex = vertex;
+            programData.fragment = fragment;
+
+            program.compile(vertex, fragment);
+
+            index = programs.length;
+            programData.index = index;
+            programs[id] = programHash[id] = programs[index] = programData;
+        } else {
+            programData.used += 1;
+            program = programData.program;
+        }
+
+        data.on("update", programData.onUpdate);
+    }
+
+    return program;
+};
+
+RendererPrototype.getProgram = function(data) {
+    var programData = this.__programHash[data.__id];
+    return !!programData && programData.program;
+};
+
 RendererPrototype.bindMaterial = function(material) {
     this.setSide(material.side);
     this.context.setBlending(material.blending);
@@ -267,9 +363,22 @@ RendererPrototype.bindAttributes = function(buffers, vertexBuffer, glAttributes)
     while (i++ < il) {
         glAttribute = glArray[i];
         buffer = buffers[glAttribute.name];
-        glAttribute.set(vertexBuffer, buffer.offset);
+
+        if (buffer) {
+            glAttribute.set(vertexBuffer, buffer.offset);
+        }
     }
 
+    return this;
+};
+
+RendererPrototype.setFrameBuffer = function(framebuffer, force) {
+    this.context.setFrameBuffer(framebuffer, force);
+    return this;
+};
+
+RendererPrototype.clearFrameBuffer = function() {
+    this.context.clearFrameBuffer();
     return this;
 };
 

@@ -60,6 +60,10 @@ GeometryPrototype.destructor = function() {
     return this;
 };
 
+GeometryPrototype.hasAttribute = function(name) {
+    return this.attributes.has(name);
+};
+
 GeometryPrototype.getAttribute = function(name) {
     return this.attributes.get(name);
 };
@@ -74,15 +78,24 @@ GeometryPrototype.removeAttribute = function(name) {
     return this;
 };
 
+GeometryPrototype.setIndex = function(index) {
+    this.index = index;
+    return this;
+};
+
 GeometryPrototype.parse = function() {
     var data = this.data,
         dataBones = data.bones,
         bones = this.bones,
+        noIndices = false,
         items, i, il, bone, dataBone;
 
     if ((items = (data.index || data.indices || data.faces)) && items.length) {
         this.index = new NativeUint16Array(items);
+    } else {
+        noIndices = true;
     }
+
     if (data.boneWeightCount) {
         this.boneWeightCount = data.boneWeightCount;
     } else {
@@ -114,6 +127,10 @@ GeometryPrototype.parse = function() {
         this.addAttribute("boneIndex", items.length, this.boneWeightCount, NativeFloat32Array, false, items);
     }
 
+    if (noIndices && this.hasAttribute("position")) {
+        this.index = createIndexTypeArray(NativeUint16Array, this.getAttribute("position").size());
+    }
+
     i = -1;
     il = dataBones.length - 1;
     while (i++ < il) {
@@ -136,6 +153,21 @@ GeometryPrototype.parse = function() {
 
     return this;
 };
+
+function createIndexArray(count) {
+    var array = new Array(count),
+        i = count;
+
+    while (i--) {
+        array[i] = i;
+    }
+
+    return array;
+}
+
+function createIndexTypeArray(Class, count) {
+    return new Class(createIndexArray(count));
+}
 
 GeometryPrototype.calculateAABB = function() {
     var position = this.attributes.__hash.position;

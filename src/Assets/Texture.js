@@ -51,6 +51,9 @@ TexturePrototype.construct = function(name, src, options) {
 
     options = options || {};
 
+    this.width = isNullOrUndefined(options.width) ? null : options.width;
+    this.height = isNullOrUndefined(options.height) ? null : options.height;
+
     this.generateMipmap = isNullOrUndefined(options.generateMipmap) ? true : !!options.generateMipmap;
     this.flipY = isNullOrUndefined(options.flipY) ? false : !!options.flipY;
     this.premultiplyAlpha = isNullOrUndefined(options.premultiplyAlpha) ? false : !!options.premultiplyAlpha;
