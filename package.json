@@ -63,6 +63,7 @@
     "mat4": "git://github.com/nathanfaucett/mat4.git",
     "mathf": "git://github.com/nathanfaucett/mathf.git",
     "now": "git://github.com/nathanfaucett/now.git",
+    "object-for_each": "git://github.com/nathanfaucett/object-for_each.git",
     "push_unique": "git://github.com/nathanfaucett/push_unique.git",
     "quat": "git://github.com/nathanfaucett/quat.git",
     "request": "git://github.com/nathanfaucett/request.git",

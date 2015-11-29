@@ -10,20 +10,23 @@ eventListener.on(environment.window, "load", function onLoad() {
         }),
         renderer = odin.Renderer.create();
 
-    var shader = odin.Shader.create([
+    var shader = odin.Shader.create({
+        vertex: [
             "void main(void) {",
             "    gl_Position = perspectiveMatrix * modelViewMatrix * getPosition();",
             "}"
-        ].join("\n"), [
+        ].join("\n"),
+        fragment: [
             "uniform vec3 color;",
 
             "void main(void) {",
             "    gl_FragColor = vec4(color, 1.0);",
             "}"
         ].join("\n")
-    );
+    });
 
-    var material = global.material = odin.Material.create("mat_box", null, {
+    var material = global.material = odin.Material.create({
+        name: "mat_box",
         shader: shader,
         uniforms: {
             color: [0.0, 0.0, 0.5]

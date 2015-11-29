@@ -20,11 +20,13 @@ function AudioAsset() {
 Asset.extend(AudioAsset, "odin.AudioAsset");
 AudioAssetPrototype = AudioAsset.prototype;
 
-AudioAssetPrototype.construct = function(name, src) {
+AudioAssetPrototype.construct = function(options) {
 
-    AssetPrototype.construct.call(this, name, null);
+    AssetPrototype.construct.call(this, options);
 
-    this.setSrc(src);
+    if (options && options.src) {
+        this.setSrc(options.src);
+    }
 
     return this;
 };

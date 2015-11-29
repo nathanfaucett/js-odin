@@ -13,17 +13,17 @@ odin.Assets = require("./Assets");
 odin.Asset = require("./Assets/Asset");
 odin.AudioAsset = require("./Assets/AudioAsset");
 odin.ImageAsset = require("./Assets/ImageAsset");
+odin.TextAsset = require("./Assets/TextAsset");
 odin.JSONAsset = require("./Assets/JSONAsset");
 odin.Texture = require("./Assets/Texture");
 odin.Material = require("./Assets/Material");
 odin.Geometry = require("./Assets/Geometry");
+odin.Shader = require("./Assets/Shader");
 
 odin.Canvas = require("./Canvas");
 odin.Renderer = require("./Renderer");
 odin.FrameBuffer = require("./Renderer/FrameBuffer");
 odin.ComponentRenderer = require("./Renderer/ComponentRenderer");
-
-odin.Shader = require("./Shader");
 
 odin.Scene = require("./Scene");
 odin.Plugin = require("./Plugin");

@@ -10,84 +10,111 @@ global.odin = odin;
 
 eventListener.on(environment.window, "load", function() {
     var assets = global.assets = odin.Assets.create(),
+    
         canvas = odin.Canvas.create({
             disableContextMenu: false,
             aspect: 1.5,
             keepAspect: true
         }),
-        renderer = odin.Renderer.create();
+        
+        renderer = odin.Renderer.create(),
 
-    var animation = odin.JSONAsset.create("anim", "../content/geometry/finger_anim.json");
+        animations = odin.JSONAsset.create({
+            name: "anim",
+            src: "../content/geometry/finger_anim.json"
+        }),
+    
+        geometry = odin.Geometry.create({
+            name: "geo",
+            src: "../content/geometry/finger.json"
+        }),
+    
+        geometryBox = odin.Geometry.create({
+            name: "geo_box",
+            src: "../content/geometry/box.json"
+        }),
+    
+        texture = odin.Texture.create({
+            name: "image_hospital",
+            src: "../content/images/hospital.png"
+        }),
+    
+        shader = odin.Shader.create({
+            vertex: [
+                "varying vec2 vUv;",
+                "varying vec3 vNormal;",
+    
+                "void main(void) {",
+                "    vUv = uv;",
+                "    vNormal = getNormal();",
+                "    gl_Position = perspectiveMatrix * modelViewMatrix * getPosition();",
+                "}"
+            ].join("\n"),
+            fragment: [
+                "uniform sampler2D texture;",
+    
+                "varying vec2 vUv;",
+                "varying vec3 vNormal;",
+    
+                "void main(void) {",
+                "    vec3 light = vec3(0.5, 0.2, 1.0);",
+                "    float dprod = max(0.0, dot(vNormal, light));",
+                "    gl_FragColor = texture2D(texture, vec2(vUv.s, vUv.t)) * vec4(dprod, dprod, dprod, 1.0);",
+                "}"
+            ].join("\n")
+        }),
+    
+        material = odin.Material.create({
+            name: "mat_box",
+            shader: shader,
+            uniforms: {
+                texture: texture
+            }
+        }),
 
-    var geometry = odin.Geometry.create("geo", "../content/geometry/finger.json");
+        camera = odin.Entity.create("main_camera").addComponent(
+            odin.Transform.create().setPosition([-5, -5, 5]),
+            odin.Camera.create().setActive(),
+            odin.OrbitControl.create()
+        ),
+    
+        object = global.object = odin.Entity.create().addComponent(
+            odin.Transform.create(),
+            odin.Mesh.create({
+                geometry: geometry,
+                material: material
+            }),
+            odin.MeshAnimation.create({
+                animations: animations,
+                current: "idle"
+            })
+        ),
+    
+        box = global.box = odin.Entity.create().addComponent(
+            odin.Transform.create()
+                .setPosition([0, 0.5, 0])
+                .setScale([0.25, 0.25, 0.25]),
+            odin.Mesh.create({
+                geometry: geometryBox,
+                material: material
+            })
+        ),
 
-    var geometryBox = odin.Geometry.create("geo_box", "../content/geometry/box.json");
+        objectMesh = object.getComponent("odin.Mesh"),
 
-    var texture = odin.Texture.create("image_hospital", "../content/images/hospital.png");
+        scene = global.scene = odin.Scene.create({
+            name: "scene"
+        }).addEntity(camera, object, box),
+        
+        cameraComponent = camera.getComponent("odin.Camera");
 
-    var shader = odin.Shader.create(
-        [
-            "varying vec2 vUv;",
-            "varying vec3 vNormal;",
-
-            "void main(void) {",
-            "    vUv = uv;",
-            "    vNormal = getNormal();",
-            "    gl_Position = perspectiveMatrix * modelViewMatrix * getPosition();",
-            "}"
-        ].join("\n"), [
-            "uniform sampler2D texture;",
-
-            "varying vec2 vUv;",
-            "varying vec3 vNormal;",
-
-            "void main(void) {",
-            "    vec3 light = vec3(0.5, 0.2, 1.0);",
-            "    float dprod = max(0.0, dot(vNormal, light));",
-            "    gl_FragColor = texture2D(texture, vec2(vUv.s, vUv.t)) * vec4(dprod, dprod, dprod, 1.0);",
-            "}"
-        ].join("\n")
-    );
-
-    var material = odin.Material.create("mat_box", null, {
-        shader: shader,
-        uniforms: {
-            texture: texture
-        }
-    });
-
-    assets.addAsset(geometry, geometryBox, animation, material, texture);
-
-    var camera = odin.Entity.create("main_camera").addComponent(
-        odin.Transform.create().setPosition([-5, -5, 5]),
-        odin.Camera.create().setActive(),
-        odin.OrbitControl.create()
-    );
-
-    var object = global.object = odin.Entity.create().addComponent(
-        odin.Transform.create(),
-        odin.Mesh.create(geometry, material),
-        odin.MeshAnimation.create(animation, {
-            current: "idle"
-        })
-    );
-
-    var box = global.box = odin.Entity.create().addComponent(
-        odin.Transform.create()
-            .setPosition([0, 0.5, 0])
-            .setScale([0.25, 0.25, 0.25]),
-        odin.Mesh.create(geometryBox, material)
-    );
-
-    var objectMesh = object.getComponent("odin.Mesh");
+    assets.addAsset(geometry, geometryBox, animations, material, texture);
+    
     objectMesh.on("awake", function() {
         var child = objectMesh.bones[3];
         child.addChild(box);
     });
-
-    var scene = global.scene = odin.Scene.create("scene").addEntity(camera, object, box),
-        cameraComponent = camera.getComponent("odin.Camera");
-
+    
     scene.assets = assets;
 
     canvas.on("resize", function(w, h) {

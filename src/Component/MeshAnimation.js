@@ -33,13 +33,13 @@ function MeshAnimation() {
 Component.extend(MeshAnimation, "odin.MeshAnimation");
 MeshAnimationPrototype = MeshAnimation.prototype;
 
-MeshAnimationPrototype.construct = function(animations, options) {
+MeshAnimationPrototype.construct = function(options) {
 
     ComponentPrototype.construct.call(this);
 
     options = options || {};
 
-    this.animations = animations;
+    this.animations = options.animations || {};
 
     this.current = isNullOrUndefined(options.current) ? "idle" : options.current;
     this.mode = isNullOrUndefined(options.mode) ? wrapMode.LOOP : options.mode;

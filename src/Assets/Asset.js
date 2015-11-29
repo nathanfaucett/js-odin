@@ -19,12 +19,14 @@ function Asset() {
 Class.extend(Asset, "odin.Asset");
 AssetPrototype = Asset.prototype;
 
-AssetPrototype.construct = function(name, src) {
+AssetPrototype.construct = function(options) {
 
     ClassPrototype.construct.call(this);
 
-    this.name = name;
-    this.src = src;
+    if (options) {
+        this.name = options.name || this.name;
+        this.src = options.src || this.src;
+    }
 
     return this;
 };

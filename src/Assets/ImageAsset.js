@@ -20,11 +20,14 @@ function ImageAsset() {
 Asset.extend(ImageAsset, "odin.ImageAsset");
 ImageAssetPrototype = ImageAsset.prototype;
 
-ImageAssetPrototype.construct = function(name, src) {
+ImageAssetPrototype.construct = function(options) {
 
-    AssetPrototype.construct.call(this, name, src);
+    AssetPrototype.construct.call(this, options);
 
-    this.data = (environment.browser && src) ? new Image() : null;
+    if (options) {
+        this.data = (environment.browser && options.src) ? new Image() : null;
+    }
+
     this.__listenedTo = false;
 
     return this;

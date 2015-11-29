@@ -39,11 +39,16 @@ function Scene() {
 Class.extend(Scene, "odin.Scene");
 ScenePrototype = Scene.prototype;
 
-ScenePrototype.construct = function(name) {
+ScenePrototype.construct = function(options) {
 
     ClassPrototype.construct.call(this);
 
-    this.name = name;
+    if (options) {
+        this.name = options.name || this.__id;
+    } else {
+        this.name = this.__id;
+    }
+
     this.time.construct();
     this.input.construct();
 

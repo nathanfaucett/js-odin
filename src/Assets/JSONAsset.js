@@ -3,7 +3,10 @@ var request = require("request"),
     Asset = require("./Asset");
 
 
-var JSONAssetPrototype;
+var REQUEST_HEADERS = {
+        "Content-Type": "text/plain"
+    },
+    JSONAssetPrototype;
 
 
 module.exports = JSONAsset;
@@ -21,9 +24,7 @@ JSONAssetPrototype.load = function(callback) {
 
     if (src) {
         request.get(src, {
-            requestHeaders: {
-                "Content-Type": "application/json"
-            },
+            requestHeaders: REQUEST_HEADERS,
             success: function(response) {
                 _this.data = response.data;
                 _this.parse();
@@ -31,10 +32,9 @@ JSONAssetPrototype.load = function(callback) {
                 callback();
             },
             error: function(response) {
-                var err = new HttpError(response.statusCode, src);
-
-                _this.emit("error", err);
-                callback(err);
+                var error = new HttpError(response.statusCode, src);
+                _this.emit("error", error);
+                callback(error);
             }
         });
     } else {

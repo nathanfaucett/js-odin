@@ -134,9 +134,9 @@ var environment = require(1),
 
 eventListener.on(environment.window, "load", function load() {
     require.async(13, function(odin) {
-        var vec2 = require(127),
-            quat = require(202),
-            PlayerControl = require(221);
+        var vec2 = require(128),
+            quat = require(207),
+            PlayerControl = require(226);
 
 
         global.odin = odin;
@@ -146,91 +146,105 @@ eventListener.on(environment.window, "load", function load() {
             canvas = odin.Canvas.create({
                 disableContextMenu: false
             }),
-            renderer = odin.Renderer.create();
-
-        var texture = odin.Texture.create("image_hospital", "../content/images/hospital.png");
-
-        var shader = odin.Shader.create(
-            [
-                "varying vec2 vUv;",
-                "varying vec3 vNormal;",
-
-                "void main(void) {",
-                "    vUv = getUV();",
-                "    vNormal = getNormal();",
-                "    gl_Position = perspectiveMatrix * modelViewMatrix * getPosition();",
-                "}"
-            ].join("\n"), [
-                "uniform sampler2D texture;",
-
-                "varying vec2 vUv;",
-                "varying vec3 vNormal;",
-
-                "void main(void) {",
-                "    vec3 light = vec3(0.5, 0.2, 1.0);",
-                "    float dprod = max(0.0, dot(vNormal, light));",
-                "    gl_FragColor = texture2D(texture, vec2(vUv.s, vUv.t)) * vec4(dprod, dprod, dprod, 1.0);",
-                "}"
-            ].join("\n")
-        );
-
-        var material = odin.Material.create("mat_box", null, {
-            shader: shader,
-            side: odin.enums.side.BOTH,
-            blending: odin.enums.blending.MULTIPLY,
-            wireframe: false,
-            wireframeLineWidth: 1,
-            uniforms: {
-                texture: texture
-            }
-        });
-
-        var engineLoop = odin.AudioAsset.create("audio_engine-loop", [
-            "../content/audio/engine-loop.mp3",
-            "../content/audio/engine-loop.ogg",
-            "../content/audio/engine-loop.wav"
-        ]);
-
-        assets.addAsset(material, texture, engineLoop);
-
-        var camera = odin.Entity.create("main_camera").addComponent(
-            odin.Transform.create()
-                .setPosition([0, -5, 5]),
-            odin.Camera.create()
-                .setOrthographic(false)
-                .setActive(),
-            odin.OrbitControl.create()
-        );
-
-        var sprite = global.object = odin.Entity.create().addComponent(
-            odin.Transform2D.create(),
-            odin.Sprite.create({
-                x: 0,
-                y: 0,
-                w: 1,
-                h: 0.5,
-                material: material
-            })
-        );
-
-        var sprite2 = global.object = odin.Entity.create().addComponent(
-            odin.Transform2D.create(),
-            odin.AudioSource.create(engineLoop, {
-                ambient: false,
-                loop: true
+            
+            renderer = odin.Renderer.create(),
+            
+            texture = odin.Texture.create({
+                name: "image_hospital",
+                src: "../content/images/hospital.png"
             }),
-            PlayerControl.create(),
-            odin.Sprite.create({
-                z: 1,
-                width: 0.5,
-                height: 0.5,
-                material: material
-            })
-        );
-
-        var scene = global.scene = odin.Scene.create("scene").addEntity(camera, sprite2, sprite),
+    
+            shader = odin.Shader.create({
+                vertex: [
+                    "varying vec2 vUv;",
+                    "varying vec3 vNormal;",
+    
+                    "void main(void) {",
+                    "    vUv = getUV();",
+                    "    vNormal = getNormal();",
+                    "    gl_Position = perspectiveMatrix * modelViewMatrix * getPosition();",
+                    "}"
+                ].join("\n"),
+                fragment: [
+                    "uniform sampler2D texture;",
+    
+                    "varying vec2 vUv;",
+                    "varying vec3 vNormal;",
+    
+                    "void main(void) {",
+                    "    vec3 light = vec3(0.5, 0.2, 1.0);",
+                    "    float dprod = max(0.0, dot(vNormal, light));",
+                    "    gl_FragColor = texture2D(texture, vec2(vUv.s, vUv.t)) * vec4(dprod, dprod, dprod, 1.0);",
+                    "}"
+                ].join("\n")
+            }),
+    
+            material = odin.Material.create({
+                name: "mat_box",
+                shader: shader,
+                side: odin.enums.side.BOTH,
+                blending: odin.enums.blending.MULTIPLY,
+                wireframe: false,
+                wireframeLineWidth: 1,
+                uniforms: {
+                    texture: texture
+                }
+            }),
+    
+            engineLoop = odin.AudioAsset.create({
+                name: "audio_engine-loop",
+                src: [
+                    "../content/audio/engine-loop.mp3",
+                    "../content/audio/engine-loop.ogg",
+                    "../content/audio/engine-loop.wav"
+                ]
+            }),
+    
+            camera = odin.Entity.create({
+                name: "main_camera"
+            }).addComponent(
+                odin.Transform.create()
+                    .setPosition([0, -5, 5]),
+                odin.Camera.create()
+                    .setOrthographic(false)
+                    .setActive(),
+                odin.OrbitControl.create()
+            ),
+    
+            sprite = global.object = odin.Entity.create().addComponent(
+                odin.Transform2D.create(),
+                odin.Sprite.create({
+                    x: 0,
+                    y: 0,
+                    w: 1,
+                    h: 0.5,
+                    material: material
+                })
+            ),
+    
+            sprite2 = global.object = odin.Entity.create().addComponent(
+                odin.Transform2D.create(),
+                odin.AudioSource.create({
+                    audio: engineLoop,
+                    ambient: false,
+                    loop: true
+                }),
+                PlayerControl.create(),
+                odin.Sprite.create({
+                    z: 1,
+                    width: 0.5,
+                    height: 0.5,
+                    material: material
+                })
+            ),
+    
+            scene = global.scene = odin.Scene.create({
+                name: "scene"
+            }).addEntity(camera, sprite2, sprite),
             cameraComponent = camera.getComponent("odin.Camera");
 
+        assets.addAsset(material, texture, engineLoop)
+            
         scene.assets = assets;
 
         scene.input.axes.get("horizontal").gravity = 2;
@@ -1096,6 +1110,11 @@ function isUndefined(value) {
 
 
 },
+null,
+null,
+null,
+null,
+null,
 null,
 null,
 null,

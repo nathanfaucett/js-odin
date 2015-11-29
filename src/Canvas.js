@@ -49,6 +49,7 @@ module.exports = Canvas;
 
 
 function Canvas() {
+    var _this = this;
 
     Class.call(this);
 
@@ -66,7 +67,9 @@ function Canvas() {
     this.pixelWidth = null;
     this.pixelHeight = null;
 
-    this.__handler = null;
+    this.__handler = function handler() {
+        Canvas_update(_this);
+    };
 }
 Class.extend(Canvas, "odin.Canvas");
 CanvasPrototype = Canvas.prototype;
@@ -147,12 +150,6 @@ function Canvas_setFixed(_this) {
     style.padding = "0px";
     style.marginLeft = "0px";
     style.marginTop = "0px";
-
-    if (!_this.__handler) {
-        _this.__handler = function handler() {
-            Canvas_update(_this);
-        };
-    }
 
     eventListener.on(window, "resize orientationchange", _this.__handler);
     Canvas_update(_this);

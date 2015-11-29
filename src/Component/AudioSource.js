@@ -38,14 +38,16 @@ function AudioSource() {
 Component.extend(AudioSource, "odin.AudioSource");
 AudioSourcePrototype = AudioSource.prototype;
 
-AudioSourcePrototype.construct = function(audioAsset, options) {
+AudioSourcePrototype.construct = function(options) {
+    var audio = options && options.audio;
 
     ComponentPrototype.construct.call(this);
 
-    this.audioAsset = audioAsset;
-
-    this.__source.setClip(audioAsset.clip);
-    this.__source.construct(options);
+    if (audio) {
+        this.audioAsset = audio;
+        this.__source.setClip(audio.clip);
+        this.__source.construct(options);
+    }
 
     if (options) {
         if (options.offset) {

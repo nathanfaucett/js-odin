@@ -20,25 +20,31 @@ function FrameBuffer() {
 Class.extend(FrameBuffer, "odin.FrameBuffer");
 FrameBufferPrototype = FrameBuffer.prototype;
 
-FrameBufferPrototype.construct = function(texture, depthBuffer, stencilBuffer) {
+FrameBufferPrototype.construct = function(options) {
 
     ClassPrototype.construct.call(this);
 
-    this.depthBuffer = !!depthBuffer ? !!depthBuffer : this.depthBuffer;
-    this.stencilBuffer = !!stencilBuffer ? !!stencilBuffer : this.stencilBuffer;
-    this.texture = texture;
+    options = options || {};
+
+    this.depthBuffer = !!options.depthBuffer ? !!options.depthBuffer : this.depthBuffer;
+    this.stencilBuffer = !!options.stencilBuffer ? !!options.stencilBuffer : this.stencilBuffer;
+    this.texture = options.texture;
 
     return this;
 };
 
 FrameBufferPrototype.setDepthBuffer = function(depthBuffer) {
+
     this.depthBuffer = !!depthBuffer;
     this.emit("update");
+
     return this;
 };
 
 FrameBufferPrototype.setStencilBuffer = function(stencilBuffer) {
+
     this.stencilBuffer = !!stencilBuffer;
     this.emit("update");
+
     return this;
 };

@@ -2,11 +2,11 @@ var arrayMap = require("array-map"),
     keys = require("keys"),
     template = require("template"),
     pushUnique = require("push_unique"),
-    Class = require("class"),
-    chunks = require("./chunks");
+    chunks = require("./chunks"),
+    TextAsset = require("../TextAsset");
 
 
-var ClassPrototype = Class.prototype,
+var TextAssetPrototype = TextAsset.prototype,
 
     VERTEX = "vertex",
     FRAGMENT = "fragment",
@@ -26,21 +26,21 @@ module.exports = Shader;
 
 function Shader() {
 
-    Class.call(this);
+    TextAsset.call(this);
 
     this.vertex = null;
     this.fragment = null;
     this.templateVariables = [];
 }
-Class.extend(Shader, "odin.Shader");
+TextAsset.extend(Shader, "odin.Shader");
 ShaderPrototype = Shader.prototype;
 
-ShaderPrototype.construct = function(vertex, fragment) {
+ShaderPrototype.construct = function(options) {
 
-    ClassPrototype.construct.call(this);
+    TextAssetPrototype.construct.call(this, options);
 
-    if (vertex && fragment) {
-        this.set(vertex, fragment);
+    if (options && options.vertex && options.fragment) {
+        this.set(options.vertex, options.fragment);
     }
 
     return this;
@@ -48,11 +48,23 @@ ShaderPrototype.construct = function(vertex, fragment) {
 
 ShaderPrototype.destructor = function() {
 
-    ClassPrototype.destructor.call(this);
+    TextAssetPrototype.destructor.call(this);
 
     this.vertex = null;
     this.fragment = null;
     this.templateVariables.length = 0;
+
+    return this;
+};
+
+ShaderPrototype.parse = function() {
+    var data = this.data;
+
+    TextAssetPrototype.parse.call(this);
+
+    if (data && data.vertex && data.fragment) {
+        this.set(data.vertex, data.fragment);
+    }
 
     return this;
 };

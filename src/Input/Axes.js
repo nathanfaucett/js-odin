@@ -136,12 +136,7 @@ AxesPrototype.add = function(options) {
         );
     }
 
-    instance = Axis.create(
-        options.name,
-        options.negButton, options.posButton,
-        options.altNegButton, options.altPosButton,
-        options.gravity, options.sensitivity, options.dead, options.type, options.axis, options.index, options.joyNum
-    );
+    instance = Axis.create(options);
 
     array[array.length] = instance;
     hash[instance.name] = instance;

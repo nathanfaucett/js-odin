@@ -16,22 +16,29 @@ eventListener.on(environment.window, "load", function load() {
                 }
             }),
 
-            texture = odin.Texture.create("image-lego_head", "../content/images/lego_head.jpg", {
+            texture = odin.Texture.create({
+                name: "image-player",
+                src: "../content/dark_tales/player.png",
                 generateMipmap: false,
                 filter: odin.enums.filterMode.NONE,
                 flipY: true
             }),
             
-            framebufferTexture = odin.Texture.create("image-framebuffer", null, {
+            framebufferTexture = odin.Texture.create({
+                name: "image-framebuffer",
                 width: 256,
                 height: 256,
                 generateMipmap: false,
                 filter: odin.enums.filterMode.NONE
             }),
             
-            framebuffer = odin.FrameBuffer.create(framebufferTexture),
+            framebuffer = odin.FrameBuffer.create({
+                texture: framebufferTexture
+            }),
             
-            framebufferGeometry = odin.Geometry.create("geometry-framebuffer")
+            framebufferGeometry = odin.Geometry.create({
+                    name: "geometry-framebuffer"
+                })
                 .addAttribute("position", 12, 3, Float32Array, false, [
                     -1.0, -1.0, 0.0,
                     -1.0, 1.0, 0.0,
@@ -48,14 +55,16 @@ eventListener.on(environment.window, "load", function load() {
                     0, 2, 1, 0, 3, 2
                 ]))
 
-            framebufferShader = odin.Shader.create([
+            framebufferShader = odin.Shader.create({
+                vertex: [
                     "varying vec2 vUv;",
 
                     "void main(void) {",
                     "    vUv = getUV();",
                     "    gl_Position = getPosition();",
                     "}"
-                ].join("\n"), [
+                ].join("\n"),
+                fragment: [
                     "uniform sampler2D texture;",
 
                     "varying vec2 vUv;",
@@ -64,79 +73,31 @@ eventListener.on(environment.window, "load", function load() {
                     "    gl_FragColor = texture2D(texture, vec2(vUv.s, vUv.t));",
                     "}"
                 ].join("\n")
-            ),
+            }),
             
-            shader = odin.Shader.create([
-                    "varying vec2 vUv;",
-                    "varying vec3 vNormal;",
+            shader = odin.Shader.create({
+                src: {
+                    vertex: "../content/shaders/toon.vs",
+                    fragment: "../content/shaders/toon.fs",
+                }
+            }),
 
-                    "void main(void) {",
-                    "    vUv = getUV();",
-                    "    vNormal = getNormal();",
-                    "    gl_Position = perspectiveMatrix * modelViewMatrix * getPosition();",
-                    "}"
-                ].join("\n"), [
-                    "uniform sampler2D texture;",
-
-                    "varying vec2 vUv;",
-                    "varying vec3 vNormal;",
-                    
-                    "float shine = 150.0;",
-                    "float celShading = 3.0;",
-                    
-                    "float celShade(float d) {",
-                    "    d *= celShading;",
-                    "    float r = 1.0 / (celShading);",
-                    "    float fd = floor(d);",
-                    "    float dr = d * r;",
-                    
-                    "    if (d > fd && d < fd) {",
-                    "        float last = (fd - sign(d - fd))*r;",
-                    "        return mix(last, fd * r, smoothstep((fd)*r, (fd) * r, dr));",
-                    "    } else {",
-                    "        return fd*r;",
-                    "    }",
-                    "}",
-
-                    "void main(void) {",
-                    "    vec4 diffuse = texture2D(texture, vec2(vUv.s, vUv.t));",
-                    
-                    "    vec3 en = normalize(vNormal);",
-                    "    vec3 ln = normalize(vec3(0.5, 0.5, 1.0));",
-                    "    vec3 hn = normalize(ln + vec3(0.0, 0.0, 1.0));",
-                      
-                    "    float df = max(0.0, dot(en, ln));",
-                    "    float sf = max(0.0, dot(en, hn));",
-                      
-                    "    float cdf = 0.5 + celShade(df);",
-                      
-                    "    sf = pow(sf, shine);",
-
-                    "    if (sf > 0.5 && sf < 0.5) {",
-                    "      sf = smoothstep(0.5, 0.5, sf);",
-                    "    } else {",
-                    "      sf = step(0.5, sf);",
-                    "    }",
-                      
-                    "    float csf = sf * 0.75;",
-                      
-                    "    vec3 color = cdf * diffuse.xyz + csf;",
-                      
-                    "    gl_FragColor = vec4(color, diffuse.w);",
-                    "}"
-                ].join("\n")
-            ),
-
-            material = odin.Material.create("material-box", null, {
+            material = odin.Material.create({
+                name: "material-player",
                 shader: shader,
                 uniforms: {
                     texture: texture
                 }
             }),
 
-            geometryLegoHead = odin.Geometry.create("geometry-box", "../content/geometry/lego_head.json"),
+            geometryPlayer = odin.Geometry.create({
+                name: "geometry-player",
+                src: "../content/dark_tales/player.json"
+            }),
 
-            camera = global.camera = odin.Entity.create("main_camera").addComponent(
+            camera = global.camera = odin.Entity.create({
+                name: "main_camera"
+            }).addComponent(
                 odin.Transform.create()
                     .setPosition([0, -2, 0]),
                 odin.Camera.create()
@@ -145,17 +106,20 @@ eventListener.on(environment.window, "load", function load() {
                 odin.OrbitControl.create()
             ),
 
-            legoHead = odin.Entity.create().addComponent(
+            player = odin.Entity.create().addComponent(
                 odin.Transform.create()
                     .setPosition([0, 0, 0]),
-                odin.Mesh.create(geometryLegoHead, material)
+                odin.Mesh.create({
+                    geometry: geometryPlayer,
+                    material: material
+                })
             ),
 
-            scene = global.scene = odin.Scene.create("scene").addEntity(camera, legoHead),
+            scene = global.scene = odin.Scene.create({name: "scene"}).addEntity(camera, player),
             
             cameraComponent = camera.getComponent("odin.Camera");
 
-        assets.addAsset(material, texture, geometryLegoHead);
+        assets.addAsset(shader, material, texture, geometryPlayer);
 
         scene.assets = assets;
 

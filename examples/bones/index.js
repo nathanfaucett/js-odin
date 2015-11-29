@@ -71,84 +71,111 @@ global.odin = odin;
 
 eventListener.on(environment.window, "load", function() {
     var assets = global.assets = odin.Assets.create(),
+    
         canvas = odin.Canvas.create({
             disableContextMenu: false,
             aspect: 1.5,
             keepAspect: true
         }),
-        renderer = odin.Renderer.create();
+        
+        renderer = odin.Renderer.create(),
 
-    var animation = odin.JSONAsset.create("anim", "../content/geometry/finger_anim.json");
+        animations = odin.JSONAsset.create({
+            name: "anim",
+            src: "../content/geometry/finger_anim.json"
+        }),
+    
+        geometry = odin.Geometry.create({
+            name: "geo",
+            src: "../content/geometry/finger.json"
+        }),
+    
+        geometryBox = odin.Geometry.create({
+            name: "geo_box",
+            src: "../content/geometry/box.json"
+        }),
+    
+        texture = odin.Texture.create({
+            name: "image_hospital",
+            src: "../content/images/hospital.png"
+        }),
+    
+        shader = odin.Shader.create({
+            vertex: [
+                "varying vec2 vUv;",
+                "varying vec3 vNormal;",
+    
+                "void main(void) {",
+                "    vUv = uv;",
+                "    vNormal = getNormal();",
+                "    gl_Position = perspectiveMatrix * modelViewMatrix * getPosition();",
+                "}"
+            ].join("\n"),
+            fragment: [
+                "uniform sampler2D texture;",
+    
+                "varying vec2 vUv;",
+                "varying vec3 vNormal;",
+    
+                "void main(void) {",
+                "    vec3 light = vec3(0.5, 0.2, 1.0);",
+                "    float dprod = max(0.0, dot(vNormal, light));",
+                "    gl_FragColor = texture2D(texture, vec2(vUv.s, vUv.t)) * vec4(dprod, dprod, dprod, 1.0);",
+                "}"
+            ].join("\n")
+        }),
+    
+        material = odin.Material.create({
+            name: "mat_box",
+            shader: shader,
+            uniforms: {
+                texture: texture
+            }
+        }),
 
-    var geometry = odin.Geometry.create("geo", "../content/geometry/finger.json");
+        camera = odin.Entity.create("main_camera").addComponent(
+            odin.Transform.create().setPosition([-5, -5, 5]),
+            odin.Camera.create().setActive(),
+            odin.OrbitControl.create()
+        ),
+    
+        object = global.object = odin.Entity.create().addComponent(
+            odin.Transform.create(),
+            odin.Mesh.create({
+                geometry: geometry,
+                material: material
+            }),
+            odin.MeshAnimation.create({
+                animations: animations,
+                current: "idle"
+            })
+        ),
+    
+        box = global.box = odin.Entity.create().addComponent(
+            odin.Transform.create()
+                .setPosition([0, 0.5, 0])
+                .setScale([0.25, 0.25, 0.25]),
+            odin.Mesh.create({
+                geometry: geometryBox,
+                material: material
+            })
+        ),
 
-    var geometryBox = odin.Geometry.create("geo_box", "../content/geometry/box.json");
+        objectMesh = object.getComponent("odin.Mesh"),
 
-    var texture = odin.Texture.create("image_hospital", "../content/images/hospital.png");
+        scene = global.scene = odin.Scene.create({
+            name: "scene"
+        }).addEntity(camera, object, box),
+        
+        cameraComponent = camera.getComponent("odin.Camera");
 
-    var shader = odin.Shader.create(
-        [
-            "varying vec2 vUv;",
-            "varying vec3 vNormal;",
-
-            "void main(void) {",
-            "    vUv = uv;",
-            "    vNormal = getNormal();",
-            "    gl_Position = perspectiveMatrix * modelViewMatrix * getPosition();",
-            "}"
-        ].join("\n"), [
-            "uniform sampler2D texture;",
-
-            "varying vec2 vUv;",
-            "varying vec3 vNormal;",
-
-            "void main(void) {",
-            "    vec3 light = vec3(0.5, 0.2, 1.0);",
-            "    float dprod = max(0.0, dot(vNormal, light));",
-            "    gl_FragColor = texture2D(texture, vec2(vUv.s, vUv.t)) * vec4(dprod, dprod, dprod, 1.0);",
-            "}"
-        ].join("\n")
-    );
-
-    var material = odin.Material.create("mat_box", null, {
-        shader: shader,
-        uniforms: {
-            texture: texture
-        }
-    });
-
-    assets.addAsset(geometry, geometryBox, animation, material, texture);
-
-    var camera = odin.Entity.create("main_camera").addComponent(
-        odin.Transform.create().setPosition([-5, -5, 5]),
-        odin.Camera.create().setActive(),
-        odin.OrbitControl.create()
-    );
-
-    var object = global.object = odin.Entity.create().addComponent(
-        odin.Transform.create(),
-        odin.Mesh.create(geometry, material),
-        odin.MeshAnimation.create(animation, {
-            current: "idle"
-        })
-    );
-
-    var box = global.box = odin.Entity.create().addComponent(
-        odin.Transform.create()
-            .setPosition([0, 0.5, 0])
-            .setScale([0.25, 0.25, 0.25]),
-        odin.Mesh.create(geometryBox, material)
-    );
-
-    var objectMesh = object.getComponent("odin.Mesh");
+    assets.addAsset(geometry, geometryBox, animations, material, texture);
+    
     objectMesh.on("awake", function() {
         var child = objectMesh.bones[3];
         child.addChild(box);
     });
-
-    var scene = global.scene = odin.Scene.create("scene").addEntity(camera, object, box),
-        cameraComponent = camera.getComponent("odin.Camera");
-
+    
     scene.assets = assets;
 
     canvas.on("resize", function(w, h) {
@@ -372,44 +399,44 @@ odin.Assets = require(19);
 odin.Asset = require(20);
 odin.AudioAsset = require(21);
 odin.ImageAsset = require(22);
-odin.JSONAsset = require(23);
-odin.Texture = require(24);
-odin.Material = require(25);
-odin.Geometry = require(26);
+odin.TextAsset = require(23);
+odin.JSONAsset = require(24);
+odin.Texture = require(25);
+odin.Material = require(26);
+odin.Geometry = require(27);
+odin.Shader = require(28);
 
-odin.Canvas = require(27);
-odin.Renderer = require(28);
-odin.FrameBuffer = require(29);
-odin.ComponentRenderer = require(30);
+odin.Canvas = require(29);
+odin.Renderer = require(30);
+odin.FrameBuffer = require(31);
+odin.ComponentRenderer = require(32);
 
-odin.Shader = require(31);
+odin.Scene = require(33);
+odin.Plugin = require(34);
+odin.Entity = require(35);
 
-odin.Scene = require(32);
-odin.Plugin = require(33);
-odin.Entity = require(34);
+odin.ComponentManager = require(36);
 
-odin.ComponentManager = require(35);
+odin.Component = require(37);
 
-odin.Component = require(36);
+odin.AudioSource = require(38);
 
-odin.AudioSource = require(37);
+odin.Transform = require(39);
+odin.Transform2D = require(40);
+odin.Camera = require(41);
 
-odin.Transform = require(38);
-odin.Transform2D = require(39);
-odin.Camera = require(40);
+odin.Sprite = require(42);
 
-odin.Sprite = require(41);
+odin.Mesh = require(43);
+odin.MeshAnimation = require(44);
 
-odin.Mesh = require(42);
-odin.MeshAnimation = require(43);
+odin.OrbitControl = require(45);
 
-odin.OrbitControl = require(44);
+odin.ParticleSystem = require(46);
 
-odin.ParticleSystem = require(45);
-
-odin.createSeededRandom = require(46);
-odin.randFloat = require(47);
-odin.randInt = require(48);
+odin.createSeededRandom = require(47);
+odin.randFloat = require(48);
+odin.randInt = require(49);
 
 
 },
@@ -1072,13 +1099,13 @@ function isUndefined(value) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/src/index.js */
 
-var has = require(49),
+var has = require(50),
     isNull = require(8),
     isFunction = require(6),
-    inherits = require(50),
-    EventEmitter = require(51),
-    createPool = require(52),
-    uuid = require(53);
+    inherits = require(51),
+    EventEmitter = require(52),
+    createPool = require(53),
+    uuid = require(54);
 
 
 var ClassPrototype;
@@ -1170,6 +1197,7 @@ ClassPrototype.generateNewId = function() {
 ClassPrototype.toJSON = function(json) {
     json = json || {};
 
+    json.__id = this.__id;
     json.className = this.className;
 
     return json;
@@ -1190,7 +1218,7 @@ function(require, exports, module, undefined, global) {
 /* ../../../node_modules/create_loop/src/index.js */
 
 var isNull = require(8),
-    requestAnimationFrame = require(66);
+    requestAnimationFrame = require(67);
 
 
 module.exports = function createLoop(callback, element) {
@@ -1245,21 +1273,21 @@ module.exports = function createLoop(callback, element) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/enums/index.js */
 
-var extend = require(59),
-    WebGLContext = require(69);
+var extend = require(60),
+    WebGLContext = require(70);
 
 
 var enums = extend(exports, WebGLContext.enums);
 
 
-enums.axis = require(70);
-enums.emitterRenderMode = require(71);
-enums.interpolation = require(72);
-enums.normalMode = require(73);
-enums.screenAlignment = require(74);
-enums.side = require(75);
-enums.sortMode = require(76);
-enums.wrapMode = require(77);
+enums.axis = require(71);
+enums.emitterRenderMode = require(72);
+enums.interpolation = require(73);
+enums.normalMode = require(74);
+enums.screenAlignment = require(75);
+enums.side = require(76);
+enums.sortMode = require(77);
+enums.wrapMode = require(78);
 
 
 },
@@ -1268,11 +1296,11 @@ function(require, exports, module, undefined, global) {
 
 var isString = require(10),
     isNumber = require(12),
-    indexOf = require(110),
+    indexOf = require(111),
     Class = require(14),
     createLoop = require(15),
     Assets = require(19),
-    Scene = require(32);
+    Scene = require(33);
 
 
 var ClassPrototype = Class.prototype,
@@ -1524,7 +1552,7 @@ function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/index.js */
 
 var Class = require(14),
-    indexOf = require(110),
+    indexOf = require(111),
     isNullOrUndefined = require(11);
 
 
@@ -1703,12 +1731,14 @@ function Asset() {
 Class.extend(Asset, "odin.Asset");
 AssetPrototype = Asset.prototype;
 
-AssetPrototype.construct = function(name, src) {
+AssetPrototype.construct = function(options) {
 
     ClassPrototype.construct.call(this);
 
-    this.name = name;
-    this.src = src;
+    if (options) {
+        this.name = options.name || this.name;
+        this.src = options.src || this.src;
+    }
 
     return this;
 };
@@ -1745,9 +1775,9 @@ AssetPrototype.load = function(callback) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/AudioAsset.js */
 
-var isArray = require(106),
-    audio = require(171),
-    arrayForEach = require(103),
+var isArray = require(107),
+    audio = require(172),
+    arrayForEach = require(104),
     Asset = require(20);
 
 
@@ -1767,11 +1797,13 @@ function AudioAsset() {
 Asset.extend(AudioAsset, "odin.AudioAsset");
 AudioAssetPrototype = AudioAsset.prototype;
 
-AudioAssetPrototype.construct = function(name, src) {
+AudioAssetPrototype.construct = function(options) {
 
-    AssetPrototype.construct.call(this, name, null);
+    AssetPrototype.construct.call(this, options);
 
-    this.setSrc(src);
+    if (options && options.src) {
+        this.setSrc(options.src);
+    }
 
     return this;
 };
@@ -1840,7 +1872,7 @@ function(require, exports, module, undefined, global) {
 
 var environment = require(1),
     eventListener = require(2),
-    HttpError = require(176),
+    HttpError = require(177),
     Asset = require(20);
 
 
@@ -1860,11 +1892,14 @@ function ImageAsset() {
 Asset.extend(ImageAsset, "odin.ImageAsset");
 ImageAssetPrototype = ImageAsset.prototype;
 
-ImageAssetPrototype.construct = function(name, src) {
+ImageAssetPrototype.construct = function(options) {
 
-    AssetPrototype.construct.call(this, name, src);
+    AssetPrototype.construct.call(this, options);
 
-    this.data = (environment.browser && src) ? new Image() : null;
+    if (options) {
+        this.data = (environment.browser && options.src) ? new Image() : null;
+    }
+
     this.__listenedTo = false;
 
     return this;
@@ -1923,14 +1958,136 @@ ImageAssetPrototype.load = function(callback) {
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../src/Assets/JSONAsset.js */
+/* ../../../src/Assets/TextAsset.js */
 
-var request = require(184),
-    HttpError = require(176),
+var keys = require(64),
+    isArray = require(107),
+    isObject = require(5),
+    arrayForEach = require(104),
+    objectForEach = require(105),
+    request = require(190),
+    HttpError = require(177),
     Asset = require(20);
 
 
-var JSONAssetPrototype;
+var REQUEST_HEADERS = {
+        "Content-Type": "text/plain"
+    },
+    TextAssetPrototype;
+
+
+module.exports = TextAsset;
+
+
+function TextAsset() {
+    Asset.call(this);
+}
+Asset.extend(TextAsset, "odin.TextAsset");
+TextAssetPrototype = TextAsset.prototype;
+
+TextAssetPrototype.load = function(callback) {
+    var _this = this,
+        src = this.src;
+
+    function finalCallback(error, data) {
+        if (error) {
+            _this.emit("error", error);
+            callback(error);
+        } else {
+            _this.data = data;
+            _this.parse();
+            _this.emit("load");
+            callback();
+        }
+    }
+
+    if (isArray(src)) {
+        loadArray(src, finalCallback);
+    } else if (isObject(src)) {
+        loadObject(src, finalCallback);
+    } else {
+        loadText(src, finalCallback);
+    }
+
+    return this;
+};
+
+function loadArray(srcs, callback) {
+    var length = srcs.length,
+        data = new Array(length),
+        index = 0;
+
+    function done(error) {
+        index += 1;
+        if (error || index === length) {
+            callback(error, data);
+        }
+    }
+
+    arrayForEach(srcs, function onEach(src, index) {
+        loadText(src, function onLoadText(error, value) {
+            if (error) {
+                done(error);
+            } else {
+                data[index] = value;
+                done();
+            }
+        });
+    });
+}
+
+function loadObject(srcs, callback) {
+    var srcKeys = keys(srcs),
+        length = srcKeys.length,
+        data = {},
+        index = 0;
+
+    function done(error) {
+        index += 1;
+        if (error || index === length) {
+            callback(error, data);
+        }
+    }
+
+    objectForEach(srcs, function onEach(src, key) {
+        loadText(src, function onLoadText(error, value) {
+            if (error) {
+                done(error);
+            } else {
+                data[key] = value;
+                done();
+            }
+        });
+    });
+}
+
+function loadText(src, callback) {
+    request.get(src, {
+        requestHeaders: REQUEST_HEADERS,
+        success: function onSuccess(response) {
+            callback(undefined, response.data);
+        },
+        error: function onError(response) {
+            var error = new HttpError(response.statusCode, src);
+            callback(error);
+        }
+    });
+}
+
+
+},
+function(require, exports, module, undefined, global) {
+/* ../../../src/Assets/JSONAsset.js */
+
+var request = require(190),
+    HttpError = require(177),
+    Asset = require(20);
+
+
+var REQUEST_HEADERS = {
+        "Content-Type": "text/plain"
+    },
+    JSONAssetPrototype;
 
 
 module.exports = JSONAsset;
@@ -1948,9 +2105,7 @@ JSONAssetPrototype.load = function(callback) {
 
     if (src) {
         request.get(src, {
-            requestHeaders: {
-                "Content-Type": "application/json"
-            },
+            requestHeaders: REQUEST_HEADERS,
             success: function(response) {
                 _this.data = response.data;
                 _this.parse();
@@ -1958,10 +2113,9 @@ JSONAssetPrototype.load = function(callback) {
                 callback();
             },
             error: function(response) {
-                var err = new HttpError(response.statusCode, src);
-
-                _this.emit("error", err);
-                callback(err);
+                var error = new HttpError(response.statusCode, src);
+                _this.emit("error", error);
+                callback(error);
             }
         });
     } else {
@@ -1976,9 +2130,9 @@ JSONAssetPrototype.load = function(callback) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/Texture.js */
 
-var vec2 = require(127),
+var vec2 = require(128),
     isNullOrUndefined = require(11),
-    WebGLContext = require(69),
+    WebGLContext = require(70),
     ImageAsset = require(22);
 
 
@@ -2023,9 +2177,9 @@ function Texture() {
 ImageAsset.extend(Texture, "odin.Texture");
 TexturePrototype = Texture.prototype;
 
-TexturePrototype.construct = function(name, src, options) {
+TexturePrototype.construct = function(options) {
 
-    ImageAssetPrototype.construct.call(this, name, src);
+    ImageAssetPrototype.construct.call(this, options);
 
     options = options || {};
 
@@ -2168,8 +2322,8 @@ function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/Material.js */
 
 var isNullOrUndefined = require(11),
-    JSONAsset = require(23),
-    Shader = require(31),
+    JSONAsset = require(24),
+    Shader = require(28),
     enums = require(16);
 
 
@@ -2200,9 +2354,9 @@ function Material() {
 JSONAsset.extend(Material, "odin.Material");
 MaterialPrototype = Material.prototype;
 
-MaterialPrototype.construct = function(name, src, options) {
+MaterialPrototype.construct = function(options) {
 
-    JSONAssetPrototype.construct.call(this, name, src);
+    JSONAssetPrototype.construct.call(this, options);
 
     options = options || {};
 
@@ -2256,16 +2410,16 @@ MaterialPrototype.parse = function() {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/Geometry/index.js */
 
-var vec3 = require(86),
-    quat = require(202),
-    mat4 = require(130),
-    mathf = require(78),
-    aabb3 = require(203),
-    FastHash = require(107),
+var vec3 = require(87),
+    quat = require(207),
+    mat4 = require(131),
+    mathf = require(79),
+    aabb3 = require(208),
+    FastHash = require(108),
     isNullOrUndefined = require(11),
-    Attribute = require(204),
-    JSONAsset = require(23),
-    GeometryBone = require(205);
+    Attribute = require(209),
+    JSONAsset = require(24),
+    GeometryBone = require(210);
 
 
 var JSONAssetPrototype = JSONAsset.prototype,
@@ -2295,9 +2449,9 @@ function Geometry() {
 JSONAsset.extend(Geometry, "odin.Geometry");
 GeometryPrototype = Geometry.prototype;
 
-GeometryPrototype.construct = function(name, src, options) {
+GeometryPrototype.construct = function(options) {
 
-    JSONAssetPrototype.construct.call(this, name, src, options);
+    JSONAssetPrototype.construct.call(this, options);
 
     return this;
 };
@@ -2789,6 +2943,139 @@ GeometryPrototype.calculateTangents = function() {
 
 },
 function(require, exports, module, undefined, global) {
+/* ../../../src/Assets/Shader/index.js */
+
+var arrayMap = require(201),
+    keys = require(64),
+    template = require(203),
+    pushUnique = require(204),
+    chunks = require(205),
+    TextAsset = require(23);
+
+
+var TextAssetPrototype = TextAsset.prototype,
+
+    VERTEX = "vertex",
+    FRAGMENT = "fragment",
+
+    chunkRegExps = arrayMap(keys(chunks), function(key) {
+        return {
+            key: key,
+            regexp: new RegExp("\\b" + key + "\\b")
+        };
+    }),
+
+    ShaderPrototype;
+
+
+module.exports = Shader;
+
+
+function Shader() {
+
+    TextAsset.call(this);
+
+    this.vertex = null;
+    this.fragment = null;
+    this.templateVariables = [];
+}
+TextAsset.extend(Shader, "odin.Shader");
+ShaderPrototype = Shader.prototype;
+
+ShaderPrototype.construct = function(options) {
+
+    TextAssetPrototype.construct.call(this, options);
+
+    if (options && options.vertex && options.fragment) {
+        this.set(options.vertex, options.fragment);
+    }
+
+    return this;
+};
+
+ShaderPrototype.destructor = function() {
+
+    TextAssetPrototype.destructor.call(this);
+
+    this.vertex = null;
+    this.fragment = null;
+    this.templateVariables.length = 0;
+
+    return this;
+};
+
+ShaderPrototype.parse = function() {
+    var data = this.data;
+
+    TextAssetPrototype.parse.call(this);
+
+    if (data && data.vertex && data.fragment) {
+        this.set(data.vertex, data.fragment);
+    }
+
+    return this;
+};
+
+ShaderPrototype.set = function(vertex, fragment) {
+
+    this.templateVariables.length = 0;
+    this.vertex = Shader_compile(this, vertex, VERTEX);
+    this.fragment = Shader_compile(this, fragment, FRAGMENT);
+
+    return this;
+};
+
+function Shader_compile(_this, shader, type) {
+    var templateVariables = _this.templateVariables,
+        shaderChunks = [],
+        out = "",
+        i = -1,
+        il = chunkRegExps.length - 1,
+        chunkRegExp;
+
+    while (i++ < il) {
+        chunkRegExp = chunkRegExps[i];
+
+        if (chunkRegExp.regexp.test(shader)) {
+            requireChunk(shaderChunks, templateVariables, chunks[chunkRegExp.key], type);
+        }
+    }
+
+    i = -1;
+    il = shaderChunks.length - 1;
+    while (i++ < il) {
+        out += shaderChunks[i].code;
+    }
+
+    return template(out + "\n" + shader);
+}
+
+function requireChunk(shaderChunks, templateVariables, chunk, type) {
+    var requires, i, il;
+
+    if (
+        type === VERTEX && chunk.vertex ||
+        type === FRAGMENT && chunk.fragment
+    ) {
+        requires = chunk.requires;
+        i = -1;
+        il = requires.length - 1;
+
+        while (i++ < il) {
+            requireChunk(shaderChunks, templateVariables, chunks[requires[i]], type);
+        }
+
+        pushUnique(shaderChunks, chunk);
+
+        if (chunk.template) {
+            pushUnique.array(templateVariables, chunk.template);
+        }
+    }
+}
+
+
+},
+function(require, exports, module, undefined, global) {
 /* ../../../src/Canvas.js */
 
 var isNumber = require(12),
@@ -2842,6 +3129,7 @@ module.exports = Canvas;
 
 
 function Canvas() {
+    var _this = this;
 
     Class.call(this);
 
@@ -2859,7 +3147,9 @@ function Canvas() {
     this.pixelWidth = null;
     this.pixelHeight = null;
 
-    this.__handler = null;
+    this.__handler = function handler() {
+        Canvas_update(_this);
+    };
 }
 Class.extend(Canvas, "odin.Canvas");
 CanvasPrototype = Canvas.prototype;
@@ -2941,12 +3231,6 @@ function Canvas_setFixed(_this) {
     style.marginLeft = "0px";
     style.marginTop = "0px";
 
-    if (!_this.__handler) {
-        _this.__handler = function handler() {
-            Canvas_update(_this);
-        };
-    }
-
     eventListener.on(window, "resize orientationchange", _this.__handler);
     Canvas_update(_this);
 
@@ -3012,21 +3296,21 @@ function Canvas_update(_this) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Renderer/index.js */
 
-var indexOf = require(110),
-    WebGLContext = require(69),
-    mat4 = require(130),
+var indexOf = require(111),
+    WebGLContext = require(70),
+    mat4 = require(131),
 
     isNullOrUndefined = require(11),
 
     Class = require(14),
-    side = require(75),
+    side = require(76),
 
-    MeshRenderer = require(206),
-    SpriteRenderer = require(207),
+    MeshRenderer = require(211),
+    SpriteRenderer = require(212),
 
-    ProgramData = require(208),
-    RendererGeometry = require(209),
-    RendererMaterial = require(210);
+    ProgramData = require(213),
+    RendererGeometry = require(214),
+    RendererMaterial = require(215);
 
 
 var enums = WebGLContext.enums,
@@ -3452,26 +3736,32 @@ function FrameBuffer() {
 Class.extend(FrameBuffer, "odin.FrameBuffer");
 FrameBufferPrototype = FrameBuffer.prototype;
 
-FrameBufferPrototype.construct = function(texture, depthBuffer, stencilBuffer) {
+FrameBufferPrototype.construct = function(options) {
 
     ClassPrototype.construct.call(this);
 
-    this.depthBuffer = !!depthBuffer ? !!depthBuffer : this.depthBuffer;
-    this.stencilBuffer = !!stencilBuffer ? !!stencilBuffer : this.stencilBuffer;
-    this.texture = texture;
+    options = options || {};
+
+    this.depthBuffer = !!options.depthBuffer ? !!options.depthBuffer : this.depthBuffer;
+    this.stencilBuffer = !!options.stencilBuffer ? !!options.stencilBuffer : this.stencilBuffer;
+    this.texture = options.texture;
 
     return this;
 };
 
 FrameBufferPrototype.setDepthBuffer = function(depthBuffer) {
+
     this.depthBuffer = !!depthBuffer;
     this.emit("update");
+
     return this;
 };
 
 FrameBufferPrototype.setStencilBuffer = function(stencilBuffer) {
+
     this.stencilBuffer = !!stencilBuffer;
     this.emit("update");
+
     return this;
 };
 
@@ -3567,134 +3857,13 @@ ComponentRendererPrototype.render = function( /* component, camera, scene, manag
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../src/Shader/index.js */
-
-var arrayMap = require(196),
-    keys = require(63),
-    template = require(198),
-    pushUnique = require(199),
-    Class = require(14),
-    chunks = require(200);
-
-
-var ClassPrototype = Class.prototype,
-
-    VERTEX = "vertex",
-    FRAGMENT = "fragment",
-
-    chunkRegExps = arrayMap(keys(chunks), function(key) {
-        return {
-            key: key,
-            regexp: new RegExp("\\b" + key + "\\b")
-        };
-    }),
-
-    ShaderPrototype;
-
-
-module.exports = Shader;
-
-
-function Shader() {
-
-    Class.call(this);
-
-    this.vertex = null;
-    this.fragment = null;
-    this.templateVariables = [];
-}
-Class.extend(Shader, "odin.Shader");
-ShaderPrototype = Shader.prototype;
-
-ShaderPrototype.construct = function(vertex, fragment) {
-
-    ClassPrototype.construct.call(this);
-
-    if (vertex && fragment) {
-        this.set(vertex, fragment);
-    }
-
-    return this;
-};
-
-ShaderPrototype.destructor = function() {
-
-    ClassPrototype.destructor.call(this);
-
-    this.vertex = null;
-    this.fragment = null;
-    this.templateVariables.length = 0;
-
-    return this;
-};
-
-ShaderPrototype.set = function(vertex, fragment) {
-
-    this.templateVariables.length = 0;
-    this.vertex = Shader_compile(this, vertex, VERTEX);
-    this.fragment = Shader_compile(this, fragment, FRAGMENT);
-
-    return this;
-};
-
-function Shader_compile(_this, shader, type) {
-    var templateVariables = _this.templateVariables,
-        shaderChunks = [],
-        out = "",
-        i = -1,
-        il = chunkRegExps.length - 1,
-        chunkRegExp;
-
-    while (i++ < il) {
-        chunkRegExp = chunkRegExps[i];
-
-        if (chunkRegExp.regexp.test(shader)) {
-            requireChunk(shaderChunks, templateVariables, chunks[chunkRegExp.key], type);
-        }
-    }
-
-    i = -1;
-    il = shaderChunks.length - 1;
-    while (i++ < il) {
-        out += shaderChunks[i].code;
-    }
-
-    return template(out + "\n" + shader);
-}
-
-function requireChunk(shaderChunks, templateVariables, chunk, type) {
-    var requires, i, il;
-
-    if (
-        type === VERTEX && chunk.vertex ||
-        type === FRAGMENT && chunk.fragment
-    ) {
-        requires = chunk.requires;
-        i = -1;
-        il = requires.length - 1;
-
-        while (i++ < il) {
-            requireChunk(shaderChunks, templateVariables, chunks[requires[i]], type);
-        }
-
-        pushUnique(shaderChunks, chunk);
-
-        if (chunk.template) {
-            pushUnique.array(templateVariables, chunk.template);
-        }
-    }
-}
-
-
-},
-function(require, exports, module, undefined, global) {
 /* ../../../src/Scene.js */
 
-var indexOf = require(110),
+var indexOf = require(111),
     Class = require(14),
-    Input = require(140),
-    Time = require(141),
-    Entity = require(34);
+    Input = require(141),
+    Time = require(142),
+    Entity = require(35);
 
 
 var ClassPrototype = Class.prototype,
@@ -3731,11 +3900,16 @@ function Scene() {
 Class.extend(Scene, "odin.Scene");
 ScenePrototype = Scene.prototype;
 
-ScenePrototype.construct = function(name) {
+ScenePrototype.construct = function(options) {
 
     ClassPrototype.construct.call(this);
 
-    this.name = name;
+    if (options) {
+        this.name = options.name || this.__id;
+    } else {
+        this.name = this.__id;
+    }
+
     this.time.construct();
     this.input.construct();
 
@@ -4347,7 +4521,7 @@ PluginPrototype.destroy = function(emitEvent) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Entity.js */
 
-var indexOf = require(110),
+var indexOf = require(111),
     Class = require(14);
 
 
@@ -4376,11 +4550,15 @@ function Entity() {
 Class.extend(Entity, "odin.Entity");
 EntityPrototype = Entity.prototype;
 
-EntityPrototype.construct = function(name) {
+EntityPrototype.construct = function(options) {
 
     ClassPrototype.construct.call(this);
 
-    this.name = name || this.__id;
+    if (options) {
+        this.name = options.name || this.__id;
+    } else {
+        this.name = this.__id;
+    }
 
     this.depth = 0;
     this.root = this;
@@ -4665,7 +4843,7 @@ EntityPrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/ComponentManager/index.js */
 
-var indexOf = require(110),
+var indexOf = require(111),
     Class = require(14),
     isNullOrUndefined = require(11);
 
@@ -4822,7 +5000,7 @@ function(require, exports, module, undefined, global) {
 /* ../../../src/Component/index.js */
 
 var Class = require(14),
-    ComponentManager = require(35);
+    ComponentManager = require(36);
 
 
 var ClassPrototype = Class.prototype,
@@ -4911,10 +5089,10 @@ ComponentPrototype.destroy = function(emitEvent) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Component/AudioSource.js */
 
-var audio = require(171),
-    vec2 = require(127),
-    vec3 = require(86),
-    Component = require(36);
+var audio = require(172),
+    vec2 = require(128),
+    vec3 = require(87),
+    Component = require(37);
 
 
 var ComponentPrototype = Component.prototype,
@@ -4951,14 +5129,16 @@ function AudioSource() {
 Component.extend(AudioSource, "odin.AudioSource");
 AudioSourcePrototype = AudioSource.prototype;
 
-AudioSourcePrototype.construct = function(audioAsset, options) {
+AudioSourcePrototype.construct = function(options) {
+    var audio = options && options.audio;
 
     ComponentPrototype.construct.call(this);
 
-    this.audioAsset = audioAsset;
-
-    this.__source.setClip(audioAsset.clip);
-    this.__source.construct(options);
+    if (audio) {
+        this.audioAsset = audio;
+        this.__source.setClip(audio.clip);
+        this.__source.construct(options);
+    }
 
     if (options) {
         if (options.offset) {
@@ -5138,12 +5318,12 @@ AudioSourcePrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Component/Transform.js */
 
-var vec3 = require(86),
-    quat = require(202),
-    mat3 = require(129),
-    mat4 = require(130),
-    Component = require(36),
-    TransformManager = require(211);
+var vec3 = require(87),
+    quat = require(207),
+    mat3 = require(130),
+    mat4 = require(131),
+    Component = require(37),
+    TransformManager = require(216);
 
 
 var ComponentPrototype = Component.prototype,
@@ -5350,12 +5530,12 @@ TransformPrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Component/Transform2D.js */
 
-var vec2 = require(127),
-    mat3 = require(129),
-    mat32 = require(212),
-    mat4 = require(130),
-    Component = require(36),
-    Transform2DManager = require(213);
+var vec2 = require(128),
+    mat3 = require(130),
+    mat32 = require(217),
+    mat4 = require(131),
+    Component = require(37),
+    Transform2DManager = require(218);
 
 
 var ComponentPrototype = Component.prototype,
@@ -5553,16 +5733,16 @@ Transform2DPrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Component/Camera.js */
 
-var audio = require(171),
+var audio = require(172),
     isNumber = require(12),
-    mathf = require(78),
-    vec2 = require(127),
-    vec3 = require(86),
-    mat4 = require(130),
-    color = require(79),
+    mathf = require(79),
+    vec2 = require(128),
+    vec3 = require(87),
+    mat4 = require(131),
+    color = require(80),
     isNullOrUndefined = require(11),
-    Component = require(36),
-    CameraManager = require(214);
+    Component = require(37),
+    CameraManager = require(219);
 
 
 var ComponentPrototype = Component.prototype,
@@ -5892,8 +6072,8 @@ function(require, exports, module, undefined, global) {
 
 var isNumber = require(12),
     isNullOrUndefined = require(11),
-    Component = require(36),
-    SpriteManager = require(215);
+    Component = require(37),
+    SpriteManager = require(220);
 
 
 var ComponentPrototype = Component.prototype,
@@ -6042,11 +6222,11 @@ SpritePrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Component/Mesh.js */
 
-var Component = require(36),
-    Bone = require(216),
-    Transform = require(38),
-    Entity = require(34),
-    MeshManager = require(217);
+var Component = require(37),
+    Bone = require(221),
+    Transform = require(39),
+    Entity = require(35),
+    MeshManager = require(222);
 
 
 var ComponentPrototype = Component.prototype,
@@ -6068,12 +6248,14 @@ function Mesh() {
 Component.extend(Mesh, "odin.Mesh", MeshManager);
 MeshPrototype = Mesh.prototype;
 
-MeshPrototype.construct = function(geometry, material) {
+MeshPrototype.construct = function(options) {
 
     ComponentPrototype.construct.call(this);
 
-    this.geometry = geometry;
-    this.material = material;
+    if (options) {
+        this.geometry = options.geometry;
+        this.material = options.material;
+    }
 
     return this;
 };
@@ -6148,12 +6330,12 @@ MeshPrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Component/MeshAnimation.js */
 
-var vec3 = require(86),
-    quat = require(202),
-    mathf = require(78),
+var vec3 = require(87),
+    quat = require(207),
+    mathf = require(79),
     isNullOrUndefined = require(11),
-    Component = require(36),
-    wrapMode = require(77);
+    Component = require(37),
+    wrapMode = require(78);
 
 
 var ComponentPrototype = Component.prototype,
@@ -6183,13 +6365,13 @@ function MeshAnimation() {
 Component.extend(MeshAnimation, "odin.MeshAnimation");
 MeshAnimationPrototype = MeshAnimation.prototype;
 
-MeshAnimationPrototype.construct = function(animations, options) {
+MeshAnimationPrototype.construct = function(options) {
 
     ComponentPrototype.construct.call(this);
 
     options = options || {};
 
-    this.animations = animations;
+    this.animations = options.animations || {};
 
     this.current = isNullOrUndefined(options.current) ? "idle" : options.current;
     this.mode = isNullOrUndefined(options.mode) ? wrapMode.LOOP : options.mode;
@@ -6426,10 +6608,10 @@ function(require, exports, module, undefined, global) {
 /* ../../../src/Component/OrbitControl.js */
 
 var environment = require(1),
-    mathf = require(78),
-    vec3 = require(86),
+    mathf = require(79),
+    vec3 = require(87),
     isNullOrUndefined = require(11),
-    Component = require(36);
+    Component = require(37);
 
 
 var ComponentPrototype = Component.prototype,
@@ -6752,9 +6934,9 @@ function OrbitControl_onMouseWheel(_this, e, wheel) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Component/ParticleSystem/index.js */
 
-var indexOf = require(110),
-    particleState = require(219),
-    Component = require(36);
+var indexOf = require(111),
+    particleState = require(224),
+    Component = require(37);
 
 
 var ComponentPrototype = Component.prototype,
@@ -6776,7 +6958,7 @@ function ParticleSystem() {
 Component.extend(ParticleSystem, "odin.ParticleSystem");
 ParticleSystemPrototype = ParticleSystem.prototype;
 
-ParticleSystem.Emitter = require(220);
+ParticleSystem.Emitter = require(225);
 
 ParticleSystemPrototype.construct = function(options) {
     var emitters, i, il;
@@ -6991,7 +7173,7 @@ function randFloat(random, min, max, t) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/utils/randInt.js */
 
-var mathf = require(78);
+var mathf = require(79);
 
 
 module.exports = randInt;
@@ -7006,8 +7188,8 @@ function randInt(random, min, max, t) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/has/src/index.js */
 
-var isNative = require(54),
-    getPrototypeOf = require(55),
+var isNative = require(55),
+    getPrototypeOf = require(56),
     isNullOrUndefined = require(11);
 
 
@@ -7047,10 +7229,10 @@ if (isNative(nativeHasOwnProp)) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/inherits/src/index.js */
 
-var create = require(58),
-    extend = require(59),
-    mixin = require(60),
-    defineProperty = require(61);
+var create = require(59),
+    extend = require(60),
+    mixin = require(61),
+    defineProperty = require(62);
 
 
 var descriptor = {
@@ -7100,9 +7282,9 @@ function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/event_emitter/src/index.js */
 
 var isFunction = require(6),
-    inherits = require(50),
-    fastSlice = require(64),
-    keys = require(63),
+    inherits = require(51),
+    fastSlice = require(65),
+    keys = require(64),
     isNumber = require(12),
     isNullOrUndefined = require(11);
 
@@ -7571,7 +7753,7 @@ function(require, exports, module, undefined, global) {
 
 var isFunction = require(6),
     isNumber = require(12),
-    defineProperty = require(61);
+    defineProperty = require(62);
 
 
 var descriptor = {
@@ -7787,7 +7969,7 @@ function(require, exports, module, undefined, global) {
 
 var isFunction = require(6),
     isNullOrUndefined = require(11),
-    escapeRegExp = require(56);
+    escapeRegExp = require(57);
 
 
 var reHostCtor = /^\[object .+?Constructor\]$/,
@@ -7836,7 +8018,7 @@ function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/get_prototype_of/src/index.js */
 
 var isObject = require(5),
-    isNative = require(54),
+    isNative = require(55),
     isNullOrUndefined = require(11);
 
 
@@ -7876,7 +8058,7 @@ if (isNative(nativeGetPrototypeOf)) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/escape_regexp/src/index.js */
 
-var toString = require(57);
+var toString = require(58);
 
 
 var reRegExpChars = /[.*+?\^${}()|\[\]\/\\]/g,
@@ -7923,8 +8105,8 @@ function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/create/src/index.js */
 
 var isNull = require(8),
-    isNative = require(54),
-    isPrimitive = require(62);
+    isNative = require(55),
+    isPrimitive = require(63);
 
 
 var nativeCreate = Object.create;
@@ -7965,7 +8147,7 @@ module.exports = create;
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/extend/src/index.js */
 
-var keys = require(63);
+var keys = require(64);
 
 
 module.exports = extend;
@@ -7999,7 +8181,7 @@ function baseExtend(a, b) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/mixin/src/index.js */
 
-var keys = require(63),
+var keys = require(64),
     isNullOrUndefined = require(11);
 
 
@@ -8039,9 +8221,9 @@ function(require, exports, module, undefined, global) {
 
 var isObject = require(5),
     isFunction = require(6),
-    isPrimitive = require(62),
-    isNative = require(54),
-    has = require(49);
+    isPrimitive = require(63),
+    isNative = require(55),
+    has = require(50);
 
 
 var nativeDefineProperty = Object.defineProperty;
@@ -8113,8 +8295,8 @@ function isPrimitive(obj) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/keys/src/index.js */
 
-var has = require(49),
-    isNative = require(54),
+var has = require(50),
+    isNative = require(55),
     isNullOrUndefined = require(11),
     isObject = require(5);
 
@@ -8155,7 +8337,7 @@ if (!isNative(nativeKeys)) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/class/node_modules/fast_slice/src/index.js */
 
-var clamp = require(65),
+var clamp = require(66),
     isNumber = require(12);
 
 
@@ -8204,8 +8386,8 @@ function(require, exports, module, undefined, global) {
 /* ../../../node_modules/request_animation_frame/src/index.js */
 
 var environment = require(1),
-    emptyFunction = require(67),
-    now = require(68);
+    emptyFunction = require(68),
+    now = require(69);
 
 
 var window = environment.window,
@@ -8346,18 +8528,21 @@ module.exports = now;
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/index.js */
 
-var mathf = require(78),
+var mathf = require(79),
+
+    isNull = require(8),
+    isNullOrUndefined = require(11),
 
     environment = require(1),
-    EventEmitter = require(51),
+    EventEmitter = require(52),
     eventListener = require(2),
-    color = require(79),
+    color = require(80),
 
-    enums = require(80),
-    WebGLBuffer = require(81),
-    WebGLTexture = require(82),
-    WebGLFrameBuffer = require(83),
-    WebGLProgram = require(84);
+    enums = require(81),
+    WebGLBuffer = require(82),
+    WebGLTexture = require(83),
+    WebGLFrameBuffer = require(84),
+    WebGLProgram = require(85);
 
 
 var NativeUint8Array = typeof(Uint8Array) !== "undefined" ? Uint8Array : Array,
@@ -8688,7 +8873,7 @@ WebGLContextPrototype.clearFrameBuffer = function() {
     var gl = this.gl,
         webglFrameBuffer = this.__framebuffer;
 
-    if (webglFrameBuffer !== null) {
+    if (!isNull(webglFrameBuffer)) {
         this.__framebuffer = null;
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -9097,28 +9282,28 @@ WebGLContextPrototype.getExtension = function(name, throwError) {
         extension = extensions[name] || (extensions[name] = gl.getExtension(name)),
         i;
 
-    if (extension == null) {
+    if (isNullOrUndefined(extension)) {
         i = getExtension_upperPrefixes.length;
 
         while (i--) {
-            if ((extension = gl.getExtension(getExtension_upperPrefixes[i] + "_" + name))) {
+            if (!isNullOrUndefined(extension = gl.getExtension(getExtension_upperPrefixes[i] + "_" + name))) {
                 extensions[name] = extension;
                 break;
             }
         }
     }
-    if (extension == null) {
+    if (isNullOrUndefined(extension)) {
         i = getExtension_lowerPrefixes.length;
 
         while (i--) {
-            if ((extension = gl.getExtension(getExtension_lowerPrefixes[i] + name))) {
+            if (!isNullOrUndefined(extension = gl.getExtension(getExtension_lowerPrefixes[i] + name))) {
                 extensions[name] = extension;
                 break;
             }
         }
     }
 
-    if (extension == null) {
+    if (isNullOrUndefined(extension)) {
         if (throwError) {
             throw new Error("WebGLContext.getExtension: could not get Extension " + name);
         } else {
@@ -9133,12 +9318,12 @@ WebGLContextPrototype.getExtension = function(name, throwError) {
 function getAttributes(attributes, options) {
     options = options || {};
 
-    attributes.alpha = options.alpha != null ? !!options.alpha : attributes.alpha;
-    attributes.antialias = options.antialias != null ? !!options.antialias : attributes.antialias;
-    attributes.depth = options.depth != null ? !!options.depth : attributes.depth;
-    attributes.premultipliedAlpha = options.premultipliedAlpha != null ? !!options.premultipliedAlpha : attributes.premultipliedAlpha;
-    attributes.preserveDrawingBuffer = options.preserveDrawingBuffer != null ? !!options.preserveDrawingBuffer : attributes.preserveDrawingBuffer;
-    attributes.stencil = options.stencil != null ? !!options.stencil : attributes.stencil;
+    attributes.alpha = !isNullOrUndefined(options.alpha) ? !!options.alpha : attributes.alpha;
+    attributes.antialias = !isNullOrUndefined(options.antialias) ? !!options.antialias : attributes.antialias;
+    attributes.depth = !isNullOrUndefined(options.depth) ? !!options.depth : attributes.depth;
+    attributes.premultipliedAlpha = !isNullOrUndefined(options.premultipliedAlpha) ? !!options.premultipliedAlpha : attributes.premultipliedAlpha;
+    attributes.preserveDrawingBuffer = !isNullOrUndefined(options.preserveDrawingBuffer) ? !!options.preserveDrawingBuffer : attributes.preserveDrawingBuffer;
+    attributes.stencil = !isNullOrUndefined(options.stencil) ? !!options.stencil : attributes.stencil;
 
     return attributes;
 }
@@ -9158,13 +9343,13 @@ function handleWebGLContextContextRestored(_this, e) {
 function WebGLContext_getGLContext(_this) {
     var gl;
 
-    if (_this.gl != null) {
+    if (!isNullOrUndefined(_this.gl)) {
         _this.clearGL();
     }
 
     gl = getWebGLContext(_this.canvas, _this.__attributes);
 
-    if (gl == null) {
+    if (isNullOrUndefined(gl)) {
         _this.emit("webglcontextcreationfailed");
     } else {
         _this.emit("webglcontextcreation");
@@ -9234,7 +9419,7 @@ function getGPUInfo(_this) {
 }
 
 var getWebGLContext_webglNames = ["3d", "moz-webgl", "experimental-webgl", "webkit-3d", "webgl"],
-    getWebGLContext_attuibutes = {
+    getWebGLContext_webglAttributes = {
         alpha: true,
         antialias: true,
         depth: true,
@@ -9244,25 +9429,28 @@ var getWebGLContext_webglNames = ["3d", "moz-webgl", "experimental-webgl", "webk
     };
 
 function getWebGLContext(canvas, attributes) {
-    var i = getWebGLContext_webglNames.length,
+    var webglNames = getWebGLContext_webglNames,
+        webglAttributes = getWebGLContext_webglAttributes,
+        i = webglNames.length,
         gl, key;
 
     attributes = attributes || {};
 
-    for (key in getWebGLContext_attuibutes) {
-        if (attributes[key] == null) {
-            attributes[key] = getWebGLContext_attuibutes[key];
+    for (key in webglAttributes) {
+        if (isNullOrUndefined(attributes[key])) {
+            attributes[key] = webglAttributes[key];
         }
     }
 
     while (i--) {
         try {
-            gl = canvas.getContext(getWebGLContext_webglNames[i], attributes);
+            gl = canvas.getContext(webglNames[i], attributes);
             if (gl) {
                 return gl;
             }
         } catch (e) {}
     }
+
     if (!gl) {
         throw new Error("WebGLContext: could not get a WebGL Context");
     }
@@ -9275,7 +9463,7 @@ function getWebGLContext(canvas, attributes) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/enums/axis.js */
 
-var enums = require(98);
+var enums = require(99);
 
 
 var emitterRenderMode = enums([
@@ -9294,7 +9482,7 @@ module.exports = emitterRenderMode;
 function(require, exports, module, undefined, global) {
 /* ../../../src/enums/emitterRenderMode.js */
 
-var enums = require(98);
+var enums = require(99);
 
 
 var emitterRenderMode = enums([
@@ -9312,7 +9500,7 @@ module.exports = emitterRenderMode;
 function(require, exports, module, undefined, global) {
 /* ../../../src/enums/interpolation.js */
 
-var enums = require(98);
+var enums = require(99);
 
 
 var interpolation = enums([
@@ -9331,7 +9519,7 @@ module.exports = interpolation;
 function(require, exports, module, undefined, global) {
 /* ../../../src/enums/normalMode.js */
 
-var enums = require(98);
+var enums = require(99);
 
 
 var normalMode = enums([
@@ -9348,7 +9536,7 @@ module.exports = normalMode;
 function(require, exports, module, undefined, global) {
 /* ../../../src/enums/screenAlignment.js */
 
-var enums = require(98);
+var enums = require(99);
 
 
 var screenAlignment = enums([
@@ -9367,7 +9555,7 @@ module.exports = screenAlignment;
 function(require, exports, module, undefined, global) {
 /* ../../../src/enums/side.js */
 
-var enums = require(98);
+var enums = require(99);
 
 
 var side = enums([
@@ -9385,7 +9573,7 @@ module.exports = side;
 function(require, exports, module, undefined, global) {
 /* ../../../src/enums/sortMode.js */
 
-var enums = require(98);
+var enums = require(99);
 
 
 var sortMode = enums([
@@ -9404,7 +9592,7 @@ module.exports = sortMode;
 function(require, exports, module, undefined, global) {
 /* ../../../src/enums/wrapMode.js */
 
-var enums = require(98);
+var enums = require(99);
 
 
 var wrapMode = enums([
@@ -9422,9 +9610,9 @@ module.exports = wrapMode;
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/mathf/src/index.js */
 
-var keys = require(63),
-    clamp = require(65),
-    isNaNPolyfill = require(85);
+var keys = require(64),
+    clamp = require(66),
+    isNaNPolyfill = require(86);
 
 
 var mathf = exports,
@@ -9833,12 +10021,12 @@ mathf.direction = function(x, y) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/color/src/index.js */
 
-var mathf = require(78),
-    vec3 = require(86),
-    vec4 = require(87),
+var mathf = require(79),
+    vec3 = require(87),
+    vec4 = require(88),
     isNumber = require(12),
     isString = require(10),
-    colorNames = require(88);
+    colorNames = require(89);
 
 
 var color = exports;
@@ -10066,23 +10254,23 @@ color.colorNames = colorNames;
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/index.js */
 
-var objectReverse = require(89);
+var objectReverse = require(90);
 
 
 var enums = exports;
 
 
-enums.blending = require(90);
-enums.cullFace = require(91);
-enums.depth = require(92);
-enums.filterMode = require(93);
+enums.blending = require(91);
+enums.cullFace = require(92);
+enums.depth = require(93);
+enums.filterMode = require(94);
 
-enums.gl = require(94);
+enums.gl = require(95);
 enums.glValues = objectReverse(enums.gl);
 
-enums.textureFormat = require(95);
-enums.textureType = require(96);
-enums.textureWrap = require(97);
+enums.textureFormat = require(96);
+enums.textureType = require(97);
+enums.textureWrap = require(98);
 
 
 },
@@ -10141,9 +10329,10 @@ WebGLBufferPrototype.compile = function(type, array, stride, draw) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/WebGLTexture.js */
 
-var isArray = require(106),
-    mathf = require(78),
-    enums = require(80);
+var isArray = require(107),
+    isNullOrUndefined = require(11),
+    mathf = require(79),
+    enums = require(81);
 
 
 var WebGLTexturePrototype,
@@ -10251,7 +10440,7 @@ function WebGLTexture_getGLTexture(_this) {
         glTexture = _this.glTexture || (_this.glTexture = gl.createTexture()),
 
         image = texture.data,
-        notNull = image != null,
+        notNull = !isNullOrUndefined(image),
         isCubeMap = isArray(image),
 
         width = texture.width,
@@ -10576,12 +10765,12 @@ function setupRenderBuffer(gl, glRenderBuffer, width, height, depthBuffer, stenc
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/WebGLProgram.js */
 
-var isArray = require(106),
-    FastHash = require(107),
+var isArray = require(107),
+    FastHash = require(108),
 
-    enums = require(80),
-    uniforms = require(108),
-    attributes = require(109);
+    enums = require(81),
+    uniforms = require(109),
+    attributes = require(110);
 
 
 var reUniformName = /[^\[]+/,
@@ -10749,7 +10938,7 @@ module.exports = Number.isNaN || function isNaN(value) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/vec3/src/index.js */
 
-var mathf = require(78),
+var mathf = require(79),
     isNumber = require(12);
 
 
@@ -11161,7 +11350,7 @@ vec3.string = vec3.toString = vec3.str;
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/vec4/src/index.js */
 
-var mathf = require(78),
+var mathf = require(79),
     isNumber = require(12);
 
 
@@ -11675,7 +11864,7 @@ module.exports = {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/object-reverse/src/index.js */
 
-var has = require(49);
+var has = require(50);
 
 
 module.exports = objectReverse;
@@ -11700,7 +11889,7 @@ function objectReverse(object) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/blending.js */
 
-var enums = require(98);
+var enums = require(99);
 
 
 module.exports = enums([
@@ -11716,8 +11905,8 @@ module.exports = enums([
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/cullFace.js */
 
-var enums = require(98),
-    gl = require(94);
+var enums = require(99),
+    gl = require(95);
 
 
 module.exports = enums({
@@ -11732,8 +11921,8 @@ module.exports = enums({
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/depth.js */
 
-var enums = require(98),
-    gl = require(94);
+var enums = require(99),
+    gl = require(95);
 
 
 module.exports = enums({
@@ -11753,7 +11942,7 @@ module.exports = enums({
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/filterMode.js */
 
-var enums = require(98);
+var enums = require(99);
 
 
 module.exports = enums({
@@ -11766,7 +11955,7 @@ module.exports = enums({
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/gl.js */
 
-var enums = require(98);
+var enums = require(99);
 
 
 module.exports = enums({
@@ -12074,8 +12263,8 @@ module.exports = enums({
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/textureFormat.js */
 
-var enums = require(98),
-    gl = require(94);
+var enums = require(99),
+    gl = require(95);
 
 
 module.exports = enums({
@@ -12091,8 +12280,8 @@ module.exports = enums({
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/textureType.js */
 
-var enums = require(98),
-    gl = require(94);
+var enums = require(99),
+    gl = require(95);
 
 
 module.exports = enums({
@@ -12110,8 +12299,8 @@ module.exports = enums({
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/enums/textureWrap.js */
 
-var enums = require(98),
-    gl = require(94);
+var enums = require(99),
+    gl = require(95);
 
 
 module.exports = enums({
@@ -12125,13 +12314,13 @@ module.exports = enums({
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/enums/src/index.js */
 
-var create = require(58),
-    defineProperty = require(61),
-    forEach = require(99),
+var create = require(59),
+    defineProperty = require(62),
+    forEach = require(100),
     isString = require(10),
     isNumber = require(12),
-    emptyFunction = require(67),
-    stringHashCode = require(100);
+    emptyFunction = require(68),
+    stringHashCode = require(101);
 
 
 var reSpliter = /[\s\, ]+/,
@@ -12185,11 +12374,11 @@ createEnum.set = function(object) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/for_each/src/index.js */
 
-var isArrayLike = require(101),
+var isArrayLike = require(102),
     isNullOrUndefined = require(11),
-    fastBindThis = require(102),
-    arrayForEach = require(103),
-    objectForEach = require(104);
+    fastBindThis = require(103),
+    arrayForEach = require(104),
+    objectForEach = require(105);
 
 
 module.exports = forEach;
@@ -12262,7 +12451,7 @@ function hashString(string) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/is_array_like/src/index.js */
 
-var isLength = require(105),
+var isLength = require(106),
     isFunction = require(6),
     isObject = require(5);
 
@@ -12340,7 +12529,7 @@ function arrayForEach(array, callback) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/object-for_each/src/index.js */
 
-var keys = require(63);
+var keys = require(64);
 
 
 module.exports = objectForEach;
@@ -12386,8 +12575,8 @@ function isLength(value) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/is_array/src/index.js */
 
-var isNative = require(54),
-    isLength = require(105),
+var isNative = require(55),
+    isLength = require(106),
     isObject = require(5);
 
 
@@ -12416,11 +12605,11 @@ module.exports = isArray;
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/fast_hash/src/index.js */
 
-var has = require(49),
-    indexOf = require(110),
+var has = require(50),
+    indexOf = require(111),
     isNullOrUndefined = require(11),
-    arrayForEach = require(103),
-    fastBindThis = require(102);
+    arrayForEach = require(104),
+    fastBindThis = require(103);
 
 
 var FastHashPrototype;
@@ -12519,28 +12708,28 @@ function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/index.js */
 
 module.exports = {
-    BOOL: require(112),
-    INT: require(113),
-    FLOAT: require(114),
+    BOOL: require(113),
+    INT: require(114),
+    FLOAT: require(115),
 
-    BOOL_VEC2: require(115),
-    BOOL_VEC3: require(116),
-    BOOL_VEC4: require(117),
+    BOOL_VEC2: require(116),
+    BOOL_VEC3: require(117),
+    BOOL_VEC4: require(118),
 
-    INT_VEC2: require(115),
-    INT_VEC3: require(116),
-    INT_VEC4: require(117),
+    INT_VEC2: require(116),
+    INT_VEC3: require(117),
+    INT_VEC4: require(118),
 
-    FLOAT_VEC2: require(118),
-    FLOAT_VEC3: require(119),
-    FLOAT_VEC4: require(120),
+    FLOAT_VEC2: require(119),
+    FLOAT_VEC3: require(120),
+    FLOAT_VEC4: require(121),
 
-    FLOAT_MAT2: require(121),
-    FLOAT_MAT3: require(122),
-    FLOAT_MAT4: require(123),
+    FLOAT_MAT2: require(122),
+    FLOAT_MAT3: require(123),
+    FLOAT_MAT4: require(124),
 
-    SAMPLER_2D: require(124),
-    SAMPLER_CUBE: require(125)
+    SAMPLER_2D: require(125),
+    SAMPLER_CUBE: require(126)
 };
 
 
@@ -12549,16 +12738,16 @@ function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/index.js */
 
 module.exports = {
-    INT: require(131),
-    FLOAT: require(132),
+    INT: require(132),
+    FLOAT: require(133),
 
-    INT_VEC2: require(133),
-    INT_VEC3: require(134),
-    INT_VEC4: require(135),
+    INT_VEC2: require(134),
+    INT_VEC3: require(135),
+    INT_VEC4: require(136),
 
-    FLOAT_VEC2: require(136),
-    FLOAT_VEC3: require(137),
-    FLOAT_VEC4: require(138)
+    FLOAT_VEC2: require(137),
+    FLOAT_VEC3: require(138),
+    FLOAT_VEC4: require(139)
 };
 
 
@@ -12566,7 +12755,7 @@ module.exports = {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/index_of/src/index.js */
 
-var isEqual = require(111);
+var isEqual = require(112);
 
 
 module.exports = indexOf;
@@ -12602,7 +12791,7 @@ function isEqual(a, b) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform1b.js */
 
-var Uniform = require(126);
+var Uniform = require(127);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -12637,7 +12826,7 @@ Uniform1b.prototype.set = function(value, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform1i.js */
 
-var Uniform = require(126);
+var Uniform = require(127);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -12672,7 +12861,7 @@ Uniform1i.prototype.set = function(value, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform1f.js */
 
-var Uniform = require(126);
+var Uniform = require(127);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -12707,8 +12896,8 @@ Uniform1f.prototype.set = function(value, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform2i.js */
 
-var vec2 = require(127),
-    Uniform = require(126);
+var vec2 = require(128),
+    Uniform = require(127);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -12743,8 +12932,8 @@ Uniform2i.prototype.set = function(value, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform3i.js */
 
-var vec3 = require(86),
-    Uniform = require(126);
+var vec3 = require(87),
+    Uniform = require(127);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -12779,8 +12968,8 @@ Uniform3i.prototype.set = function(value, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform4i.js */
 
-var vec4 = require(87),
-    Uniform = require(126);
+var vec4 = require(88),
+    Uniform = require(127);
 
 
 var NativeInt32Array = typeof(Int32Array) !== "undefined" ? Int32Array : Array;
@@ -12815,8 +13004,8 @@ Uniform4i.prototype.set = function(value, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform2f.js */
 
-var vec2 = require(127),
-    Uniform = require(126);
+var vec2 = require(128),
+    Uniform = require(127);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -12851,8 +13040,8 @@ Uniform2f.prototype.set = function(value, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform3f.js */
 
-var vec3 = require(86),
-    Uniform = require(126);
+var vec3 = require(87),
+    Uniform = require(127);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -12887,8 +13076,8 @@ Uniform3f.prototype.set = function(value, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform4f.js */
 
-var vec4 = require(87),
-    Uniform = require(126);
+var vec4 = require(88),
+    Uniform = require(127);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -12923,8 +13112,8 @@ Uniform4f.prototype.set = function(value, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/UniformMatrix2fv.js */
 
-var mat2 = require(128),
-    Uniform = require(126);
+var mat2 = require(129),
+    Uniform = require(127);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -12959,8 +13148,8 @@ UniformMatrix2fv.prototype.set = function(value, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/UniformMatrix3fv.js */
 
-var mat3 = require(129),
-    Uniform = require(126);
+var mat3 = require(130),
+    Uniform = require(127);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -12999,8 +13188,8 @@ UniformMatrix3fv.prototype.set = function(value, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/UniformMatrix4fv.js */
 
-var mat4 = require(130),
-    Uniform = require(126);
+var mat4 = require(131),
+    Uniform = require(127);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array;
@@ -13040,7 +13229,7 @@ UniformMatrix4fv.prototype.set = function(value, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/UniformTexture.js */
 
-var Uniform = require(126);
+var Uniform = require(127);
 
 
 module.exports = UniformTexture;
@@ -13061,7 +13250,7 @@ UniformTexture.prototype.set = function(value, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/UniformTextureCube.js */
 
-var Uniform = require(126);
+var Uniform = require(127);
 
 
 module.exports = UniformTextureCube;
@@ -13082,7 +13271,7 @@ UniformTextureCube.prototype.set = function(value, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/uniforms/Uniform.js */
 
-var inherits = require(50);
+var inherits = require(51);
 
 
 module.exports = Uniform;
@@ -13109,7 +13298,7 @@ Uniform.prototype.set = function( /* value, force */ ) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/vec2/src/index.js */
 
-var mathf = require(78),
+var mathf = require(79),
     isNumber = require(12);
 
 
@@ -13481,7 +13670,7 @@ vec2.string = vec2.toString = vec2.str;
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/mat2/src/index.js */
 
-var mathf = require(78),
+var mathf = require(79),
     isNumber = require(12);
 
 
@@ -13703,7 +13892,7 @@ mat2.string = mat2.toString = mat2.str;
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/mat3/src/index.js */
 
-var mathf = require(78),
+var mathf = require(79),
     isNumber = require(12);
 
 
@@ -14098,8 +14287,8 @@ mat3.string = mat3.toString = mat3.str;
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/node_modules/mat4/src/index.js */
 
-var mathf = require(78),
-    vec3 = require(86),
+var mathf = require(79),
+    vec3 = require(87),
     isNumber = require(12);
 
 
@@ -15115,7 +15304,7 @@ mat4.string = mat4.toString = mat4.str;
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute1i.js */
 
-var Attribute = require(139);
+var Attribute = require(140);
 
 
 module.exports = Attribute1i;
@@ -15139,7 +15328,7 @@ Attribute1i.prototype.set = function(buffer, offset, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute1f.js */
 
-var Attribute = require(139);
+var Attribute = require(140);
 
 
 module.exports = Attribute1f;
@@ -15163,7 +15352,7 @@ Attribute1f.prototype.set = function(buffer, offset, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute2i.js */
 
-var Attribute = require(139);
+var Attribute = require(140);
 
 
 module.exports = Attribute2i;
@@ -15187,7 +15376,7 @@ Attribute2i.prototype.set = function(buffer, offset, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute3i.js */
 
-var Attribute = require(139);
+var Attribute = require(140);
 
 
 module.exports = Attribute3i;
@@ -15211,7 +15400,7 @@ Attribute3i.prototype.set = function(buffer, offset, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute4i.js */
 
-var Attribute = require(139);
+var Attribute = require(140);
 
 
 module.exports = Attribute4i;
@@ -15235,7 +15424,7 @@ Attribute4i.prototype.set = function(buffer, offset, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute2f.js */
 
-var Attribute = require(139);
+var Attribute = require(140);
 
 
 module.exports = Attribute2f;
@@ -15259,7 +15448,7 @@ Attribute2f.prototype.set = function(buffer, offset, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute3f.js */
 
-var Attribute = require(139);
+var Attribute = require(140);
 
 
 module.exports = Attribute3f;
@@ -15283,7 +15472,7 @@ Attribute3f.prototype.set = function(buffer, offset, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute4f.js */
 
-var Attribute = require(139);
+var Attribute = require(140);
 
 
 module.exports = Attribute4f;
@@ -15307,7 +15496,7 @@ Attribute4f.prototype.set = function(buffer, offset, force) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/webgl_context/src/attributes/Attribute.js */
 
-var inherits = require(50);
+var inherits = require(51);
 
 
 module.exports = Attribute;
@@ -15332,16 +15521,16 @@ Attribute.prototype.set = function( /* buffer, offset, force */ ) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/index.js */
 
-var vec3 = require(86),
-    EventEmitter = require(51),
+var vec3 = require(87),
+    EventEmitter = require(52),
     isNullOrUndefined = require(11),
-    Handler = require(142),
-    Mouse = require(143),
-    Buttons = require(144),
-    Gamepads = require(145),
-    Touches = require(146),
-    Axes = require(147),
-    eventHandlers = require(148);
+    Handler = require(143),
+    Mouse = require(144),
+    Buttons = require(145),
+    Gamepads = require(146),
+    Touches = require(147),
+    Axes = require(148),
+    eventHandlers = require(149);
 
 
 var MOUSE_BUTTONS = [
@@ -15534,7 +15723,7 @@ InputPrototype.update = function(time, frame) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Time.js */
 
-var now = require(68);
+var now = require(69);
 
 
 var START_TIME = now.getStartTime(),
@@ -15671,14 +15860,14 @@ TimePrototype.stampMS = function() {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Handler.js */
 
-var EventEmitter = require(51),
-    focusNode = require(149),
-    blurNode = require(150),
-    getActiveElement = require(151),
+var EventEmitter = require(52),
+    focusNode = require(150),
+    blurNode = require(151),
+    getActiveElement = require(152),
     eventListener = require(2),
-    gamepads = require(152),
-    GamepadEvent = require(153),
-    events = require(154);
+    gamepads = require(153),
+    GamepadEvent = require(154),
+    events = require(155);
 
 
 var HandlerPrototype;
@@ -15836,7 +16025,7 @@ HandlerPrototype.detach = function() {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Mouse.js */
 
-var vec2 = require(127);
+var vec2 = require(128);
 
 
 var MousePrototype;
@@ -15917,7 +16106,7 @@ MousePrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Buttons.js */
 
-var Button = require(167);
+var Button = require(168);
 
 
 var ButtonsPrototype;
@@ -16042,8 +16231,8 @@ ButtonsPrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Gamepads.js */
 
-var EventEmitter = require(51),
-    Gamepad = require(168);
+var EventEmitter = require(52),
+    Gamepad = require(169);
 
 
 var GamepadsPrototype;
@@ -16150,8 +16339,8 @@ function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Touches.js */
 
 var isNull = require(8),
-    indexOf = require(110),
-    Touch = require(169);
+    indexOf = require(111),
+    Touch = require(170);
 
 
 var TouchesPrototype;
@@ -16290,8 +16479,8 @@ TouchesPrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Axes.js */
 
-var Axis = require(170),
-    axis = require(70);
+var Axis = require(171),
+    axis = require(71);
 
 
 var AxesPrototype;
@@ -16428,12 +16617,7 @@ AxesPrototype.add = function(options) {
         );
     }
 
-    instance = Axis.create(
-        options.name,
-        options.negButton, options.posButton,
-        options.altNegButton, options.altPosButton,
-        options.gravity, options.sensitivity, options.dead, options.type, options.axis, options.index, options.joyNum
-    );
+    instance = Axis.create(options);
 
     array[array.length] = instance;
     hash[instance.name] = instance;
@@ -16503,7 +16687,7 @@ AxesPrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/eventHandlers.js */
 
-var mathf = require(78);
+var mathf = require(79);
 
 
 var eventHandlers = exports,
@@ -16690,7 +16874,7 @@ function blurNode(node) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/get_active_element/src/index.js */
 
-var isDocument = require(155),
+var isDocument = require(156),
     environment = require(1);
 
 
@@ -16715,14 +16899,14 @@ function getActiveElement(ownerDocument) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/gamepads/src/index.js */
 
-var has = require(49),
+var has = require(50),
     environment = require(1),
     eventListener = require(2),
-    EventEmitter = require(51),
-    requestAnimationFrame = require(66),
-    isSupported = require(156),
-    defaultMapping = require(157),
-    Gamepad = require(158);
+    EventEmitter = require(52),
+    requestAnimationFrame = require(67),
+    isSupported = require(157),
+    defaultMapping = require(158),
+    Gamepad = require(159);
 
 
 var window = environment.window,
@@ -16877,7 +17061,7 @@ module.exports = gamepads;
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/events/GamepadEvent.js */
 
-var createPool = require(52);
+var createPool = require(53);
 
 
 var GamepadEventPrototype;
@@ -16911,11 +17095,11 @@ GamepadEventPrototype.destructor = function() {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/events/index.js */
 
-var MouseEvent = require(161),
-    WheelEvent = require(162),
-    KeyEvent = require(163),
-    TouchEvent = require(164),
-    DeviceMotionEvent = require(165);
+var MouseEvent = require(162),
+    WheelEvent = require(163),
+    KeyEvent = require(164),
+    TouchEvent = require(165),
+    DeviceMotionEvent = require(166);
 
 
 module.exports = {
@@ -17043,13 +17227,13 @@ module.exports = {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/gamepads/src/Gamepad.js */
 
-var createPool = require(52),
-    EventEmitter = require(51),
+var createPool = require(53),
+    EventEmitter = require(52),
     isNullOrUndefined = require(11),
     isNumber = require(12),
-    defaultMapping = require(157),
-    GamepadButton = require(159),
-    GamepadAxis = require(160);
+    defaultMapping = require(158),
+    GamepadButton = require(160),
+    GamepadAxis = require(161);
 
 
 var reIdFirst = /^(\d+)\-(\d+)\-/,
@@ -17312,7 +17496,7 @@ function eachFromJSON(array, json) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/gamepads/src/GamepadButton.js */
 
-var createPool = require(52);
+var createPool = require(53);
 
 
 var GamepadButtonPrototype;
@@ -17372,7 +17556,7 @@ GamepadButtonPrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/gamepads/src/GamepadAxis.js */
 
-var createPool = require(52);
+var createPool = require(53);
 
 
 var GamepadAxisPrototype;
@@ -17428,7 +17612,7 @@ GamepadAxisPrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/events/MouseEvent.js */
 
-var createPool = require(52),
+var createPool = require(53),
     environment = require(1),
     isNullOrUndefined = require(11);
 
@@ -17490,7 +17674,7 @@ function getButton(e) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/events/WheelEvent.js */
 
-var createPool = require(52);
+var createPool = require(53);
 
 
 var WheelEventPrototype;
@@ -17542,8 +17726,8 @@ function getDeltaY(e) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/events/KeyEvent.js */
 
-var createPool = require(52),
-    keyCodes = require(166);
+var createPool = require(53),
+    keyCodes = require(167);
 
 
 var KeyEventPrototype;
@@ -17581,7 +17765,7 @@ KeyEventPrototype.destructor = function() {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/events/TouchEvent.js */
 
-var createPool = require(52);
+var createPool = require(53);
 
 
 var TouchEventPrototype,
@@ -17732,7 +17916,7 @@ function getForce(nativeTouch) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/events/DeviceMotionEvent.js */
 
-var createPool = require(52);
+var createPool = require(53);
 
 
 var DeviceMotionEventPrototype;
@@ -18024,8 +18208,8 @@ ButtonPrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Gamepad.js */
 
-var EventEmitter = require(51),
-    createPool = require(52);
+var EventEmitter = require(52),
+    createPool = require(53);
 
 
 var GamepadPrototype,
@@ -18308,8 +18492,8 @@ GamepadButtonPrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Touch.js */
 
-var vec2 = require(127),
-    createPool = require(52);
+var vec2 = require(128),
+    createPool = require(53);
 
 
 var TouchPrototype;
@@ -18432,9 +18616,9 @@ TouchPrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Input/Axis.js */
 
-var mathf = require(78),
+var mathf = require(79),
     isNullOrUndefined = require(11),
-    axis = require(70);
+    axis = require(71);
 
 
 var AxisPrototype;
@@ -18467,45 +18651,31 @@ function Axis() {
 }
 AxisPrototype = Axis.prototype;
 
-Axis.create = function(
-    name,
-    negButton, posButton,
-    altNegButton, altPosButton,
-    gravity, sensitivity, dead, type, axis, index, gamepadIndex
-) {
-    return (new Axis()).construct(
-        name,
-        negButton, posButton,
-        altNegButton, altPosButton,
-        gravity, sensitivity, dead, type, axis, index, gamepadIndex
-    );
+Axis.create = function(options) {
+    return (new Axis()).construct(options);
 };
 
-AxisPrototype.construct = function(
-    name,
-    negButton, posButton,
-    altNegButton, altPosButton,
-    gravity, sensitivity, dead, type, axis, index, gamepadIndex
-) {
+AxisPrototype.construct = function(options) {
+    options = options || {};
 
-    this.name = isNullOrUndefined(name) ? "unknown" : name;
+    this.name = isNullOrUndefined(options.name) ? "unknown" : options.name;
 
-    this.negButton = isNullOrUndefined(negButton) ? "" : negButton;
-    this.posButton = isNullOrUndefined(posButton) ? "" : posButton;
+    this.negButton = isNullOrUndefined(options.negButton) ? "" : options.negButton;
+    this.posButton = isNullOrUndefined(options.posButton) ? "" : options.posButton;
 
-    this.altNegButton = isNullOrUndefined(altNegButton) ? "" : altNegButton;
-    this.altPosButton = isNullOrUndefined(altPosButton) ? "" : altPosButton;
+    this.altNegButton = isNullOrUndefined(options.altNegButton) ? "" : options.altNegButton;
+    this.altPosButton = isNullOrUndefined(options.altPosButton) ? "" : options.altPosButton;
 
-    this.gravity = isNullOrUndefined(gravity) ? 3 : gravity;
-    this.sensitivity = isNullOrUndefined(sensitivity) ? 3 : sensitivity;
+    this.gravity = isNullOrUndefined(options.gravity) ? 3 : options.gravity;
+    this.sensitivity = isNullOrUndefined(options.sensitivity) ? 3 : options.sensitivity;
 
-    this.dead = isNullOrUndefined(dead) ? 0.001 : dead;
+    this.dead = isNullOrUndefined(options.dead) ? 0.001 : options.dead;
 
-    this.type = isNullOrUndefined(type) ? Axis.ButtonType : type;
-    this.axis = isNullOrUndefined(axis) ? 0 : axis;
-    this.index = isNullOrUndefined(index) ? 0 : index;
+    this.type = isNullOrUndefined(options.type) ? Axis.ButtonType : options.type;
+    this.axis = isNullOrUndefined(options.axis) ? 0 : options.axis;
+    this.index = isNullOrUndefined(options.index) ? 0 : options.index;
 
-    this.gamepadIndex = isNullOrUndefined(gamepadIndex) ? 0 : gamepadIndex;
+    this.gamepadIndex = isNullOrUndefined(options.gamepadIndex) ? 0 : options.gamepadIndex;
 
     this.value = 0;
 
@@ -18669,16 +18839,16 @@ AxisPrototype.toJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/src/index.js */
 
-var context = require(172);
+var context = require(173);
 
 
 var audio = exports;
 
 
 audio.context = context;
-audio.load = require(173);
-audio.Clip = require(174);
-audio.Source = require(175);
+audio.load = require(174);
+audio.Clip = require(175);
+audio.Source = require(176);
 
 audio.setOrientation = function(ox, oy, oz, ux, uy, uz) {
     if (context) {
@@ -18773,11 +18943,11 @@ module.exports = isNullOrUndefined(context) ? false : context;
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/src/load.js */
 
-var HttpError = require(176),
+var HttpError = require(177),
     environment = require(1),
     eventListener = require(2),
-    XMLHttpRequestPolyfill = require(177),
-    context = require(172);
+    XMLHttpRequestPolyfill = require(178),
+    context = require(173);
 
 
 var document = environment.document,
@@ -18840,7 +19010,7 @@ module.exports = load;
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/src/Clip.js */
 
-var load = require(173);
+var load = require(174);
 
 
 var ClipPrototype;
@@ -18875,13 +19045,13 @@ ClipPrototype.load = function(callback) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/src/Source.js */
 
-var context = require(172);
+var context = require(173);
 
 
 if (context) {
-    module.exports = require(181);
+    module.exports = require(187);
 } else {
-    module.exports = require(182);
+    module.exports = require(188);
 }
 
 
@@ -18889,9 +19059,9 @@ if (context) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/node_modules/http_error/src/index.js */
 
-var objectForEach = require(104),
-    inherits = require(50),
-    STATUS_CODES = require(178);
+var objectForEach = require(105),
+    inherits = require(51),
+    STATUS_CODES = require(179);
 
 
 var STATUS_NAMES = {},
@@ -18976,93 +19146,192 @@ HttpErrorPrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/node_modules/xmlhttprequest_polyfill/src/index.js */
 
-var extend = require(59),
-    environment = require(1),
-    emptyFunction = require(67),
-    createXMLHttpRequest = require(179),
-    toUint8Array = require(180);
+var extend = require(60),
+    EventEmitter = require(52),
+    EventPolyfill = require(180),
+    ProgressEventPolyfill = require(181),
+    tryCallFunction = require(182),
+    trySetValue = require(183),
+    emitEvent = require(184),
+    toUint8Array = require(185),
+    createNativeXMLHttpRequest = require(186);
 
 
-var window = environment.window,
+var hasNativeProgress = false,
+    XMLHttpRequestPolyfillPrototype;
 
-    NativeXMLHttpRequest = window.XMLHttpRequest,
-    NativeActiveXObject = window.ActiveXObject,
 
-    XMLHttpRequestPolyfill = (
-        NativeXMLHttpRequest ||
-        (function getRequestObject(types) {
-            var i = -1,
-                il = types.length - 1,
-                instance, type;
+module.exports = XMLHttpRequestPolyfill;
 
-            while (i++ < il) {
-                try {
-                    type = types[i];
-                    instance = new NativeActiveXObject(type);
-                    break;
-                } catch (e) {}
-                type = null;
+
+function XMLHttpRequestPolyfill(options) {
+    var _this = this,
+        nativeXMLHttpRequest = createNativeXMLHttpRequest(options || {});
+
+    EventEmitter.call(this, -1);
+
+    this.__requestHeaders = {};
+    this.__nativeXMLHttpRequest = nativeXMLHttpRequest;
+
+    this.onabort = null;
+    this.onerror = null;
+    this.onload = null;
+    this.onloadend = null;
+    this.onloadstart = null;
+    this.onprogress = null;
+    this.onreadystatechange = null;
+    this.ontimeout = null;
+
+    this.readyState = 0;
+    this.response = "";
+    this.responseText = "";
+    this.responseType = "";
+    this.responseURL = "";
+    this.responseXML = null;
+    this.status = 0;
+    this.statusText = "";
+    this.timeout = 0;
+    this.withCredentials = false;
+
+    nativeXMLHttpRequest.onreadystatechange = function(e) {
+        return XMLHttpRequestPolyfill_onReadyStateChange(_this, e || {});
+    };
+
+    nativeXMLHttpRequest.ontimeout = function(e) {
+        emitEvent(_this, "timeout", new EventPolyfill("timeout", e || {}));
+    };
+
+    nativeXMLHttpRequest.onerror = function(e) {
+        emitEvent(_this, "error", new EventPolyfill("error", e || {}));
+    };
+
+    if ("onprogress" in nativeXMLHttpRequest) {
+        hasNativeProgress = true;
+        nativeXMLHttpRequest.onprogress = function(e) {
+            emitEvent(_this, "progress", new ProgressEventPolyfill("progress", e || {}));
+        };
+    }
+}
+EventEmitter.extend(XMLHttpRequestPolyfill);
+XMLHttpRequestPolyfillPrototype = XMLHttpRequestPolyfill.prototype;
+
+
+function XMLHttpRequestPolyfill_onReadyStateChange(_this, e) {
+    var nativeXMLHttpRequest = _this.__nativeXMLHttpRequest,
+        response;
+
+    _this.status = nativeXMLHttpRequest.status || 0;
+    _this.statusText = nativeXMLHttpRequest.statusText || "";
+    _this.readyState = nativeXMLHttpRequest.readyState;
+
+    switch (nativeXMLHttpRequest.readyState) {
+        case 1:
+            emitEvent(_this, "loadstart", new EventPolyfill("loadstart", e));
+            break;
+        case 3:
+            XMLHttpRequestPolyfill_onProgress(_this, e);
+            break;
+        case 4:
+            response = nativeXMLHttpRequest.response || "";
+
+            _this.response = response;
+
+            if (nativeXMLHttpRequest.responseType !== "arraybuffer") {
+                _this.responseText = nativeXMLHttpRequest.responseText || response;
+                _this.responseXML = nativeXMLHttpRequest.responseXML || response;
+            } else {
+                _this.responseText = "";
+                _this.responseXML = "";
             }
 
-            if (!type) {
-                throw new Error("XMLHttpRequest not supported by this browser");
-            }
+            _this.responseType = nativeXMLHttpRequest.responseType || "";
+            _this.responseURL = nativeXMLHttpRequest.responseURL || "";
 
-            return createXMLHttpRequest(function createNativeObject() {
-                return new NativeActiveXObject(type);
-            });
-        }([
-            "Msxml2.XMLHTTP",
-            "Msxml3.XMLHTTP",
-            "Microsoft.XMLHTTP"
-        ]))
-    ),
+            emitEvent(_this, "load", new EventPolyfill("load", e));
+            emitEvent(_this, "loadend", new EventPolyfill("loadend", e));
 
-    XMLHttpRequestPolyfillPrototype = XMLHttpRequestPolyfill.prototype;
+            break;
+    }
 
+    emitEvent(_this, "readystatechange", new EventPolyfill("readystatechange", e));
 
-if (!(XMLHttpRequestPolyfillPrototype.addEventListener || XMLHttpRequestPolyfillPrototype.attachEvent)) {
-    XMLHttpRequestPolyfill = createXMLHttpRequest(function createNativeObject() {
-        return new NativeXMLHttpRequest();
-    });
-    XMLHttpRequestPolyfillPrototype = XMLHttpRequestPolyfill.prototype;
+    return _this;
 }
 
-XMLHttpRequestPolyfillPrototype.nativeSetRequestHeader = XMLHttpRequestPolyfillPrototype.setRequestHeader || emptyFunction;
+function XMLHttpRequestPolyfill_onProgress(_this, e) {
+    var event;
+
+    if (!hasNativeProgress) {
+        event = new ProgressEventPolyfill("progress", e);
+
+        event.lengthComputable = false;
+        event.loaded = 1;
+        event.total = 1;
+
+        emitEvent(_this, "progress", event);
+
+        return event;
+    }
+}
+
+XMLHttpRequestPolyfillPrototype.abort = function() {
+    emitEvent(this, "abort", new EventPolyfill("abort", {}));
+    tryCallFunction(this.__nativeXMLHttpRequest, "abort");
+};
+
+XMLHttpRequestPolyfillPrototype.setTimeout = function(ms) {
+    this.timeout = ms;
+    trySetValue(this.__nativeXMLHttpRequest, "timeout", ms);
+};
+
+XMLHttpRequestPolyfillPrototype.setWithCredentials = function(value) {
+    value = !!value;
+    this.withCredentials = value;
+    trySetValue(this.__nativeXMLHttpRequest, "withCredentials", value);
+};
+
+XMLHttpRequestPolyfillPrototype.getAllResponseHeaders = function() {
+    return tryCallFunction(this.__nativeXMLHttpRequest, "getAllResponseHeaders");
+};
+
+XMLHttpRequestPolyfillPrototype.getResponseHeader = function(header) {
+    return tryCallFunction(this.__nativeXMLHttpRequest, "getResponseHeader", header);
+};
+
+XMLHttpRequestPolyfillPrototype.open = function(method, url, async, user, password) {
+    if (this.readyState === 0) {
+        this.readyState = 1;
+        return tryCallFunction(this.__nativeXMLHttpRequest, "open", method, url, async, user, password);
+    } else {
+        return undefined;
+    }
+};
+
+XMLHttpRequestPolyfillPrototype.overrideMimeType = function(mimetype) {
+    tryCallFunction(this.__nativeXMLHttpRequest, "overrideMimeType", mimetype);
+};
+
+XMLHttpRequestPolyfillPrototype.send = function(data) {
+    this.__nativeXMLHttpRequest.responseType = this.responseType;
+    tryCallFunction(this.__nativeXMLHttpRequest, "send", data);
+};
 
 XMLHttpRequestPolyfillPrototype.setRequestHeader = function(key, value) {
-    (this.__requestHeaders || (this.__requestHeaders = {}))[key] = value;
-    this.nativeSetRequestHeader(key, value);
+    this.__requestHeaders[key] = value;
+    tryCallFunction(this.__nativeXMLHttpRequest, "setRequestHeader", key, value);
 };
 
 XMLHttpRequestPolyfillPrototype.getRequestHeader = function(key) {
-    return (this.__requestHeaders || (this.__requestHeaders = {}))[key];
+    return this.__requestHeaders[key];
 };
 
 XMLHttpRequestPolyfillPrototype.getRequestHeaders = function() {
     return extend({}, this.__requestHeaders);
 };
 
-if (!XMLHttpRequestPolyfillPrototype.setTimeout) {
-    XMLHttpRequestPolyfillPrototype.setTimeout = function(ms) {
-        this.timeout = ms;
-    };
-}
-
-if (!XMLHttpRequestPolyfillPrototype.setWithCredentials) {
-    XMLHttpRequestPolyfillPrototype.setWithCredentials = function(value) {
-        this.withCredentials = !!value;
-    };
-}
-
-if (!XMLHttpRequestPolyfillPrototype.sendAsBinary) {
-    XMLHttpRequestPolyfillPrototype.sendAsBinary = function(str) {
-        return this.send(toUint8Array(str));
-    };
-}
-
-
-module.exports = XMLHttpRequestPolyfill;
+XMLHttpRequestPolyfillPrototype.sendAsBinary = function(string) {
+    return this.send(toUint8Array(string));
+};
 
 
 },
@@ -19136,210 +19405,136 @@ module.exports = {
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/audio/node_modules/xmlhttprequest_polyfill/src/createXMLHttpRequest.js */
+/* ../../../node_modules/audio/node_modules/xmlhttprequest_polyfill/src/EventPolyfill.js */
 
-var EventEmitter = require(51),
-    toUint8Array = require(180);
-
-
-module.exports = createXMLHttpRequest;
+var tryCallFunction = require(182);
 
 
-function createXMLHttpRequest(createNativeObject) {
-    var XMLHttpRequestPrototype;
+var EventPolyfillPrototype;
 
 
-    function XMLHttpRequest() {
-        var _this = this,
-            nativeObject = createNativeObject();
+module.exports = EventPolyfill;
 
-        EventEmitter.call(this, -1);
 
-        this.__requestHeaders = {};
-        this.__nativeObject = nativeObject;
+function EventPolyfill(type, nativeEvent) {
 
-        this.onabort = null;
-        this.onerror = null;
-        this.onload = null;
-        this.onloadend = null;
-        this.onloadstart = null;
-        this.onprogress = null;
-        this.onreadystatechange = null;
-        this.ontimeout = null;
-        this.readyState = 0;
-        this.response = "";
-        this.responseText = "";
-        this.responseType = "";
-        this.responseURL = "";
-        this.responseXML = null;
-        this.status = 0;
-        this.statusText = "";
-        this.timeout = 0;
-        this.withCredentials = false;
+    this.__nativeEvent = nativeEvent;
 
-        nativeObject.onreadystatechange = function(e) {
-            return XMLHttpRequest_onReadyStateChange(_this, e);
-        };
+    this.type = type;
+    this.bubbles = nativeEvent.bubbles;
+    this.cancelBubble = nativeEvent.cancelBubble;
+    this.cancelable = nativeEvent.cancelable;
+    this.currentTarget = nativeEvent.currentTarget;
+    this.defaultPrevented = nativeEvent.defaultPrevented;
+    this.eventPhase = nativeEvent.eventPhase;
+    this.isTrusted = nativeEvent.isTrusted;
+    this.path = nativeEvent.path;
+    this.returnValue = nativeEvent.returnValue;
+    this.srcElement = nativeEvent.srcElement;
+    this.target = nativeEvent.target;
+    this.timeStamp = nativeEvent.timeStamp;
+}
+EventPolyfillPrototype = EventPolyfill.prototype;
 
-        nativeObject.ontimeout = function(e) {
-            if (_this.ontimeout) {
-                _this.ontimeout(e);
-            }
-            _this.emit("timeout");
-        };
+EventPolyfillPrototype.AT_TARGET = 2;
+EventPolyfillPrototype.BLUR = 8192;
+EventPolyfillPrototype.BUBBLING_PHASE = 3;
+EventPolyfillPrototype.CAPTURING_PHASE = 1;
+EventPolyfillPrototype.CHANGE = 32768;
+EventPolyfillPrototype.CLICK = 64;
+EventPolyfillPrototype.DBLCLICK = 128;
+EventPolyfillPrototype.DRAGDROP = 2048;
+EventPolyfillPrototype.FOCUS = 4096;
+EventPolyfillPrototype.KEYDOWN = 256;
+EventPolyfillPrototype.KEYPRESS = 1024;
+EventPolyfillPrototype.KEYUP = 512;
+EventPolyfillPrototype.MOUSEDOWN = 1;
+EventPolyfillPrototype.MOUSEDRAG = 32;
+EventPolyfillPrototype.MOUSEMOVE = 16;
+EventPolyfillPrototype.MOUSEOUT = 8;
+EventPolyfillPrototype.MOUSEOVER = 4;
+EventPolyfillPrototype.MOUSEUP = 2;
+EventPolyfillPrototype.NONE = 0;
+EventPolyfillPrototype.SELECT = 16384;
 
-        nativeObject.onerror = function(e) {
-            if (_this.onerror) {
-                _this.onerror(e);
-            }
-            _this.emit("error");
-        };
+EventPolyfillPrototype.preventDefault = function() {
+    return tryCallFunction(this.__nativeEvent, "preventDefault");
+};
+
+EventPolyfillPrototype.stopImmediatePropagation = function() {
+    return tryCallFunction(this.__nativeEvent, "stopImmediatePropagation");
+};
+
+EventPolyfillPrototype.stopPropagation = function() {
+    return tryCallFunction(this.__nativeEvent, "stopPropagation");
+};
+
+
+},
+function(require, exports, module, undefined, global) {
+/* ../../../node_modules/audio/node_modules/xmlhttprequest_polyfill/src/ProgressEventPolyfill.js */
+
+var inherits = require(51),
+    EventPolyfill = require(180);
+
+
+module.exports = ProgressEventPolyfill;
+
+
+function ProgressEventPolyfill(type, nativeEvent) {
+
+    EventPolyfill.call(this, type, nativeEvent);
+
+    this.lengthComputable = nativeEvent.lengthComputable;
+    this.loaded = nativeEvent.loaded;
+    this.total = nativeEvent.total;
+}
+inherits(ProgressEventPolyfill, EventPolyfill);
+
+
+},
+function(require, exports, module, undefined, global) {
+/* ../../../node_modules/audio/node_modules/xmlhttprequest_polyfill/src/tryCallFunction.js */
+
+module.exports = tryCallFunction;
+
+
+function tryCallFunction(object, name, a0, a1, a2, a3, a4) {
+    try {
+        return object[name](a0, a1, a2, a3, a4);
+    } catch (e) {}
+}
+
+
+},
+function(require, exports, module, undefined, global) {
+/* ../../../node_modules/audio/node_modules/xmlhttprequest_polyfill/src/trySetValue.js */
+
+module.exports = trySetValue;
+
+
+function trySetValue(object, name, key, value) {
+    try {
+        return (object[name][key] = value);
+    } catch (e) {}
+}
+
+
+},
+function(require, exports, module, undefined, global) {
+/* ../../../node_modules/audio/node_modules/xmlhttprequest_polyfill/src/emitEvent.js */
+
+module.exports = emitEvent;
+
+
+function emitEvent(object, type, event) {
+    var onevent = "on" + type;
+
+    if (object[onevent]) {
+        object[onevent](event);
     }
-    EventEmitter.extend(XMLHttpRequest);
-    XMLHttpRequestPrototype = XMLHttpRequest.prototype;
 
-    function XMLHttpRequest_onReadyStateChange(_this, e) {
-        var nativeObject = _this.__nativeObject,
-            response;
-
-        _this.readyState = nativeObject.readyState;
-
-        if (_this.onreadystatechange) {
-            _this.onreadystatechange(e);
-        }
-        _this.emit("readystatechange", e);
-
-        switch (nativeObject.readyState) {
-            case 3:
-                if (_this.onprogress) {
-                    _this.onprogress();
-                }
-                _this.emit("progress", e);
-                break;
-            case 4:
-                response = nativeObject.response || "";
-
-                if (_this.responseType === "arraybuffer") {
-                    response = toUint8Array(response);
-                }
-
-                _this.response = response;
-                _this.responseText = nativeObject.responseText || _this.response;
-                _this.responseType = nativeObject.responseType || "";
-                _this.responseURL = nativeObject.responseURL || "";
-                _this.responseXML = nativeObject.responseXML || _this.response;
-                _this.status = nativeObject.status || 0;
-                _this.statusText = nativeObject.statusText || "";
-
-                if (_this.onload) {
-                    _this.onload();
-                }
-                _this.emit("load", e);
-                if (_this.onloadend) {
-                    _this.onloadend();
-                }
-                _this.emit("loadend", e);
-                break;
-        }
-
-        return _this;
-    }
-
-    XMLHttpRequestPrototype.attachEvent = function(type, fn) {
-        return this.on(type.slice(2), fn);
-    };
-    XMLHttpRequestPrototype.detachEvent = function(type, fn) {
-        return this.off(type.slice(2), fn);
-    };
-
-    XMLHttpRequestPrototype.addEventListener = XMLHttpRequestPrototype.on;
-    XMLHttpRequestPrototype.removeEventListener = XMLHttpRequestPrototype.off;
-
-    XMLHttpRequestPrototype.dispatchEvent = function(event) {
-        return this.emit(event.type, event);
-    };
-
-    XMLHttpRequestPrototype.fireEvent = function(type, event) {
-        return this.emit("on" + type, event);
-    };
-
-    XMLHttpRequestPrototype.abort = function() {
-        try {
-            if (this.onabort) {
-                this.onabort();
-            }
-            _this.emit("abort", {});
-            this.__nativeObject.abort();
-        } catch (e) {}
-    };
-
-    XMLHttpRequestPrototype.setTimeout = function(ms) {
-        this.timeout = ms;
-        try {
-            this.__nativeObject.timeout = ms;
-        } catch (e) {}
-    };
-
-    XMLHttpRequestPrototype.setWithCredentials = function(value) {
-        value = !!value;
-        this.withCredentials = value;
-        try {
-            this.__nativeObject.withCredentials = value;
-        } catch (e) {}
-    };
-
-    XMLHttpRequestPrototype.getAllResponseHeaders = function() {
-        try {
-            return this.__nativeObject.getAllResponseHeaders();
-        } catch (e) {
-            return null;
-        }
-    };
-
-    XMLHttpRequestPrototype.getResponseHeader = function(header) {
-        try {
-            return this.__nativeObject.getResponseHeader(header);
-        } catch (e) {
-            return null;
-        }
-    };
-
-    XMLHttpRequestPrototype.getResponseHeader = function(header) {
-        try {
-            return this.__nativeObject.getResponseHeader(header);
-        } catch (e) {
-            return null;
-        }
-    };
-
-    XMLHttpRequestPrototype.open = function(method, url, async, user, password) {
-        if (this.readyState === 0) {
-            this.readyState = 1;
-            return this.__nativeObject.open(method, url, async, user, password);
-        } else {
-            return undefined;
-        }
-    };
-
-    XMLHttpRequestPrototype.overrideMimeType = function(mimetype) {
-        try {
-            return this.__nativeObject.overrideMimeType(mimetype);
-        } catch (e) {}
-    };
-
-    XMLHttpRequestPrototype.send = function(data) {
-        try {
-            return this.__nativeObject.send(data);
-        } catch (e) {}
-    };
-
-    XMLHttpRequestPrototype.setRequestHeader = function(key, value) {
-        try {
-            return this.__nativeObject.setRequestHeader(key, value);
-        } catch (e) {}
-    };
-
-    return XMLHttpRequest;
+    object.emitArg(type, event);
 }
 
 
@@ -19356,14 +19551,14 @@ var Uint8Array = environment.window.Uint8Array || Array;
 module.exports = toUint8Array;
 
 
-function toUint8Array(str) {
-    var length = str.length,
+function toUint8Array(string) {
+    var length = string.length,
         ui8 = new Uint8Array(length),
         i = -1,
         il = length - 1;
 
     while (i++ < il) {
-        ui8[i] = str.charCodeAt(i) & 0xff;
+        ui8[i] = string.charCodeAt(i) & 0xff;
     }
 
     return ui8;
@@ -19372,15 +19567,68 @@ function toUint8Array(str) {
 
 },
 function(require, exports, module, undefined, global) {
+/* ../../../node_modules/audio/node_modules/xmlhttprequest_polyfill/src/createNativeXMLHttpRequest.js */
+
+var environment = require(1);
+
+
+var window = environment.window,
+    NativeXMLHttpRequest = window.XMLHttpRequest,
+
+    createNativeXMLHttpRequest, NativeActiveXObjectType;
+
+
+if (NativeXMLHttpRequest) {
+    createNativeXMLHttpRequest = function createNativeXMLHttpRequest(options) {
+        return new NativeXMLHttpRequest(options);
+    };
+} else {
+    createNativeXMLHttpRequest = (function getNativeActiveXObject(types) {
+        var NativeActiveXObject = window.ActiveXObject,
+            i = -1,
+            il = types.length - 1,
+            instance, type;
+
+        while (i++ < il) {
+            try {
+                type = types[i];
+                instance = new NativeActiveXObject(type);
+                break;
+            } catch (e) {}
+            type = null;
+        }
+
+        if (!type) {
+            throw new Error("XMLHttpRequest not supported by this browser");
+        }
+
+        NativeActiveXObjectType = type;
+    }([
+        "Msxml2.XMLHTTP",
+        "Msxml3.XMLHTTP",
+        "Microsoft.XMLHTTP"
+    ]));
+
+    createNativeXMLHttpRequest = function createNativeXMLHttpRequest() {
+        return new NativeActiveXObject(NativeActiveXObjectType);
+    };
+}
+
+
+module.exports = createNativeXMLHttpRequest;
+
+
+},
+function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/src/WebAudioSource.js */
 
-var isBoolean = require(183),
+var isBoolean = require(189),
     isNumber = require(12),
     isString = require(10),
-    EventEmitter = require(51),
-    mathf = require(78),
-    now = require(68),
-    context = require(172);
+    EventEmitter = require(52),
+    mathf = require(79),
+    now = require(69),
+    context = require(173);
 
 
 var WebAudioSourcePrototype;
@@ -19841,11 +20089,11 @@ WebAudioSourcePrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/audio/src/AudioSource.js */
 
-var isBoolean = require(183),
+var isBoolean = require(189),
     isNumber = require(12),
-    EventEmitter = require(51),
-    mathf = require(78),
-    now = require(68);
+    EventEmitter = require(52),
+    mathf = require(79),
+    now = require(69);
 
 
 var AudioSourcePrototype;
@@ -20168,17 +20416,17 @@ function isBoolean(value) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/request/src/browser.js */
 
-module.exports = require(185)(require(186));
+module.exports = require(191)(require(192));
 
 
 },
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/request/src/create.js */
 
-var methods = require(187),
-    arrayForEach = require(103),
-    EventEmitter = require(51),
-    defaults = require(188);
+var methods = require(193),
+    arrayForEach = require(104),
+    EventEmitter = require(52),
+    defaults = require(194);
 
 
 module.exports = function createRequest(request) {
@@ -20221,17 +20469,17 @@ module.exports = function createRequest(request) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/request/src/requestBrowser.js */
 
-var PromisePolyfill = require(189),
-    XMLHttpRequestPolyfill = require(177),
+var PromisePolyfill = require(195),
+    XMLHttpRequestPolyfill = require(178),
     isFunction = require(6),
     isString = require(10),
-    objectForEach = require(104),
-    trim = require(190),
-    extend = require(59),
-    Response = require(191),
-    defaults = require(188),
-    camelcaseHeader = require(192),
-    parseContentType = require(193);
+    objectForEach = require(105),
+    trim = require(196),
+    extend = require(60),
+    Response = require(197),
+    defaults = require(194),
+    camelcaseHeader = require(198),
+    parseContentType = require(199);
 
 
 var supportsFormData = typeof(FormData) !== "undefined";
@@ -20396,7 +20644,7 @@ function request(options) {
 
     if (options.transformRequest) {
         options.data = options.transformRequest(options.data);
-    } else {
+    } else if (options.data) {
         if (!isString(options.data) && !isFormData) {
             if (options.headers["Content-Type"] === "application/json") {
                 options.data = JSON.stringify(options.data);
@@ -20417,7 +20665,7 @@ module.exports = request;
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/methods/src/browser.js */
+/* ../../../node_modules/request/node_modules/methods/src/browser.js */
 
 module.exports = [
     "checkout",
@@ -20454,18 +20702,17 @@ module.exports = [
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/request/src/defaults.js */
 
-var extend = require(59),
+var extend = require(60),
     isString = require(10),
     isFunction = require(6);
 
 
 function defaults(options) {
+
     options = extend({}, defaults.values, options);
 
     options.url = isString(options.url || (options.url = options.src)) ? options.url : null;
     options.method = isString(options.method) ? options.method.toUpperCase() : "GET";
-
-    options.data = options.data;
 
     options.transformRequest = isFunction(options.transformRequest) ? options.transformRequest : null;
     options.transformResponse = isFunction(options.transformResponse) ? options.transformResponse : null;
@@ -20487,6 +20734,7 @@ function defaults(options) {
 defaults.values = {
     url: "",
     method: "GET",
+    data: null,
     headers: {
         Accept: "*/*",
         "X-Requested-With": "XMLHttpRequest"
@@ -20499,35 +20747,22 @@ module.exports = defaults;
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/promise_polyfill/src/index.js */
+/* ../../../node_modules/request/node_modules/promise_polyfill/src/index.js */
 
 var process = require(4);
 var isNull = require(8),
-    isArray = require(106),
+    isArray = require(107),
     isObject = require(5),
     isFunction = require(6),
-    WeakMapPolyfill = require(194),
-    fastSlice = require(64);
+    createStore = require(200),
+    fastSlice = require(65);
 
 
-var PromisePolyfill, PromisePolyfillPrototype, PrivatePromise;
+var PromisePolyfill, PrivatePromise;
 
 
-if (
-    typeof(Promise) !== "undefined" &&
-    (function isValidPromise() {
-        try {
-            new Promise(function resolver(resolve) {
-                resolve(true);
-            }).then(function onThen() {});
-            return true;
-        } catch (e) {
-            return false;
-        }
-    }())
-) {
+if (typeof(Promise) !== "undefined") {
     PromisePolyfill = Promise;
-    PromisePolyfillPrototype = PromisePolyfill.prototype;
 } else {
     PrivatePromise = (function createPrivatePromise() {
 
@@ -20549,7 +20784,7 @@ if (
             );
         }
 
-        PrivatePromise.store = new WeakMapPolyfill();
+        PrivatePromise.store = createStore();
 
         PrivatePromise.handle = function(_this, onFulfilled, onRejected, resolve, reject) {
             handle(_this, new Handler(onFulfilled, onRejected, resolve, reject));
@@ -20670,6 +20905,9 @@ if (
 
     PromisePolyfill = function Promise(resolver) {
 
+        if (!(this instanceof PromisePolyfill)) {
+            throw new TypeError("Promise(resolver) \"this\" must be an instance of Promise");
+        }
         if (!isFunction(resolver)) {
             throw new TypeError("Promise(resolver) You must pass a resolver function as the first argument to the promise constructor");
         }
@@ -20677,9 +20915,7 @@ if (
         PrivatePromise.store.set(this, new PrivatePromise(resolver));
     };
 
-    PromisePolyfillPrototype = PromisePolyfill.prototype;
-
-    PromisePolyfillPrototype.then = function(onFulfilled, onRejected) {
+    PromisePolyfill.prototype.then = function(onFulfilled, onRejected) {
         var _this = PrivatePromise.store.get(this);
 
         return new PromisePolyfill(function resolver(resolve, reject) {
@@ -20688,9 +20924,10 @@ if (
     };
 }
 
-if (!isFunction(PromisePolyfillPrototype["catch"])) {
-    PromisePolyfillPrototype["catch"] = function(reject) {
-        return this.then(null, reject);
+
+if (!isFunction(PromisePolyfill.prototype["catch"])) {
+    PromisePolyfill.prototype["catch"] = function(onRejected) {
+        return this.then(null, onRejected);
     };
 }
 
@@ -20788,10 +21025,10 @@ module.exports = PromisePolyfill;
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/trim/src/index.js */
+/* ../../../node_modules/request/node_modules/trim/src/index.js */
 
-var isNative = require(54),
-    toString = require(57);
+var isNative = require(55),
+    toString = require(58);
 
 
 var StringPrototype = String.prototype,
@@ -20871,8 +21108,8 @@ function Response() {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/request/src/camelcaseHeader.js */
 
-var arrayMap = require(196),
-    capitalizeString = require(197);
+var arrayMap = require(201),
+    capitalizeString = require(202);
 
 
 module.exports = function camelcaseHeader(str) {
@@ -20904,63 +21141,11 @@ module.exports = function parseContentType(str) {
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/weak_map_polyfill/src/index.js */
+/* ../../../node_modules/request/node_modules/promise_polyfill/node_modules/create_store/src/index.js */
 
-var isNative = require(54),
-    isPrimitive = require(62),
-    createStore = require(195);
-
-
-var NativeWeakMap = typeof(WeakMap) !== "undefined" ? WeakMap : null,
-    WeakMapPolyfill, WeakMapPolyfillPrototype;
-
-
-if (isNative(NativeWeakMap)) {
-    WeakMapPolyfill = NativeWeakMap;
-    WeakMapPolyfillPrototype = WeakMapPolyfill.prototype;
-} else {
-    WeakMapPolyfill = function WeakMap() {
-        this.__store = createStore();
-    };
-    WeakMapPolyfillPrototype = WeakMapPolyfill.prototype;
-    WeakMapPolyfillPrototype.constructor = WeakMapPolyfill;
-
-    WeakMapPolyfillPrototype.get = function(key) {
-        return this.__store.get(key);
-    };
-
-    WeakMapPolyfillPrototype.set = function(key, value) {
-        if (isPrimitive(key)) {
-            throw new TypeError("Invalid value used as key");
-        } else {
-            this.__store.set(key, value);
-        }
-    };
-
-    WeakMapPolyfillPrototype.has = function(key) {
-        return this.__store.has(key);
-    };
-
-    WeakMapPolyfillPrototype["delete"] = function(key) {
-        return this.__store.remove(key);
-    };
-
-    WeakMapPolyfillPrototype.length = 0;
-}
-
-WeakMapPolyfillPrototype.remove = WeakMapPolyfillPrototype["delete"];
-
-
-module.exports = WeakMapPolyfill;
-
-
-},
-function(require, exports, module, undefined, global) {
-/* ../../../node_modules/create_store/src/index.js */
-
-var has = require(49),
-    defineProperty = require(61),
-    isPrimitive = require(62);
+var has = require(50),
+    defineProperty = require(62),
+    isPrimitive = require(63);
 
 
 var emptyStore = {
@@ -21074,7 +21259,7 @@ function privateStore(key, privateKey) {
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/array-map/src/index.js */
+/* ../../../node_modules/request/node_modules/array-map/src/index.js */
 
 module.exports = arrayMap;
 
@@ -21095,7 +21280,7 @@ function arrayMap(array, callback) {
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../node_modules/capitalize_string/src/index.js */
+/* ../../../node_modules/request/node_modules/capitalize_string/src/index.js */
 
 module.exports = capitalizeString;
 
@@ -21202,7 +21387,7 @@ template.settings = {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/push_unique/src/index.js */
 
-var indexOf = require(110);
+var indexOf = require(111);
 
 
 module.exports = pushUnique;
@@ -21239,9 +21424,9 @@ function basePushUnique(array, value) {
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../src/Shader/chunks.js */
+/* ../../../src/Assets/Shader/chunks.js */
 
-var ShaderChunk = require(201);
+var ShaderChunk = require(206);
 
 
 var chunks = exports;
@@ -21514,9 +21699,9 @@ chunks.getUV = ShaderChunk.create({
 
 },
 function(require, exports, module, undefined, global) {
-/* ../../../src/Shader/ShaderChunk.js */
+/* ../../../src/Assets/Shader/ShaderChunk.js */
 
-var isArray = require(106),
+var isArray = require(107),
     isNullOrUndefined = require(11);
 
 
@@ -21571,9 +21756,9 @@ ShaderChunkPrototype.destructor = function() {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/quat/src/index.js */
 
-var mathf = require(78),
-    vec3 = require(86),
-    vec4 = require(87),
+var mathf = require(79),
+    vec3 = require(87),
+    vec4 = require(88),
     isNumber = require(12);
 
 
@@ -21958,7 +22143,7 @@ quat.fromMat4 = function(out, m) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/aabb3/src/index.js */
 
-var vec3 = require(86);
+var vec3 = require(87);
 
 
 var aabb3 = exports;
@@ -22355,9 +22540,9 @@ AttributePrototype.setXYZW = function(index, x, y, z, w) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Assets/Geometry/GeometryBone.js */
 
-var vec3 = require(86),
-    quat = require(202),
-    mat4 = require(130),
+var vec3 = require(87),
+    quat = require(207),
+    mat4 = require(131),
     isNullOrUndefined = require(11);
 
 
@@ -22412,9 +22597,9 @@ GeometryBonePrototype.destructor = function() {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Renderer/MeshRenderer.js */
 
-var mat3 = require(129),
-    mat4 = require(130),
-    ComponentRenderer = require(30);
+var mat3 = require(130),
+    mat4 = require(131),
+    ComponentRenderer = require(32);
 
 
 var MeshRendererPrototype;
@@ -22476,13 +22661,13 @@ MeshRendererPrototype.render = function(mesh, camera) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Renderer/SpriteRenderer.js */
 
-var mat3 = require(129),
-    mat4 = require(130),
-    vec2 = require(127),
-    vec4 = require(87),
-    WebGLContext = require(69),
-    Geometry = require(26),
-    ComponentRenderer = require(30);
+var mat3 = require(130),
+    mat4 = require(131),
+    vec2 = require(128),
+    vec4 = require(88),
+    WebGLContext = require(70),
+    Geometry = require(27),
+    ComponentRenderer = require(32);
 
 
 var depth = WebGLContext.enums.depth,
@@ -22633,7 +22818,7 @@ function ProgramData() {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Renderer/RendererGeometry.js */
 
-var FastHash = require(107);
+var FastHash = require(108);
 
 
 var NativeFloat32Array = typeof(Float32Array) !== "undefined" ? Float32Array : Array,
@@ -22919,7 +23104,7 @@ RendererMaterialPrototype.getProgramFor = function(data) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/ComponentManager/TransformManager.js */
 
-var ComponentManager = require(35);
+var ComponentManager = require(36);
 
 
 var TransformManagerPrototype;
@@ -22943,8 +23128,8 @@ TransformManagerPrototype.sortFunction = function(a, b) {
 function(require, exports, module, undefined, global) {
 /* ../../../node_modules/mat32/src/index.js */
 
-var mathf = require(78),
-    vec2 = require(127),
+var mathf = require(79),
+    vec2 = require(128),
     isNumber = require(12);
 
 
@@ -23332,7 +23517,7 @@ mat32.string = mat32.toString = mat32.str;
 function(require, exports, module, undefined, global) {
 /* ../../../src/ComponentManager/Transform2DManager.js */
 
-var ComponentManager = require(35);
+var ComponentManager = require(36);
 
 
 var Transform2DManagerPrototype;
@@ -23356,7 +23541,7 @@ Transform2DManagerPrototype.sortFunction = function(a, b) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/ComponentManager/CameraManager.js */
 
-var ComponentManager = require(35);
+var ComponentManager = require(36);
 
 
 var ComponentManagerPrototype = ComponentManager.prototype,
@@ -23439,8 +23624,8 @@ CameraManagerPrototype.removeComponent = function(component) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/ComponentManager/SpriteManager.js */
 
-var indexOf = require(110),
-    ComponentManager = require(35);
+var indexOf = require(111),
+    ComponentManager = require(36);
 
 
 var SpriteManagerPrototype;
@@ -23641,12 +23826,12 @@ SpriteManagerPrototype.removeComponent = function(component) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Component/Bone.js */
 
-var vec3 = require(86),
-    quat = require(202),
-    mat4 = require(130),
+var vec3 = require(87),
+    quat = require(207),
+    mat4 = require(131),
     isNullOrUndefined = require(11),
-    Component = require(36),
-    BoneManager = require(218);
+    Component = require(37),
+    BoneManager = require(223);
 
 
 var ComponentPrototype = Component.prototype,
@@ -23788,7 +23973,7 @@ BonePrototype.fromJSON = function(json) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/ComponentManager/MeshManager.js */
 
-var ComponentManager = require(35);
+var ComponentManager = require(36);
 
 
 var MeshManagerPrototype;
@@ -23812,7 +23997,7 @@ MeshManagerPrototype.sortFunction = function(a, b) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/ComponentManager/BoneManager.js */
 
-var ComponentManager = require(35);
+var ComponentManager = require(36);
 
 
 var BoneManagerPrototype;
@@ -23836,7 +24021,7 @@ BoneManagerPrototype.sortFunction = function(a, b) {
 function(require, exports, module, undefined, global) {
 /* ../../../src/Component/ParticleSystem/particleState.js */
 
-var enums = require(98);
+var enums = require(99);
 
 
 var particleState = enums([
@@ -23854,19 +24039,19 @@ module.exports = particleState;
 function(require, exports, module, undefined, global) {
 /* ../../../src/Component/ParticleSystem/Emitter.js */
 
-var indexOf = require(110),
+var indexOf = require(111),
     isNumber = require(12),
-    mathf = require(78),
-    vec2 = require(127),
+    mathf = require(79),
+    vec2 = require(128),
     Class = require(14),
-    particleState = require(219),
-    normalMode = require(73),
-    emitterRenderMode = require(71),
-    interpolation = require(72),
-    screenAlignment = require(74),
-    sortMode = require(76),
-    createSeededRandom = require(46),
-    randFloat = require(47);
+    particleState = require(224),
+    normalMode = require(74),
+    emitterRenderMode = require(72),
+    interpolation = require(73),
+    screenAlignment = require(75),
+    sortMode = require(77),
+    createSeededRandom = require(47),
+    randFloat = require(48);
 
 
 var MAX_SAFE_INTEGER = mathf.pow(2, 53) - 1,

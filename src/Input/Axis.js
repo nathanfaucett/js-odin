@@ -33,45 +33,31 @@ function Axis() {
 }
 AxisPrototype = Axis.prototype;
 
-Axis.create = function(
-    name,
-    negButton, posButton,
-    altNegButton, altPosButton,
-    gravity, sensitivity, dead, type, axis, index, gamepadIndex
-) {
-    return (new Axis()).construct(
-        name,
-        negButton, posButton,
-        altNegButton, altPosButton,
-        gravity, sensitivity, dead, type, axis, index, gamepadIndex
-    );
+Axis.create = function(options) {
+    return (new Axis()).construct(options);
 };
 
-AxisPrototype.construct = function(
-    name,
-    negButton, posButton,
-    altNegButton, altPosButton,
-    gravity, sensitivity, dead, type, axis, index, gamepadIndex
-) {
+AxisPrototype.construct = function(options) {
+    options = options || {};
 
-    this.name = isNullOrUndefined(name) ? "unknown" : name;
+    this.name = isNullOrUndefined(options.name) ? "unknown" : options.name;
 
-    this.negButton = isNullOrUndefined(negButton) ? "" : negButton;
-    this.posButton = isNullOrUndefined(posButton) ? "" : posButton;
+    this.negButton = isNullOrUndefined(options.negButton) ? "" : options.negButton;
+    this.posButton = isNullOrUndefined(options.posButton) ? "" : options.posButton;
 
-    this.altNegButton = isNullOrUndefined(altNegButton) ? "" : altNegButton;
-    this.altPosButton = isNullOrUndefined(altPosButton) ? "" : altPosButton;
+    this.altNegButton = isNullOrUndefined(options.altNegButton) ? "" : options.altNegButton;
+    this.altPosButton = isNullOrUndefined(options.altPosButton) ? "" : options.altPosButton;
 
-    this.gravity = isNullOrUndefined(gravity) ? 3 : gravity;
-    this.sensitivity = isNullOrUndefined(sensitivity) ? 3 : sensitivity;
+    this.gravity = isNullOrUndefined(options.gravity) ? 3 : options.gravity;
+    this.sensitivity = isNullOrUndefined(options.sensitivity) ? 3 : options.sensitivity;
 
-    this.dead = isNullOrUndefined(dead) ? 0.001 : dead;
+    this.dead = isNullOrUndefined(options.dead) ? 0.001 : options.dead;
 
-    this.type = isNullOrUndefined(type) ? Axis.ButtonType : type;
-    this.axis = isNullOrUndefined(axis) ? 0 : axis;
-    this.index = isNullOrUndefined(index) ? 0 : index;
+    this.type = isNullOrUndefined(options.type) ? Axis.ButtonType : options.type;
+    this.axis = isNullOrUndefined(options.axis) ? 0 : options.axis;
+    this.index = isNullOrUndefined(options.index) ? 0 : options.index;
 
-    this.gamepadIndex = isNullOrUndefined(gamepadIndex) ? 0 : gamepadIndex;
+    this.gamepadIndex = isNullOrUndefined(options.gamepadIndex) ? 0 : options.gamepadIndex;
 
     this.value = 0;
 

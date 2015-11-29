@@ -37,9 +37,9 @@ function Geometry() {
 JSONAsset.extend(Geometry, "odin.Geometry");
 GeometryPrototype = Geometry.prototype;
 
-GeometryPrototype.construct = function(name, src, options) {
+GeometryPrototype.construct = function(options) {
 
-    JSONAssetPrototype.construct.call(this, name, src, options);
+    JSONAssetPrototype.construct.call(this, options);
 
     return this;
 };

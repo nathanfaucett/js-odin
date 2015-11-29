@@ -27,11 +27,15 @@ function Entity() {
 Class.extend(Entity, "odin.Entity");
 EntityPrototype = Entity.prototype;
 
-EntityPrototype.construct = function(name) {
+EntityPrototype.construct = function(options) {
 
     ClassPrototype.construct.call(this);
 
-    this.name = name || this.__id;
+    if (options) {
+        this.name = options.name || this.__id;
+    } else {
+        this.name = this.__id;
+    }
 
     this.depth = 0;
     this.root = this;

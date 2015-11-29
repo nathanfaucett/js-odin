@@ -24,12 +24,14 @@ function Mesh() {
 Component.extend(Mesh, "odin.Mesh", MeshManager);
 MeshPrototype = Mesh.prototype;
 
-MeshPrototype.construct = function(geometry, material) {
+MeshPrototype.construct = function(options) {
 
     ComponentPrototype.construct.call(this);
 
-    this.geometry = geometry;
-    this.material = material;
+    if (options) {
+        this.geometry = options.geometry;
+        this.material = options.material;
+    }
 
     return this;
 };

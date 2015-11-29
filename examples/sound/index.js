@@ -134,18 +134,23 @@ var environment = require(1),
 
 eventListener.on(environment.window, "load", function load() {
     require.async(13, function(odin) {
-        var BoxControl = require(218),
+        var BoxControl = require(221),
 
             assets = odin.Assets.create(),
+            
             canvas = odin.Canvas.create({
                 disableContextMenu: false
             }),
 
             renderer = odin.Renderer.create(),
 
-            texture = odin.Texture.create("image-default_diffuse", "../content/images/default_diffuse.jpg"),
+            texture = odin.Texture.create({
+                name: "image-default_diffuse",
+                src: "../content/images/default_diffuse.jpg"
+            }),
 
-            shader = odin.Shader.create([
+            shader = odin.Shader.create({
+                vertex: [
                     "varying vec2 vUv;",
                     "varying vec3 vNormal;",
 
@@ -154,7 +159,8 @@ eventListener.on(environment.window, "load", function load() {
                     "    vNormal = getNormal();",
                     "    gl_Position = perspectiveMatrix * modelViewMatrix * getPosition();",
                     "}"
-                ].join("\n"), [
+                ].join("\n"),
+                fragment: [
                     "uniform sampler2D texture;",
 
                     "varying vec2 vUv;",
@@ -166,9 +172,10 @@ eventListener.on(environment.window, "load", function load() {
                     "    gl_FragColor = texture2D(texture, vec2(vUv.s, vUv.t)) * vec4(dprod, dprod, dprod, 1.0);",
                     "}"
                 ].join("\n")
-            ),
+            }),
 
-            material = odin.Material.create("mat_box", null, {
+            material = odin.Material.create({
+                name: "mat_box",
                 shader: shader,
                 side: odin.enums.side.BOTH,
                 uniforms: {
@@ -176,11 +183,19 @@ eventListener.on(environment.window, "load", function load() {
                 }
             }),
 
-            geometryBox = odin.Geometry.create("geometry-box", "../content/geometry/player.json"),
+            geometryBox = odin.Geometry.create({
+                name: "geometry-box",
+                src: "../content/geometry/player.json"
+            }),
 
-            audioBoom = odin.AudioAsset.create("audio-boom", "../content/audio/boom.ogg"),
+            audioBoom = odin.AudioAsset.create({
+                name: "audio-boom",
+                src: "../content/audio/boom.ogg"
+            }),
 
-            camera = global.camera = odin.Entity.create("main_camera").addComponent(
+            camera = global.camera = odin.Entity.create({
+                name: "main_camera"
+            }).addComponent(
                 odin.Transform.create()
                     .setPosition([0, -2, 0]),
                 odin.Camera.create()
@@ -192,27 +207,37 @@ eventListener.on(environment.window, "load", function load() {
             boxLeft = global.boxLeft = odin.Entity.create().addComponent(
                 odin.Transform.create()
                     .setPosition([0, 0, 0]),
-                odin.AudioSource.create(audioBoom)
+                odin.AudioSource.create({
+                        audio: audioBoom
+                    })
                     .setConeInnerAngle(180)
                     .setConeOuterAngle(180),
-                odin.Mesh.create(geometryBox, material),
+                odin.Mesh.create({
+                    geometry: geometryBox,
+                    material: material
+                }),
                 BoxControl.create()
             ),
 
             boxRight = global.boxRight = odin.Entity.create().addComponent(
                 odin.Transform.create()
                     .setPosition([0, 0, 0]),
-                odin.AudioSource.create(audioBoom)
+                odin.AudioSource.create({
+                        audio: audioBoom
+                    })
                     .setConeInnerAngle(180)
                     .setConeOuterAngle(180),
-                odin.Mesh.create(geometryBox, material),
+                odin.Mesh.create({
+                    geometry: geometryBox,
+                    material: material
+                }),
                 BoxControl.create({
                     position: 2,
                     offset: 0.5
                 })
             ),
 
-            scene = global.scene = odin.Scene.create("scene").addEntity(camera, boxLeft, boxRight),
+            scene = global.scene = odin.Scene.create({name: "scene"}).addEntity(camera, boxLeft, boxRight),
             cameraComponent = camera.getComponent("odin.Camera");
 
         boxLeft.on("awake", function() {
@@ -1092,6 +1117,9 @@ function isUndefined(value) {
 
 
 },
+null,
+null,
+null,
 null,
 null,
 null,
